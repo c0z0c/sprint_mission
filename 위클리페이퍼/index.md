@@ -2,6 +2,9 @@
 layout: default
 title: 위클리페이퍼 - 스프린트 미션 보관함
 description: 주간 학습 리포트
+cache-control: no-cache
+expires: 0
+pragma: no-cache
 ---
 
 # 📰 위클리페이퍼

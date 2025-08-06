@@ -2,6 +2,9 @@
 layout: default
 title: 스프린트 미션 보관함
 description: 코드잇 AI 4기 스프린트 미션 결과물 보관함
+cache-control: no-cache
+expires: 0
+pragma: no-cache
 ---
 
 # 📚 스프린트 미션 보관함

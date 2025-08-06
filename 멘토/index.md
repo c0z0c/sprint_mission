@@ -2,6 +2,9 @@
 layout: default
 title: 멘토 - 스프린트 미션 보관함
 description: 멘토 관련 자료들
+cache-control: no-cache
+expires: 0
+pragma: no-cache
 ---
 
 # 👨‍🏫 멘토

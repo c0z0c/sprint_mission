@@ -2,6 +2,9 @@
 layout: default
 title: 스프린트미션_완료 - 스프린트 미션 보관함
 description: 완료된 스프린트 미션들
+cache-control: no-cache
+expires: 0
+pragma: no-cache
 ---
 
 # ✅ 스프린트미션_완료

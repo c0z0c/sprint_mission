@@ -2,6 +2,9 @@
 layout: default
 title: CensusIncome - 멘토 자료
 description: Census Income 데이터 분석 프로젝트
+cache-control: no-cache
+expires: 0
+pragma: no-cache
 ---
 
 # 📊 CensusIncome 프로젝트
