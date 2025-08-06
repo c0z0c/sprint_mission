@@ -30,15 +30,12 @@ pragma: no-cache
               <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
               &nbsp;&nbsp;
               <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
-            {% else if file.extname == '.docx' %}
+            {% elsif file.extname == '.docx' %}
               <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
               &nbsp;&nbsp;
-              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Google에서 열기)</a>
+              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Google에서 열기)</a>
             {% else %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-<!--
-              <a href="{{ file.path | relative_url }}" target="_blank">{{ file.name }}</a>
--->
+              <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% endif %}
           </td>
         </tr>
