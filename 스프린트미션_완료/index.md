@@ -18,8 +18,6 @@ pragma: no-cache
   <thead>
     <tr>
       <th>파일명</th>
-      <th>유형</th>
-      <th>다운로드/바로가기</th>
     </tr>
   </thead>
   <tbody>
@@ -27,13 +25,13 @@ pragma: no-cache
     {% for file in site.static_files %}
       {% if file.path contains folder and file.name != 'index.md' %}
         <tr>
-          <td>{{ file.name }}</td>
-          <td>{{ file.extname }}</td>
           <td>
             {% if file.extname == '.ipynb' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">GitHub 소스 바로가기</a>
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              &nbsp;|&nbsp;
+              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }} (Colab에서 열기)</a>
             {% else %}
-              <a href="{{ file.path | relative_url }}" target="_blank">다운로드</a>
+              <a href="{{ file.path | relative_url }}" target="_blank">{{ file.name }}</a>
             {% endif %}
           </td>
         </tr>
