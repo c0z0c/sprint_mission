@@ -13,168 +13,34 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<div class="file-list">
-  <!-- README 파일 -->
-  <div class="file-item featured">
-    <a href="{{ site.baseurl }}/스프린트미션_완료/README.html" class="item-link file readme">
-      <span class="item-icon">📖</span>
-      <span class="item-name">README.md</span>
-      <span class="item-desc">프로젝트 전체 설명 문서</span>
-      <span class="item-badge">중요</span>
-    </a>
-  </div>
 
-  <!-- 미션 1 -->
-  <div class="mission-group">
-    <h3>🎯 미션 1</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">미션1_5팀_김명환.ipynb</span>
-        <span class="item-desc">첫 번째 스프린트 미션 노트북 (렌더링됨)</span>
-      </a>
-    </div>
-    <div class="file-actions">
-      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="action-link github" target="_blank">
-        <span class="action-icon">💻</span>
-        <span class="action-text">GitHub에서 소스 보기</span>
-      </a>
-      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
-        <span class="action-icon">🔍</span>
-        <span class="action-text">NBViewer로 보기</span>
-      </a>
-      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="action-link colab" target="_blank">
-        <span class="action-icon">🚀</span>
-        <span class="action-text">Colab에서 실행</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 미션 2 -->
-  <div class="mission-group">
-    <h3>🎯 미션 2</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">미션2_5팀_김명환.ipynb</span>
-        <span class="item-desc">두 번째 스프린트 미션 노트북 (렌더링됨)</span>
-      </a>
-    </div>
-    <div class="file-actions">
-      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="action-link github" target="_blank">
-        <span class="action-icon">💻</span>
-        <span class="action-text">GitHub에서 소스 보기</span>
-      </a>
-      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
-        <span class="action-icon">🔍</span>
-        <span class="action-text">NBViewer로 보기</span>
-      </a>
-      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="action-link colab" target="_blank">
-        <span class="action-icon">🚀</span>
-        <span class="action-text">Colab에서 실행</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 미션 3 -->
-  <div class="mission-group">
-    <h3>🎯 미션 3</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">미션3_5팀_김명환.ipynb</span>
-        <span class="item-desc">세 번째 스프린트 미션 노트북 (렌더링됨)</span>
-      </a>
-    </div>
-    <div class="file-actions">
-      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="action-link github" target="_blank">
-        <span class="action-icon">💻</span>
-        <span class="action-text">GitHub에서 소스 보기</span>
-      </a>
-      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
-        <span class="action-icon">🔍</span>
-        <span class="action-text">NBViewer로 보기</span>
-      </a>
-      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="action-link colab" target="_blank">
-        <span class="action-icon">🚀</span>
-        <span class="action-text">Colab에서 실행</span>
-      </a>
-    </div>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션3_5팀_김명환.docx" class="item-link file document" target="_blank">
-        <span class="item-icon">📄</span>
-        <span class="item-name">미션3_5팀_김명환.docx</span>
-        <span class="item-desc">미션 3 문서 파일</span>
-      </a>
-    </div>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션3_5팀_김명환.pdf" class="item-link file pdf" target="_blank">
-        <span class="item-icon">📕</span>
-        <span class="item-name">미션3_5팀_김명환.pdf</span>
-        <span class="item-desc">미션 3 PDF 버전</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 미션 4 -->
-  <div class="mission-group">
-    <h3>🎯 미션 4</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">미션4_5팀_김명환.ipynb</span>
-        <span class="item-desc">네 번째 스프린트 미션 노트북 (렌더링됨)</span>
-      </a>
-    </div>
-    <div class="file-actions">
-      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="action-link github" target="_blank">
-        <span class="action-icon">💻</span>
-        <span class="action-text">GitHub에서 소스 보기</span>
-      </a>
-      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
-        <span class="action-icon">🔍</span>
-        <span class="action-text">NBViewer로 보기</span>
-      </a>
-      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="action-link colab" target="_blank">
-        <span class="action-icon">🚀</span>
-        <span class="action-text">Colab에서 실행</span>
-      </a>
-    </div>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션4_5팀_김명환.docx" class="item-link file document" target="_blank">
-        <span class="item-icon">📄</span>
-        <span class="item-name">미션4_5팀_김명환.docx</span>
-        <span class="item-desc">미션 4 문서 파일</span>
-      </a>
-    </div>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/미션4_5팀_김명환.pdf" class="item-link file pdf" target="_blank">
-        <span class="item-icon">📕</span>
-        <span class="item-name">미션4_5팀_김명환.pdf</span>
-        <span class="item-desc">미션 4 PDF 버전</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 유틸리티 파일들 -->
-  <div class="mission-group">
-    <h3>🔧 유틸리티 파일들</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/스프린트미션_완료/helper_c0z0c_dev.py" class="item-link file python" target="_blank">
-        <span class="item-icon">🐍</span>
-        <span class="item-name">helper_c0z0c_dev.py</span>
-        <span class="item-desc">헬퍼 유틸리티 모듈</span>
-      </a>
-    </div>
-    <div class="file-item">
-      <div class="item-link file-display">
-        <span class="item-icon">💾</span>
-        <span class="item-name">cache.json</span>
-        <span class="item-desc">캐시 데이터 파일</span>
-      </div>
-    </div>
-  </div>
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>파일명</th>
+      <th>유형</th>
+      <th>다운로드/바로가기</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% assign folder = '스프린트미션_완료/' %}
+    {% for file in site.static_files %}
+      {% if file.path contains folder and file.name != 'index.md' %}
+        <tr>
+          <td>{{ file.name }}</td>
+          <td>{{ file.extname }}</td>
+          <td>
+            {% if file.extname == '.ipynb' %}
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">GitHub 소스 바로가기</a>
+            {% else %}
+              <a href="{{ file.path | relative_url }}" target="_blank">다운로드</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
 
 ## 📊 완료 현황
 
