@@ -31,7 +31,21 @@ pragma: no-cache
       <a href="{{ site.baseurl }}/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
         <span class="item-icon">📓</span>
         <span class="item-name">미션1_5팀_김명환.ipynb</span>
-        <span class="item-desc">첫 번째 스프린트 미션 노트북</span>
+        <span class="item-desc">첫 번째 스프린트 미션 노트북 (렌더링됨)</span>
+      </a>
+    </div>
+    <div class="file-actions">
+      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="action-link github" target="_blank">
+        <span class="action-icon">💻</span>
+        <span class="action-text">GitHub에서 소스 보기</span>
+      </a>
+      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
+        <span class="action-icon">🔍</span>
+        <span class="action-text">NBViewer로 보기</span>
+      </a>
+      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션1_5팀_김명환.ipynb" class="action-link colab" target="_blank">
+        <span class="action-icon">🚀</span>
+        <span class="action-text">Colab에서 실행</span>
       </a>
     </div>
   </div>
@@ -43,7 +57,21 @@ pragma: no-cache
       <a href="{{ site.baseurl }}/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
         <span class="item-icon">📓</span>
         <span class="item-name">미션2_5팀_김명환.ipynb</span>
-        <span class="item-desc">두 번째 스프린트 미션 노트북</span>
+        <span class="item-desc">두 번째 스프린트 미션 노트북 (렌더링됨)</span>
+      </a>
+    </div>
+    <div class="file-actions">
+      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="action-link github" target="_blank">
+        <span class="action-icon">💻</span>
+        <span class="action-text">GitHub에서 소스 보기</span>
+      </a>
+      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
+        <span class="action-icon">🔍</span>
+        <span class="action-text">NBViewer로 보기</span>
+      </a>
+      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션2_5팀_김명환.ipynb" class="action-link colab" target="_blank">
+        <span class="action-icon">🚀</span>
+        <span class="action-text">Colab에서 실행</span>
       </a>
     </div>
   </div>
@@ -55,7 +83,21 @@ pragma: no-cache
       <a href="{{ site.baseurl }}/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
         <span class="item-icon">📓</span>
         <span class="item-name">미션3_5팀_김명환.ipynb</span>
-        <span class="item-desc">세 번째 스프린트 미션 노트북</span>
+        <span class="item-desc">세 번째 스프린트 미션 노트북 (렌더링됨)</span>
+      </a>
+    </div>
+    <div class="file-actions">
+      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="action-link github" target="_blank">
+        <span class="action-icon">💻</span>
+        <span class="action-text">GitHub에서 소스 보기</span>
+      </a>
+      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
+        <span class="action-icon">🔍</span>
+        <span class="action-text">NBViewer로 보기</span>
+      </a>
+      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션3_5팀_김명환.ipynb" class="action-link colab" target="_blank">
+        <span class="action-icon">🚀</span>
+        <span class="action-text">Colab에서 실행</span>
       </a>
     </div>
     <div class="file-item">
@@ -81,7 +123,21 @@ pragma: no-cache
       <a href="{{ site.baseurl }}/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="item-link file notebook" target="_blank">
         <span class="item-icon">📓</span>
         <span class="item-name">미션4_5팀_김명환.ipynb</span>
-        <span class="item-desc">네 번째 스프린트 미션 노트북</span>
+        <span class="item-desc">네 번째 스프린트 미션 노트북 (렌더링됨)</span>
+      </a>
+    </div>
+    <div class="file-actions">
+      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="action-link github" target="_blank">
+        <span class="action-icon">💻</span>
+        <span class="action-text">GitHub에서 소스 보기</span>
+      </a>
+      <a href="https://nbviewer.org/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="action-link nbviewer" target="_blank">
+        <span class="action-icon">🔍</span>
+        <span class="action-text">NBViewer로 보기</span>
+      </a>
+      <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/미션4_5팀_김명환.ipynb" class="action-link colab" target="_blank">
+        <span class="action-icon">🚀</span>
+        <span class="action-text">Colab에서 실행</span>
       </a>
     </div>
     <div class="file-item">
@@ -312,5 +368,68 @@ pragma: no-cache
 .nav-icon {
   margin-right: 8px;
   font-size: 16px;
+}
+
+.file-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85em;
+  transition: all 0.3s ease;
+  border: 1px solid;
+}
+
+.action-link.github {
+  background: #f6f8fa;
+  color: #24292e;
+  border-color: #d0d7de;
+}
+
+.action-link.github:hover {
+  background: #24292e;
+  color: white;
+  text-decoration: none;
+}
+
+.action-link.nbviewer {
+  background: #fff8e1;
+  color: #e65100;
+  border-color: #ffb74d;
+}
+
+.action-link.nbviewer:hover {
+  background: #e65100;
+  color: white;
+  text-decoration: none;
+}
+
+.action-link.colab {
+  background: #fff3e0;
+  color: #f57c00;
+  border-color: #ffb74d;
+}
+
+.action-link.colab:hover {
+  background: #f57c00;
+  color: white;
+  text-decoration: none;
+}
+
+.action-icon {
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.action-text {
+  font-size: 0.8em;
 }
 </style>
