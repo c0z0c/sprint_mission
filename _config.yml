@@ -1,0 +1,43 @@
+# Jekyll 설정
+title: "스프린트 미션 보관함"
+description: "코드잇 AI 4기 스프린트 미션 결과물 보관함"
+url: "https://c0z0c.github.io"
+baseurl: "/sprint_mission"
+
+# Build 설정
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# 파일 처리
+include:
+  - "_*_.html"
+  - "_*_.md"
+
+# 제외할 파일들
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - ".git"
+
+# 기본 레이아웃 설정
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+      cache-control: "no-cache"
+      expires: 0
+      pragma: "no-cache"
+      
+# 한국어 설정
+lang: ko
+timezone: Asia/Seoul
+
+# 인코딩 설정
+encoding: utf-8
