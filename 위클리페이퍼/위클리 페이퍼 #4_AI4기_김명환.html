@@ -1,0 +1,599 @@
+---
+layout: default
+title: 위클리 페이퍼 #4 - 머신러닝 vs 딥러닝 그리고 하이퍼파라미터
+description: 머신러닝과 딥러닝의 차이점 및 하이퍼파라미터 최적화
+---
+
+# 위클리페이퍼 #4: 머신러닝 vs 딥러닝 그리고 하이퍼파라미터
+
+---
+
+<div class="document-info">
+  <h2>📋 문서 정보</h2>
+  <table class="info-table">
+    <tr><td><strong>작성자</strong></td><td>김명환</td></tr>
+    <tr><td><strong>작성일</strong></td><td>2025년 7월 31일</td></tr>
+    <tr><td><strong>과정</strong></td><td>AI엔지니어 딥러닝 과정</td></tr>
+    <tr><td><strong>주제</strong></td><td>머신러닝과 딥러닝의 차이점 및 하이퍼파라미터 최적화</td></tr>
+  </table>
+</div>
+
+---
+
+<div class="learning-objectives">
+  <h2>📌 학습 목표</h2>
+  <p>이 문서를 통해 다음 내용을 학습할 수 있습니다:</p>
+  <ul class="objective-list">
+    <li>✅ 머신러닝과 딥러닝의 포함관계와 핵심 차이점 이해</li>
+    <li>✅ 딥러닝 성능 향상을 위한 주요 하이퍼파라미터 숙지</li>
+    <li>✅ 실무 환경에서의 메모리 관리와 최적 설정 방법</li>
+  </ul>
+</div>
+
+---
+
+## 단원 1: 딥러닝과 머신러닝의 포함관계
+
+### 1.1 기본 개념 이해하기
+
+머신러닝(Machine Learning)과 딥러닝(Deep Learning)의 관계를 이해하기 위해서는 먼저 인공지능(AI)의 전체적인 구조를 알아야 합니다.
+
+<div class="hierarchy-diagram">
+  <div class="hierarchy-level level-1">
+    <div class="hierarchy-box ai">인공지능(AI)</div>
+  </div>
+  <div class="hierarchy-level level-2">
+    <div class="hierarchy-box ml">머신러닝(Machine Learning)</div>
+  </div>
+  <div class="hierarchy-level level-3">
+    <div class="hierarchy-box dl">딥러닝(Deep Learning)</div>
+  </div>
+</div>
+
+### 1.2 각 개념의 정의
+
+<div class="concept-cards">
+  <div class="concept-card ai-card">
+    <h4>인공지능(Artificial Intelligence)</h4>
+    <p><strong>정의:</strong> 인간의 지능을 모방하여 문제를 해결하는 모든 기술</p>
+    <p><strong>예시:</strong> 규칙 기반 시스템, Expert System, 머신러닝 등</p>
+  </div>
+
+  <div class="concept-card ml-card">
+    <h4>머신러닝(Machine Learning)</h4>
+    <p><strong>정의:</strong> 명시적으로 프로그래밍하지 않고도 데이터로부터 학습하여 성능을 개선하는 알고리즘</p>
+    <div class="features">
+      <p><strong>특징:</strong></p>
+      <ul>
+        <li>데이터에서 패턴을 자동으로 학습</li>
+        <li>새로운 데이터에 대한 예측 가능</li>
+        <li>전통적인 알고리즘: Linear Regression, Decision Tree, SVM, Random Forest 등</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="concept-card dl-card">
+    <h4>딥러닝(Deep Learning)</h4>
+    <p><strong>정의:</strong> 인공 신경망을 여러 층으로 깊게 쌓아 복잡한 패턴을 학습하는 머신러닝의 한 분야</p>
+    <div class="features">
+      <p><strong>특징:</strong></p>
+      <ul>
+        <li>다층 신경망 구조 (Hidden Layer 3개 이상)</li>
+        <li>비선형 변환을 통한 복잡한 패턴 학습</li>
+        <li>이미지, 텍스트, 음성 등 비정형 데이터 처리에 특화</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+## 단원 2: 주요 차이점 분석
+
+<div class="comparison-table-wrapper">
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>머신러닝</th>
+        <th>딥러닝</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>데이터 요구량</strong></td>
+        <td>상대적으로 적은 데이터</td>
+        <td>대량의 데이터 필요</td>
+      </tr>
+      <tr>
+        <td><strong>특성 추출</strong></td>
+        <td>수동 특성 엔지니어링</td>
+        <td>자동 특성 추출</td>
+      </tr>
+      <tr>
+        <td><strong>계산 복잡도</strong></td>
+        <td>상대적으로 낮음</td>
+        <td>매우 높음 (GPU 필요)</td>
+      </tr>
+      <tr>
+        <td><strong>해석 가능성</strong></td>
+        <td>높음 (투명한 모델)</td>
+        <td>낮음 (블랙박스)</td>
+      </tr>
+      <tr>
+        <td><strong>성능</strong></td>
+        <td>구조화된 데이터에서 우수</td>
+        <td>비정형 데이터에서 압도적</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 단원 3: 하이퍼파라미터 최적화
+
+### 3.1 주요 하이퍼파라미터
+
+<div class="hyperparameter-grid">
+  <div class="param-card">
+    <h4>🎯 Learning Rate</h4>
+    <p><strong>역할:</strong> 가중치 업데이트 크기 결정</p>
+    <p><strong>권장값:</strong> 0.001 ~ 0.01</p>
+    <div class="code-example">
+      <code>optimizer = Adam(learning_rate=0.001)</code>
+    </div>
+  </div>
+
+  <div class="param-card">
+    <h4>📦 Batch Size</h4>
+    <p><strong>역할:</strong> 한 번에 처리할 데이터 수</p>
+    <p><strong>권장값:</strong> 16, 32, 64, 128</p>
+    <div class="code-example">
+      <code>model.fit(X, y, batch_size=32)</code>
+    </div>
+  </div>
+
+  <div class="param-card">
+    <h4>🔄 Epochs</h4>
+    <p><strong>역할:</strong> 전체 데이터를 학습하는 횟수</p>
+    <p><strong>권장값:</strong> 50 ~ 200</p>
+    <div class="code-example">
+      <code>model.fit(X, y, epochs=100)</code>
+    </div>
+  </div>
+
+  <div class="param-card">
+    <h4>🚪 Dropout Rate</h4>
+    <p><strong>역할:</strong> 과적합 방지</p>
+    <p><strong>권장값:</strong> 0.2 ~ 0.5</p>
+    <div class="code-example">
+      <code>Dropout(0.3)</code>
+    </div>
+  </div>
+</div>
+
+### 3.2 메모리 관리 전략
+
+<div class="memory-management">
+  <h3>💾 메모리 최적화 방법</h3>
+  
+  <div class="strategy-card">
+    <h4>1. 배치 사이즈 조정</h4>
+    <pre><code># 메모리 부족 시 배치 사이즈 줄이기
+batch_size = 16  # 32에서 16으로 감소
+model.fit(X_train, y_train, batch_size=batch_size)</code></pre>
+  </div>
+
+  <div class="strategy-card">
+    <h4>2. 모델 구조 간소화</h4>
+    <pre><code># 뉴런 수 줄이기
+model = Sequential([
+    Flatten(),
+    Dense(128, activation='relu'),  # 256에서 128로 감소
+    Dense(10, activation='softmax')
+])</code></pre>
+  </div>
+
+  <div class="strategy-card">
+    <h4>3. 그래디언트 어큐뮬레이션</h4>
+    <pre><code># 작은 배치를 여러 번 누적하여 큰 배치 효과
+accumulate_grad_batches = 4
+effective_batch_size = batch_size * accumulate_grad_batches</code></pre>
+  </div>
+</div>
+
+### 3.3 실무 팁
+
+<div class="practical-tips">
+  <div class="tip-section">
+    <h4>📊 메모리 모니터링</h4>
+    <pre><code># 메모리 사용량 확인
+import psutil
+print(f"RAM 사용률: {psutil.virtual_memory().percent}%")
+
+# GPU 메모리 확인 (GPU 있는 경우)
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    tf.config.experimental.set_memory_growth(gpus[0], True)</code></pre>
+  </div>
+
+  <div class="tip-section">
+    <h4>⚡ 데이터 로딩 최적화</h4>
+    <pre><code># 메모리 효율적인 데이터 로딩
+train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+train_dataset = train_dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)</code></pre>
+  </div>
+</div>
+
+## 마무리
+
+<div class="conclusion">
+  <h3>🎯 핵심 요약</h3>
+  <div class="summary-points">
+    <div class="summary-point">
+      <span class="point-icon">🔍</span>
+      <p>딥러닝은 머신러닝의 한 분야로, 더 복잡한 문제를 해결할 수 있지만 그만큼 더 많은 데이터와 계산 자원이 필요합니다.</p>
+    </div>
+    
+    <div class="summary-point">
+      <span class="point-icon">⚙️</span>
+      <p>하이퍼파라미터 튜닝은 딥러닝 모델의 성능을 크게 좌우하므로, 각 파라미터의 역할을 이해하고 체계적으로 접근하는 것이 중요합니다.</p>
+    </div>
+    
+    <div class="summary-point">
+      <span class="point-icon">💡</span>
+      <p>처음에는 기본값으로 시작하여 점진적으로 조정해 나가며, 항상 검증 데이터로 성능을 확인하는 것을 잊지 마세요!</p>
+    </div>
+    
+    <div class="summary-point">
+      <span class="point-icon">💾</span>
+      <p>제한된 하드웨어 환경에서는 메모리 관리와 배치 사이즈 설정이 성공적인 학습의 핵심입니다.</p>
+    </div>
+  </div>
+</div>
+
+---
+
+<div class="navigation-footer">
+  <a href="{{ site.baseurl }}/위클리페이퍼/" class="nav-button back">
+    <span class="nav-icon">⬅️</span> 위클리페이퍼 목록으로
+  </a>
+  <a href="{{ site.baseurl }}/" class="nav-button home">
+    <span class="nav-icon">🏠</span> 홈으로
+  </a>
+</div>
+
+<style>
+.document-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin: 30px 0;
+}
+
+.info-table {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.info-table td {
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+}
+
+.learning-objectives {
+  background: #e8f5e8;
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 5px solid #27ae60;
+  margin: 30px 0;
+}
+
+.objective-list {
+  margin: 15px 0 0 0;
+}
+
+.objective-list li {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.hierarchy-diagram {
+  text-align: center;
+  margin: 30px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.hierarchy-level {
+  margin: 15px 0;
+}
+
+.hierarchy-box {
+  display: inline-block;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  color: white;
+  margin: 0 10px;
+}
+
+.hierarchy-box.ai { background: #e74c3c; }
+.hierarchy-box.ml { background: #3498db; }
+.hierarchy-box.dl { background: #9b59b6; }
+
+.concept-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.concept-card {
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 5px solid;
+}
+
+.concept-card.ai-card {
+  background: #ffebee;
+  border-left-color: #e74c3c;
+}
+
+.concept-card.ml-card {
+  background: #e3f2fd;
+  border-left-color: #3498db;
+}
+
+.concept-card.dl-card {
+  background: #f3e5f5;
+  border-left-color: #9b59b6;
+}
+
+.concept-card h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.features ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.comparison-table-wrapper {
+  overflow-x: auto;
+  margin: 30px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.comparison-table th {
+  background: #34495e;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.comparison-table td {
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.comparison-table tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.hyperparameter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.param-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.param-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.param-card h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+}
+
+.code-example {
+  background: #f4f4f4;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.memory-management {
+  background: #fff3e0;
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 5px solid #ff9800;
+  margin: 30px 0;
+}
+
+.strategy-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 15px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.strategy-card h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.strategy-card pre {
+  margin: 10px 0 0 0;
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 15px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.practical-tips {
+  margin: 30px 0;
+}
+
+.tip-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border: 1px solid #dee2e6;
+}
+
+.tip-section h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.tip-section pre {
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 15px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 10px 0 0 0;
+}
+
+.conclusion {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin: 40px 0;
+}
+
+.conclusion h3 {
+  margin-top: 0;
+  color: white;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  padding-bottom: 10px;
+}
+
+.summary-points {
+  margin: 20px 0;
+}
+
+.summary-point {
+  display: flex;
+  align-items: flex-start;
+  margin: 15px 0;
+  padding: 15px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+}
+
+.point-icon {
+  font-size: 20px;
+  margin-right: 15px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.summary-point p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.navigation-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: #3498db;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin: 0 10px;
+}
+
+.nav-button:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: white;
+}
+
+.nav-button.home {
+  background: #27ae60;
+}
+
+.nav-button.home:hover {
+  background: #219a52;
+}
+
+.nav-button.back {
+  background: #95a5a6;
+}
+
+.nav-button.back:hover {
+  background: #7f8c8d;
+}
+
+.nav-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .concept-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .hyperparameter-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hierarchy-box {
+    display: block;
+    margin: 10px 0;
+  }
+  
+  .summary-point {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .point-icon {
+    margin: 0 0 10px 0;
+  }
+}
+</style>
