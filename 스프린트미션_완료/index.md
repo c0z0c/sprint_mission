@@ -1,15 +1,15 @@
 ---
 layout: default
-title: 스터디 - 스터디 자료 보관함
-description: 스터디 관련 자료들
+title: 스프린트미션_완료 - 완료된 미션 보관함
+description: 완료된 스프린트 미션 자료들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# 📚 스터디
+# ✅ 스프린트미션_완료
 
-스터디 관련 자료들을 모아둔 폴더입니다.
+완료된 스프린트 미션 자료들을 모아둔 폴더입니다.
 
 ## 📄 파일 목록
 
@@ -18,29 +18,68 @@ pragma: no-cache
   <thead>
     <tr>
       <th>파일명</th>
+      <th>타입</th>
     </tr>
   </thead>
   <tbody>
-    {% assign folder = '/스프린트미션_완료/' %}
-    {% assign exclude_files = "index.md,info.html,info.md" | split: "," %}
-    {% for file in site.static_files %}
-      {% if file.path contains folder and exclude_files contains file.name == false %}
+    {% assign folder_path = 'sprint_mission/스프린트미션_완료/' %}
+    {% assign exclude_files = "index.md,info.md" | split: "," %}
+    {% assign files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+    {% assign sorted_files = files | sort: 'name' %}
+    
+    {% for file in sorted_files %}
+      {% unless exclude_files contains file.name %}
         <tr>
           <td>
             {% if file.extname == '.ipynb' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-              &nbsp;&nbsp;
-              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
+              <div>
+                <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+                <br>
+                <small>
+                  <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #f57c00;">🔗 Colab에서 열기</a>
+                </small>
+              </div>
             {% elsif file.extname == '.docx' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-              &nbsp;&nbsp;
-              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Google에서 열기)</a>
-            {% else %}
+              <div>
+                <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+                <br>
+                <small>
+                  <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #4285f4;">🔗 Google에서 열기</a>
+                </small>
+              </div>
+            {% elsif file.extname == '.pdf' %}
+              <div>
+                <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+                <br>
+                <small>
+                  <a href="https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #dc3545;">🔗 PDF 다운로드</a>
+                </small>
+              </div>
+            {% elsif file.extname == '.html' %}
               <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+            {% elsif file.extname == '.md' and file.name != 'index.md' %}
+              <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+            {% else %}
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+            {% endif %}
+          </td>
+          <td>
+            {% if file.extname == '.ipynb' %}
+              <span style="background: #ff9800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📓 Notebook</span>
+            {% elsif file.extname == '.docx' %}
+              <span style="background: #2196f3; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📄 Word</span>
+            {% elsif file.extname == '.pdf' %}
+              <span style="background: #f44336; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📋 PDF</span>
+            {% elsif file.extname == '.html' %}
+              <span style="background: #4caf50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">🌐 HTML</span>
+            {% elsif file.extname == '.md' %}
+              <span style="background: #9c27b0; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📝 Markdown</span>
+            {% else %}
+              <span style="background: #757575; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📎 기타</span>
             {% endif %}
           </td>
         </tr>
-      {% endif %}
+      {% endunless %}
     {% endfor %}
   </tbody>
 </table>
@@ -49,15 +88,15 @@ pragma: no-cache
 
 <div class="completion-stats">
   <div class="stat-card">
-    <div class="stat-number">0</div>
-    <div class="stat-label">완료된 스터디</div>
+    <div class="stat-number">4</div>
+    <div class="stat-label">완료된 미션</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">0</div>
+    <div class="stat-number">9</div>
     <div class="stat-label">총 파일 수</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">0%</div>
+    <div class="stat-number">100%</div>
     <div class="stat-label">진행률</div>
   </div>
 </div>
