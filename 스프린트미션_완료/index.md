@@ -96,10 +96,12 @@ pragma: no-cache
     <div class="stat-number">9</div>
     <div class="stat-label">총 파일 수</div>
   </div>
+<!--
   <div class="stat-card">
     <div class="stat-number">100%</div>
     <div class="stat-label">진행률</div>
   </div>
+-->
 </div>
 
 ---

@@ -47,8 +47,8 @@ pragma: no-cache
       <a href="https://github.com/c0z0c/sprint_mission" target="_blank">
         <span class="link-icon">📱</span> GitHub 저장소
       </a>
-      <a href="{{ site.baseurl }}/스프린트미션_완료/README.html">
-        <span class="link-icon">📖</span> README
+      <a href="{{ site.baseurl }}/스프린트미션_완료/info">
+        <span class="link-icon">📖</span> Info
       </a>
     </div>
   </div>

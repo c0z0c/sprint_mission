@@ -23,6 +23,8 @@ exclude:
   - Gemfile.lock
   - vendor/
   - ".git"
+  - ".gitignore"
+  - "helper_c0z0c_dev.py"
 
 # 기본 레이아웃 설정
 defaults:
