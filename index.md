@@ -15,29 +15,38 @@ pragma: no-cache
   <div class="section-card">
     <h2>📂 폴더별 탐색</h2>
     <div class="folder-links">
-      <a href="{{ site.baseurl }}/멘토/" class="folder-link">
-        <span class="folder-icon">👨‍🏫</span>
-        <span class="folder-name">멘토</span>
-        <span class="folder-desc">멘토 관련 자료</span>
-      </a>
+      {% assign folder_icons = "멘토:👨‍🏫,스프린트미션_완료:✅,스프린트미션_작업중:🚧,위클리페이퍼:📰,스터디:📚" | split: "," %}
+      {% assign folder_descriptions = "멘토:멘토 관련 자료,스프린트미션_완료:완료된 스프린트 미션들,스프린트미션_작업중:진행 중인 미션들,위클리페이퍼:주간 학습 리포트,스터디:스터디 관련 자료" | split: "," %}
       
-      <a href="{{ site.baseurl }}/스프린트미션_완료/" class="folder-link">
-        <span class="folder-icon">✅</span>
-        <span class="folder-name">스프린트미션_완료</span>
-        <span class="folder-desc">완료된 스프린트 미션들</span>
-      </a>
-      
-      <a href="{{ site.baseurl }}/스프린트미션_작업중/" class="folder-link">
-        <span class="folder-icon">🚧</span>
-        <span class="folder-name">스프린트미션_작업중</span>
-        <span class="folder-desc">진행 중인 미션들</span>
-      </a>
-      
-      <a href="{{ site.baseurl }}/위클리페이퍼/" class="folder-link">
-        <span class="folder-icon">📰</span>
-        <span class="folder-name">위클리페이퍼</span>
-        <span class="folder-desc">주간 학습 리포트</span>
-      </a>
+      {% for page in site.pages %}
+        {% if page.dir != '/' and page.name == 'index.md' %}
+          {% assign folder_name = page.dir | remove: '/' %}
+          {% assign folder_icon = '📁' %}
+          {% assign folder_desc = '폴더' %}
+          
+          {% for icon_pair in folder_icons %}
+            {% assign icon_parts = icon_pair | split: ':' %}
+            {% if icon_parts[0] == folder_name %}
+              {% assign folder_icon = icon_parts[1] %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+          
+          {% for desc_pair in folder_descriptions %}
+            {% assign desc_parts = desc_pair | split: ':' %}
+            {% if desc_parts[0] == folder_name %}
+              {% assign folder_desc = desc_parts[1] %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+          
+          <a href="{{ site.baseurl }}{{ page.dir }}" class="folder-link">
+            <span class="folder-icon">{{ folder_icon }}</span>
+            <span class="folder-name">{{ folder_name }}</span>
+            <span class="folder-desc">{{ folder_desc }}</span>
+          </a>
+        {% endif %}
+      {% endfor %}
     </div>
   </div>
 
