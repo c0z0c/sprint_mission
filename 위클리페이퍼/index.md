@@ -51,13 +51,14 @@ pragma: no-cache
                 <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file.name }}" target="_blank">{{ file.name }}</a>
                 <br>
                 <small>
-                  <a href="https://raw.githubusercontent.com/c0z0c/sprint_mission/master/위클리페이퍼/{{ file.name }}" target="_blank" style="color: #dc3545;">🔗 PDF 다운로드</a>
+                  <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/위클리페이퍼/{{ file.name }}" target="_blank" style="color: #dc3545;">🔗 PDF 뷰어로 열기</a>
                 </small>
               </div>
             {% elsif file.extname == '.html' %}
               <a href="https://c0z0c.github.io/sprint_mission/위클리페이퍼/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% elsif file.extname == '.md' and file.name != 'index.md' %}
-              <a href="https://c0z0c.github.io/sprint_mission/위클리페이퍼/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              {% assign md_name = file.name | remove: '.md' %}
+              <a href="https://c0z0c.github.io/sprint_mission/위클리페이퍼/{{ md_name }}" target="_blank">{{ file.name }}</a>
             {% else %}
               <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% endif %}

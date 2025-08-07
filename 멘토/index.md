@@ -34,7 +34,7 @@ pragma: no-cache
   </thead>
   <tbody>
     {% assign folder_path = 'sprint_mission/멘토/' %}
-    {% assign exclude_files = "index.md,info.md" | split: "," %}
+    {% assign exclude_files = "index.md,info.md,.gitignore" | split: "," %}
     {% assign files = site.static_files | where_exp: "file", "file.path contains '멘토/'" %}
     {% assign sorted_files = files | sort: 'name' %}
     
@@ -63,13 +63,14 @@ pragma: no-cache
                 <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
                 <br>
                 <small>
-                  <a href="https://raw.githubusercontent.com/c0z0c/sprint_mission/master/멘토/{{ file.name }}" target="_blank" style="color: #dc3545;">🔗 PDF 다운로드</a>
+                  <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/멘토/{{ file.name }}" target="_blank" style="color: #dc3545;">🔗 PDF 뷰어로 열기</a>
                 </small>
               </div>
             {% elsif file.extname == '.html' %}
               <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% elsif file.extname == '.md' and file.name != 'index.md' %}
-              <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              {% assign md_name = file.name | remove: '.md' %}
+              <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ md_name }}" target="_blank">{{ file.name }}</a>
             {% else %}
               <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% endif %}
