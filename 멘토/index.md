@@ -36,7 +36,7 @@ pragma: no-cache
     {% assign folder_path = 'sprint_mission/멘토/' %}
     {% assign exclude_files = "index.md,info.md,.gitignore" | split: "," %}
     {% assign files = site.static_files | where_exp: "file", "file.path contains '멘토/'" %}
-    {% assign sorted_files = files | sort: 'name' %}
+    {% assign sorted_files = files | sort: 'name' | reverse %}
     
     {% for file in sorted_files %}
       {% unless exclude_files contains file.name %}

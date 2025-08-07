@@ -25,7 +25,7 @@ pragma: no-cache
     {% assign folder_path = 'sprint_mission/스프린트미션_완료/' %}
     {% assign exclude_files = "index.md,info.md" | split: "," %}
     {% assign files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
-    {% assign sorted_files = files | sort: 'name' %}
+    {% assign sorted_files = files | sort: 'name' | reverse %}
     
     {% for file in sorted_files %}
       {% unless exclude_files contains file.name %}

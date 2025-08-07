@@ -24,7 +24,7 @@ pragma: no-cache
     {% assign folder_path = 'sprint_mission/위클리페이퍼/' %}
     {% assign exclude_files = "index.md,info.md" | split: "," %}
     {% assign files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
-    {% assign sorted_files = files | sort: 'name' %}
+    {% assign sorted_files = files | sort: 'name' | reverse %}
     
     {% for file in sorted_files %}
       {% unless exclude_files contains file.name %}

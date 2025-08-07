@@ -38,6 +38,13 @@ pragma: no-cache
         <span class="folder-name">위클리페이퍼</span>
         <span class="folder-desc">주간 학습 리포트</span>
       </a>
+
+      <a href="{{ site.baseurl }}/스터디/" class="folder-link">
+        <span class="folder-icon">📒</span>
+        <span class="folder-name">스터디</span>
+        <span class="folder-desc">학습</span>
+      </a>
+
     </div>
   </div>
 
