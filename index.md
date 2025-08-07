@@ -22,7 +22,7 @@ pragma: no-cache
         {% if page.dir != '/' and page.name == 'index.md' %}
           {% assign folder_name = page.dir | remove: '/' %}
           {% assign folder_icon = '📁' %}
-          {% assign folder_desc = '폴더' %}
+          {% assign folder_desc = folder_name %}
           
           {% for icon_pair in folder_icons %}
             {% assign icon_parts = icon_pair | split: ':' %}
