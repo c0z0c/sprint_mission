@@ -13,74 +13,38 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<div class="file-list">
-  <!-- 위클리 페이퍼 #1 -->
-  <div class="weekly-group">
-    <h3>📅 위클리 페이퍼 #1</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/위클리페이퍼/위클리 페이퍼 #1_AI4기_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">위클리 페이퍼 #1_AI4기_김명환.ipynb</span>
-        <span class="item-desc">첫 번째 주간 학습 리포트</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 위클리 페이퍼 #2 -->
-  <div class="weekly-group">
-    <h3>📅 위클리 페이퍼 #2</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/위클리페이퍼/위클리 페이퍼 #2_AI4기_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">위클리 페이퍼 #2_AI4기_김명환.ipynb</span>
-        <span class="item-desc">두 번째 주간 학습 리포트</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 위클리 페이퍼 #3 -->
-  <div class="weekly-group">
-    <h3>📅 위클리 페이퍼 #3</h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/위클리페이퍼/위클리 페이퍼 #3_AI4기_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">위클리 페이퍼 #3_AI4기_김명환.ipynb</span>
-        <span class="item-desc">세 번째 주간 학습 리포트</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 위클리 페이퍼 #4 -->
-  <div class="weekly-group latest">
-    <h3>📅 위클리 페이퍼 #4 <span class="latest-badge">최신</span></h3>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/위클리페이퍼/위클리 페이퍼 #4_AI4기_김명환.ipynb" class="item-link file notebook" target="_blank">
-        <span class="item-icon">📓</span>
-        <span class="item-name">위클리 페이퍼 #4_AI4기_김명환.ipynb</span>
-        <span class="item-desc">네 번째 주간 학습 리포트 (노트북)</span>
-      </a>
-    </div>
-    <div class="file-item">
-      <a href="{{ site.baseurl }}/위클리페이퍼/위클리 페이퍼 #4_AI4기_김명환.html" class="item-link file markdown" target="_blank">
-        <span class="item-icon">📝</span>
-        <span class="item-name">위클리 페이퍼 #4_AI4기_김명환.md</span>
-        <span class="item-desc">네 번째 주간 학습 리포트 (마크다운)</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- Git 폴더 -->
-  <div class="utility-group">
-    <h3>🔧 기타 파일</h3>
-    <div class="file-item">
-      <div class="item-link file-display">
-        <span class="item-icon">📂</span>
-        <span class="item-name">.git</span>
-        <span class="item-desc">Git 버전 관리 폴더</span>
-      </div>
-    </div>
-  </div>
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>파일명</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% assign folder = '/스터디/' %}
+    {% assign exclude_files = "index.md,info.html,info.md" | split: "," %}
+    {% for file in site.static_files %}
+      {% if file.path contains folder and exclude_files contains file.name == false %}
+        <tr>
+          <td>
+            {% if file.extname == '.ipynb' %}
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              &nbsp;&nbsp;
+              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
+            {% elsif file.extname == '.docx' %}
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              &nbsp;&nbsp;
+              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">(Google에서 열기)</a>
+            {% elsif file.extname == '.html' or file.extname == '.md' %}
+              <a href="https://c0z0c.github.io/sprint_mission/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
+            {% else %}
+              <span>{{ file.name }}</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
 
 ## 📊 위클리페이퍼 현황
 

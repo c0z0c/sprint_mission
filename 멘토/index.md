@@ -25,13 +25,38 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<div class="file-list">
-  <!-- 현재 폴더에 직접적인 파일이 없음 -->
-  <div class="empty-message">
-    <span class="empty-icon">📭</span>
-    <p>이 폴더에는 직접적인 파일이 없습니다. 하위 폴더를 확인해보세요.</p>
-  </div>
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>파일명</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% assign folder = '/멘토/' %}
+    {% assign exclude_files = "index.md,info.html,info.md" | split: "," %}
+    {% for file in site.static_files %}
+      {% if file.path contains folder and exclude_files contains file.name == false %}
+        <tr>
+          <td>
+            {% if file.extname == '.ipynb' %}
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              &nbsp;&nbsp;
+              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
+            {% elsif file.extname == '.docx' %}
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              &nbsp;&nbsp;
+              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">(Google에서 열기)</a>
+            {% elsif file.extname == '.html' or file.extname == '.md' %}
+              <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
+            {% else %}
+              <span>{{ file.name }}</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
 
 ---
 

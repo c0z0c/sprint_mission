@@ -21,22 +21,22 @@ pragma: no-cache
     </tr>
   </thead>
   <tbody>
-    {% assign folder = '스터디/' %}
+    {% assign folder = '/스프린트미션_완료/' %}
     {% assign exclude_files = "index.md,info.html,info.md" | split: "," %}
     {% for file in site.static_files %}
       {% if file.path contains folder and exclude_files contains file.name == false %}
         <tr>
           <td>
             {% if file.extname == '.ipynb' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
               &nbsp;&nbsp;
-              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
+              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
             {% elsif file.extname == '.docx' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
               &nbsp;&nbsp;
-              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">(Google에서 열기)</a>
+              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Google에서 열기)</a>
             {% else %}
-              <a href="https://c0z0c.github.io/sprint_mission/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% endif %}
           </td>
         </tr>
