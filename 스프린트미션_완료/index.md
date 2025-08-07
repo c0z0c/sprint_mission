@@ -1,15 +1,15 @@
 ---
 layout: default
-title: 스프린트미션_완료 - 스프린트 미션 보관함
-description: 완료된 스프린트 미션들
+title: 스터디 - 스터디 자료 보관함
+description: 스터디 관련 자료들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# ✅ 스프린트미션_완료
+# 📚 스터디
 
-완료된 스프린트 미션들을 모아둔 폴더입니다.
+스터디 관련 자료들을 모아둔 폴더입니다.
 
 ## 📄 파일 목록
 
@@ -21,21 +21,22 @@ pragma: no-cache
     </tr>
   </thead>
   <tbody>
-    {% assign folder = '스프린트미션_완료/' %}
+    {% assign folder = '스터디/' %}
+    {% assign exclude_files = "index.md,info.html,info.md" | split: "," %}
     {% for file in site.static_files %}
-      {% if file.path contains folder and file.name != 'index.md' %}
+      {% if file.path contains folder and exclude_files contains file.name == false %}
         <tr>
           <td>
             {% if file.extname == '.ipynb' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
               &nbsp;&nbsp;
-              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
+              <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">(Colab에서 열기)</a>
             {% elsif file.extname == '.docx' %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
               &nbsp;&nbsp;
-              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">(Google에서 열기)</a>
+              <a href="https://docs.google.com/viewer?url=https://c0z0c.github.io/sprint_mission/blob/master/스터디/{{ file.name }}" target="_blank">(Google에서 열기)</a>
             {% else %}
-              <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
+              <a href="https://c0z0c.github.io/sprint_mission/스터디/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% endif %}
           </td>
         </tr>
@@ -48,15 +49,15 @@ pragma: no-cache
 
 <div class="completion-stats">
   <div class="stat-card">
-    <div class="stat-number">4</div>
-    <div class="stat-label">완료된 미션</div>
+    <div class="stat-number">0</div>
+    <div class="stat-label">완료된 스터디</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">11</div>
+    <div class="stat-number">0</div>
     <div class="stat-label">총 파일 수</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">100%</div>
+    <div class="stat-number">0%</div>
     <div class="stat-label">진행률</div>
   </div>
 </div>
