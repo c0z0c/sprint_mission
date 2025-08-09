@@ -52,7 +52,7 @@ pragma: no-cache
     <h2>🔗 빠른 링크</h2>
     <div class="quick-links">
       <a href="https://c0z0c.github.io/" target="_blank">
-        <span class="link-icon">🌐</span> 포트폴리오
+        <span class="link-icon">🌐</span> 메인
       </a>
       <a href="https://github.com/c0z0c/sprint_mission" target="_blank">
         <span class="link-icon">📱</span> GitHub 저장소
