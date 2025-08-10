@@ -99,7 +99,7 @@ pragma: no-cache
   
   {% if all_files.size > 0 %}
     {% for file in all_files %}
-      <!-- file {{ file }} -->
+      <!-- file {{ file.name }} -->
       {% assign file_ext = file.extname | downcase %}
       {% if file_ext == "" and file.path %}
         {% assign file_name = file.path | split: "/" | last %}
