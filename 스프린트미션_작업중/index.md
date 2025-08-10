@@ -13,22 +13,105 @@ pragma: no-cache
 
 ## 📁 폴더 목록
 
-<div class="empty-folder">
-  <div class="empty-message">
-    <span class="empty-icon">📭</span>
-    <h3>폴더가 비어있습니다</h3>
-    <p>현재 진행 중인 미션이 없습니다.</p>
-  </div>
+{% assign current_path = "/스프린트미션/스프린트미션_작업중/" %}
+{% assign folders = site.static_files | where_exp: "item", "item.path contains current_path" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
+{% assign unique_folders = "" | split: "" %}
+
+{% for file in site.static_files %}
+  {% if file.path contains current_path and file.path != current_path %}
+    {% assign path_parts = file.path | remove: current_path | split: "/" %}
+    {% if path_parts.size > 1 %}
+      {% assign folder_name = path_parts[0] %}
+      {% unless unique_folders contains folder_name %}
+        {% assign unique_folders = unique_folders | push: folder_name %}
+      {% endunless %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+<div class="file-grid">
+  {% if unique_folders.size > 0 %}
+    {% for folder in unique_folders %}
+      {% unless folder == "" %}
+        <div class="file-item folder-item">
+          <div class="file-icon">📁</div>
+          <div class="file-info">
+            <h4 class="file-name">{{ folder }}</h4>
+            <p class="file-type">폴더</p>
+          </div>
+        </div>
+      {% endunless %}
+    {% endfor %}
+  {% else %}
+    <div class="empty-message">
+      <span class="empty-icon">�</span>
+      <h3>폴더가 없습니다</h3>
+      <p>현재 이 위치에는 하위 폴더가 없습니다.</p>
+    </div>
+  {% endif %}
 </div>
 
 ## 📄 파일 목록
 
-<div class="empty-folder">
-  <div class="empty-message">
-    <span class="empty-icon">📄</span>
-    <h3>파일이 없습니다</h3>
-    <p>새로운 미션이 시작되면 여기에 작업 파일들이 추가됩니다.</p>
-  </div>
+<div class="file-grid">
+  {% assign current_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
+  {% assign direct_files = "" | split: "" %}
+  
+  {% for file in current_files %}
+    {% assign relative_path = file.path | remove: current_path %}
+    {% unless relative_path contains "/" %}
+      {% assign direct_files = direct_files | push: file %}
+    {% endunless %}
+  {% endfor %}
+  
+  {% if direct_files.size > 0 %}
+    {% for file in direct_files %}
+      {% assign file_ext = file.extname | downcase %}
+      {% assign file_icon = "📄" %}
+      {% assign file_type = "파일" %}
+      
+      {% if file_ext == ".ipynb" %}
+        {% assign file_icon = "📓" %}
+        {% assign file_type = "Jupyter Notebook" %}
+      {% elsif file_ext == ".py" %}
+        {% assign file_icon = "🐍" %}
+        {% assign file_type = "Python 파일" %}
+      {% elsif file_ext == ".md" %}
+        {% assign file_icon = "📝" %}
+        {% assign file_type = "Markdown 문서" %}
+      {% elsif file_ext == ".json" %}
+        {% assign file_icon = "⚙️" %}
+        {% assign file_type = "JSON 설정" %}
+      {% elsif file_ext == ".zip" %}
+        {% assign file_icon = "📦" %}
+        {% assign file_type = "압축 파일" %}
+      {% elsif file_ext == ".png" or file_ext == ".jpg" or file_ext == ".jpeg" %}
+        {% assign file_icon = "🖼️" %}
+        {% assign file_type = "이미지 파일" %}
+      {% elsif file_ext == ".csv" %}
+        {% assign file_icon = "📊" %}
+        {% assign file_type = "데이터 파일" %}
+      {% endif %}
+      
+      <div class="file-item">
+        <div class="file-icon">{{ file_icon }}</div>
+        <div class="file-info">
+          <h4 class="file-name">{{ file.name }}</h4>
+          <p class="file-type">{{ file_type }}</p>
+          <p class="file-size">{{ file.modified_time | date: "%Y-%m-%d" }}</p>
+        </div>
+        <div class="file-actions">
+          <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-message">
+      <span class="empty-icon">📄</span>
+      <h3>파일이 없습니다</h3>
+      <p>새로운 미션이 시작되면 여기에 작업 파일들이 추가됩니다.</p>
+    </div>
+  {% endif %}
 </div>
 
 ## 🎯 다음 미션 준비
@@ -108,16 +191,98 @@ pragma: no-cache
 </div>
 
 <style>
-.empty-folder {
-  margin: 30px 0;
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.file-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-color: #3498db;
+}
+
+.folder-item {
+  border-left: 4px solid #f39c12;
+}
+
+.file-item:not(.folder-item) {
+  border-left: 4px solid #3498db;
+}
+
+.file-icon {
+  font-size: 24px;
+  margin-right: 15px;
+  width: 40px;
+  text-align: center;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.file-name {
+  margin: 0 0 4px 0;
+  font-size: 1em;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.file-type {
+  margin: 0 0 2px 0;
+  font-size: 0.85em;
+  color: #666;
+}
+
+.file-size {
+  margin: 0;
+  font-size: 0.8em;
+  color: #999;
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.file-action {
+  padding: 6px 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.file-action:hover {
+  background: #e9ecef;
+  text-decoration: none;
 }
 
 .empty-message {
+  grid-column: 1 / -1;
   text-align: center;
   padding: 60px 20px;
   background: #f8f9fa;
   border-radius: 12px;
   border: 2px dashed #dee2e6;
+}
+
+.empty-folder {
+  margin: 30px 0;
 }
 
 .empty-icon {
