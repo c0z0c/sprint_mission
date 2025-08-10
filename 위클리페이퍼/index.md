@@ -86,13 +86,18 @@ pragma: no-cache
 
 ## 📊 위클리페이퍼 현황
 
+{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign weekly_papers = weekly_files | where_exp: "file", "file.name contains '위클리_페이퍼_'" %}
+{% assign total_files = weekly_files | where_exp: "file", "file.name != 'index.md'" | size %}
+{% assign completed_papers = weekly_papers | size %}
+
 <div class="weekly-stats">
   <div class="stat-card">
-    <div class="stat-number">4</div>
+    <div class="stat-number">{{ completed_papers }}</div>
     <div class="stat-label">작성 완료</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">5</div>
+    <div class="stat-number">{{ total_files }}</div>
     <div class="stat-label">총 파일 수</div>
   </div>
   <div class="stat-card">
@@ -103,38 +108,23 @@ pragma: no-cache
 
 ## 📈 학습 진행사항
 
+{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign weekly_papers = weekly_files | where_exp: "file", "file.name contains '위클리_페이퍼_'" %}
+{% assign sorted_papers = weekly_papers | sort: 'name' %}
+
 <div class="progress-timeline">
-  <div class="timeline-item completed">
-    <div class="timeline-marker">✅</div>
-    <div class="timeline-content">
-      <h4>위클리 페이퍼 #1</h4>
-      <p>첫 번째 주간 학습 정리</p>
+  {% for paper in sorted_papers %}
+    {% assign paper_number = paper.name | remove: '위클리_페이퍼_' | remove: '_AI4기_김명환.ipynb' | remove: '_AI4기_김명환.md' | remove: '_AI4기_김명환.html' %}
+    {% assign is_last = forloop.last %}
+    
+    <div class="timeline-item completed{% if is_last %} current{% endif %}">
+      <div class="timeline-marker">{% if is_last %}🔥{% else %}✅{% endif %}</div>
+      <div class="timeline-content">
+        <h4>위클리 페이퍼 #{{ paper_number }}</h4>
+        <p>{% if is_last %}최신 주간 학습 정리 (현재){% else %}{{ paper_number }}번째 주간 학습 정리{% endif %}</p>
+      </div>
     </div>
-  </div>
-  
-  <div class="timeline-item completed">
-    <div class="timeline-marker">✅</div>
-    <div class="timeline-content">
-      <h4>위클리 페이퍼 #2</h4>
-      <p>두 번째 주간 학습 정리</p>
-    </div>
-  </div>
-  
-  <div class="timeline-item completed">
-    <div class="timeline-marker">✅</div>
-    <div class="timeline-content">
-      <h4>위클리 페이퍼 #3</h4>
-      <p>세 번째 주간 학습 정리</p>
-    </div>
-  </div>
-  
-  <div class="timeline-item completed current">
-    <div class="timeline-marker">🔥</div>
-    <div class="timeline-content">
-      <h4>위클리 페이퍼 #4</h4>
-      <p>최신 주간 학습 정리 (현재)</p>
-    </div>
-  </div>
+  {% endfor %}
 </div>
 
 ---

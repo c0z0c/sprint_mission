@@ -87,13 +87,25 @@ pragma: no-cache
 
 ## 📊 완료 현황
 
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+{% assign mission_files = completed_files | where_exp: "file", "file.name contains '미션'" %}
+{% assign total_files = completed_files | where_exp: "file", "file.name != 'index.md' and file.name != 'info.md' and file.name != 'info.html'" | size %}
+{% assign unique_missions = "" | split: "" %}
+
+{% for file in mission_files %}
+  {% assign mission_number = file.name | split: '_' | first %}
+  {% unless unique_missions contains mission_number %}
+    {% assign unique_missions = unique_missions | push: mission_number %}
+  {% endunless %}
+{% endfor %}
+
 <div class="completion-stats">
   <div class="stat-card">
-    <div class="stat-number">4</div>
+    <div class="stat-number">{{ unique_missions.size }}</div>
     <div class="stat-label">완료된 미션</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">9</div>
+    <div class="stat-number">{{ total_files }}</div>
     <div class="stat-label">총 파일 수</div>
   </div>
 <!--

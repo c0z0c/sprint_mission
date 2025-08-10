@@ -145,20 +145,34 @@ pragma: no-cache
 
 ## 📈 진행률
 
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+{% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
+{% assign unique_completed = "" | split: "" %}
+
+{% for file in completed_missions %}
+  {% assign mission_number = file.name | split: '_' | first %}
+  {% unless unique_completed contains mission_number %}
+    {% assign unique_completed = unique_completed | push: mission_number %}
+  {% endunless %}
+{% endfor %}
+
+{% assign working_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_작업중/'" %}
+{% assign working_missions = working_files | where_exp: "file", "file.name contains '미션'" %}
+
 <div class="progress-overview">
   <div class="progress-card">
-    <div class="progress-number">4</div>
+    <div class="progress-number">{{ unique_completed.size }}</div>
     <div class="progress-label">완료된 미션</div>
     <div class="progress-bar">
       <div class="progress-fill" style="width: 100%"></div>
     </div>
   </div>
   
-  <div class="progress-card waiting">
-    <div class="progress-number">?</div>
-    <div class="progress-label">다음 미션</div>
+  <div class="progress-card{% if working_missions.size > 0 %} working{% else %} waiting{% endif %}">
+    <div class="progress-number">{% if working_missions.size > 0 %}진행중{% else %}?{% endif %}</div>
+    <div class="progress-label">{% if working_missions.size > 0 %}작업 중인 미션{% else %}다음 미션{% endif %}</div>
     <div class="progress-bar">
-      <div class="progress-fill waiting-fill" style="width: 0%"></div>
+      <div class="progress-fill {% if working_missions.size > 0 %}working-fill{% else %}waiting-fill{% endif %}" style="width: {% if working_missions.size > 0 %}50{% else %}0{% endif %}%"></div>
     </div>
   </div>
 </div>
@@ -374,6 +388,11 @@ pragma: no-cache
   box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
 }
 
+.progress-card.working {
+  border-color: #17a2b8;
+  box-shadow: 0 2px 8px rgba(23, 162, 184, 0.1);
+}
+
 .progress-number {
   font-size: 2.5em;
   font-weight: bold;
@@ -383,6 +402,10 @@ pragma: no-cache
 
 .progress-card.waiting .progress-number {
   color: #ffc107;
+}
+
+.progress-card.working .progress-number {
+  color: #17a2b8;
 }
 
 .progress-label {
@@ -410,9 +433,19 @@ pragma: no-cache
   animation: pulse 2s infinite;
 }
 
+.working-fill {
+  background: linear-gradient(90deg, #17a2b8, #20c997);
+  animation: progress 3s infinite;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.7; }
+}
+
+@keyframes progress {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 .related-links {
