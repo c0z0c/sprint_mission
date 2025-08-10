@@ -1,45 +1,84 @@
 ---
 layout: default
-title: 스프린트미션_완료 - 완료된 미션 보관함
-description: 완료된 스프린트 미션 자료들
+title: 스프린트미션_완료 - 스프린트 미션 보관함
+description: 진행 중인 미션들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
--<!-- Debugging Section -->
-<details style="margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-<summary style="cursor: pointer; font-weight: bold;">🔍 디버깅 정보 (파일 감지 상태)</summary>
-<h4>Static Files in 스프린트미션_완료/:</h4>
-<ul>
+---
+
+# 🚧 스프린트미션_완료
+
+현재 진행 중인 스프린트 미션들을 모아둔 폴더입니다.
+
+## 📁 폴더 목록
+
+{% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
+{% assign folders = site.static_files | where_exp: "item", "item.path contains current_path" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
+{% assign unique_folders = "" | split: "" %}
+
 {% for file in site.static_files %}
-  {% if file.path contains '/sprint_mission/스프린트미션_완료/' %}
-    <li>{{ file.path }} ({{ file.name }}) - {{ file.extname }}</li>
+  {% if file.path contains current_path and file.path != current_path %}
+    {% assign path_parts = file.path | remove: current_path | split: "/" %}
+    {% if path_parts.size > 1 %}
+      {% assign folder_name = path_parts[0] %}
+      {% unless unique_folders contains folder_name %}
+        {% assign unique_folders = unique_folders | push: folder_name %}
+      {% endunless %}
+    {% endif %}
   {% endif %}
 {% endfor %}
-</ul>
-<h4>Pages containing '/sprint_mission/스프린트미션_완료':</h4>
+
+<div class="file-grid">
+  {% if unique_folders.size > 0 %}
+    {% for folder in unique_folders %}
+      {% unless folder == "" %}
+        <div class="file-item folder-item">
+          <div class="file-icon">📁</div>
+          <div class="file-info">
+            <h4 class="file-name">{{ folder }}</h4>
+            <p class="file-type">폴더</p>
+          </div>
+        </div>
+      {% endunless %}
+    {% endfor %}
+  {% else %}
+    <div class="empty-message">
+      <span class="empty-icon">�</span>
+      <h3>폴더가 없습니다</h3>
+      <p>현재 이 위치에는 하위 폴더가 없습니다.</p>
+    </div>
+  {% endif %}
+</div>
+
+## 📄 파일 목록
+
+<details>
 <ul>
+{% for file in site.static_files %}
+  {% if file.path contains '스프린트미션_완료' %}
+    <li>Static File: {{ file.path }} ({{ file.name }})</li>
+  {% endif %}
+{% endfor %}
 {% for page in site.pages %}
-  {% if page.path contains '/sprint_mission/스프린트미션_완료' %}
-    <li>{{ page.path }} ({{ page.name }}) - {{ page.url }}</li>
+  {% if page.path contains '스프린트미션_완료' %}
+    <li>Page: {{ page.path }} ({{ page.name }})</li>
   {% endif %}
 {% endfor %}
 </ul>
 </details>
 
-완료된 스프린트 미션 자료들을 모아둔 폴더입니다.
-
-## 📄 파일 목록
-
 <div class="file-grid">
-  {% assign current_folder = "/sprint_mission/스프린트미션_완료/" %}
-  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
+  <!-- Static files (non-markdown) -->
+  {% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
   
   {% assign all_files = "" | split: "" %}
   
   <!-- Add static files -->
   {% for file in static_files %}
-    {% assign relative_path = file.path | remove: current_folder %}
+    {% assign relative_path = file.path | remove: current_path %}
     {% unless relative_path contains "/" or file.name == "index.md" %}
       {% assign all_files = all_files | push: file %}
     {% endunless %}
@@ -53,10 +92,8 @@ pragma: no-cache
     {% endunless %}
   {% endfor %}
   
-  {% assign sorted_files = all_files | sort: "name" %}
-  
-  {% if sorted_files.size > 0 %}
-    {% for file in sorted_files %}
+  {% if all_files.size > 0 %}
+    {% for file in all_files %}
       {% assign file_ext = file.extname | downcase %}
       {% if file_ext == "" and file.path %}
         {% assign file_name = file.path | split: "/" | last %}
@@ -69,27 +106,21 @@ pragma: no-cache
       {% if file_ext == ".ipynb" %}
         {% assign file_icon = "📓" %}
         {% assign file_type = "Jupyter Notebook" %}
-      {% elsif file_ext == ".docx" %}
-        {% assign file_icon = "📄" %}
-        {% assign file_type = "Word 문서" %}
-      {% elsif file_ext == ".pdf" %}
-        {% assign file_icon = "📄" %}
-        {% assign file_type = "PDF 문서" %}
-      {% elsif file_ext == ".html" %}
-        {% assign file_icon = "🌐" %}
-        {% assign file_type = "HTML 문서" %}
-      {% elsif file_ext == ".md" %}
-        {% assign file_icon = "📝" %}
-        {% assign file_type = "Markdown 문서" %}
       {% elsif file_ext == ".py" %}
         {% assign file_icon = "🐍" %}
         {% assign file_type = "Python 파일" %}
+      {% elsif file_ext == ".md" %}
+        {% assign file_icon = "📝" %}
+        {% assign file_type = "Markdown 문서" %}
       {% elsif file_ext == ".json" %}
         {% assign file_icon = "⚙️" %}
         {% assign file_type = "JSON 설정" %}
       {% elsif file_ext == ".zip" %}
         {% assign file_icon = "📦" %}
         {% assign file_type = "압축 파일" %}
+      {% elsif file_ext == ".png" or file_ext == ".jpg" or file_ext == ".jpeg" %}
+        {% assign file_icon = "🖼️" %}
+        {% assign file_type = "이미지 파일" %}
       {% elsif file_ext == ".csv" %}
         {% assign file_icon = "📊" %}
         {% assign file_type = "데이터 파일" %}
@@ -103,7 +134,15 @@ pragma: no-cache
           <p class="file-size">{% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}</p>
         </div>
         <div class="file-actions">
-          {% if file_ext == ".ipynb" %}
+          {% if file_ext == ".md" and file.name != "index.md" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            {% assign md_name_clean = file_name_clean | remove: '.md' %}
+            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+          {% elsif file_ext == ".ipynb" %}
             {% assign file_name_clean = file.name %}
             {% if file_name_clean == nil %}
               {% assign file_name_clean = file.path | split: "/" | last %}
@@ -116,28 +155,20 @@ pragma: no-cache
               {% assign file_name_clean = file.path | split: "/" | last %}
             {% endif %}
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://docs.google.com/viewer?url=https://github.com/c0z0c/sprint_mission/raw/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Google Docs Viewer에서 열기" target="_blank">👁️</a>
+            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>
           {% elsif file_ext == ".docx" %}
             {% assign file_name_clean = file.name %}
             {% if file_name_clean == nil %}
               {% assign file_name_clean = file.path | split: "/" | last %}
             {% endif %}
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://docs.google.com/viewer?url=https://github.com/c0z0c/sprint_mission/raw/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Google Docs에서 열기" target="_blank">�</a>
+            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Google에서 열기" target="_blank">📊</a>
           {% elsif file_ext == ".html" %}
             {% assign file_name_clean = file.name %}
             {% if file_name_clean == nil %}
               {% assign file_name_clean = file.path | split: "/" | last %}
             {% endif %}
-            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
-          {% elsif file_ext == ".md" and file.name != "index.md" %}
-            {% assign file_name_clean = file.name %}
-            {% if file_name_clean == nil %}
-              {% assign file_name_clean = file.path | split: "/" | last %}
-            {% endif %}
-            {% assign md_name_clean = file_name_clean | remove: '.md' %}
-            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
           {% else %}
             <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
@@ -147,74 +178,93 @@ pragma: no-cache
     {% endfor %}
   {% else %}
     <div class="empty-message">
-      <span class="empty-icon">�</span>
+      <span class="empty-icon">📄</span>
       <h3>파일이 없습니다</h3>
-      <p>현재 이 위치에는 파일이 없습니다.</p>
+      <p>새로운 미션이 시작되면 여기에 작업 파일들이 추가됩니다.</p>
     </div>
   {% endif %}
 </div>
 
-<!-- Debugging Section -->
-<details style="margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-<summary style="cursor: pointer; font-weight: bold;">� 디버깅 정보 (파일 감지 상태)</summary>
-<h4>Static Files in /sprint_mission/스프린트미션_완료/:</h4>
-<ul>
-{% for file in site.static_files %}
-  {% if file.path contains '/sprint_mission/스프린트미션_완료/' %}
-    <li>{{ file.path }} ({{ file.name }}) - {{ file.extname }}</li>
-  {% endif %}
-{% endfor %}
-</ul>
-<h4>Pages containing '스프린트미션_완료':</h4>
-<ul>
-{% for page in site.pages %}
-  {% if page.path contains '스프린트미션_완료' %}
-    <li>{{ page.path }} ({{ page.name }}) - {{ page.url }}</li>
-  {% endif %}
-{% endfor %}
-</ul>
-</details>
+## 🎯 다음 미션 준비
 
-## 📊 완료 현황
+<div class="preparation-section">
+  <h3>📋 준비 사항</h3>
+  <div class="prep-card">
+    <div class="prep-icon">⚡</div>
+    <div class="prep-content">
+      <h4>개발 환경 설정</h4>
+      <p>Jupyter Notebook과 필요한 라이브러리들이 준비되어 있습니다.</p>
+    </div>
+  </div>
+  
+  <div class="prep-card">
+    <div class="prep-icon">📚</div>
+    <div class="prep-content">
+      <h4>학습 자료</h4>
+      <p>이전 미션들의 경험과 위클리페이퍼를 통한 학습 정리가 완료되었습니다.</p>
+    </div>
+  </div>
+  
+  <div class="prep-card">
+    <div class="prep-icon">🔧</div>
+    <div class="prep-content">
+      <h4>헬퍼 모듈</h4>
+      <p>helper_c0z0c_dev.py 모듈을 통한 효율적인 개발 환경이 구축되어 있습니다.</p>
+    </div>
+  </div>
+</div>
 
-{% assign current_folder = "스프린트미션_완료/" %}
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains current_folder" %}
-{% assign mission_files = completed_files | where_exp: "file", "file.name contains '미션'" %}
-{% assign exclude_files = "index.md,info.md,info.html" | split: "," %}
-{% assign filtered_files = "" | split: "" %}
+## 📈 진행률
 
-{% for file in completed_files %}
-  {% assign relative_path = file.path | remove: current_folder %}
-  {% unless relative_path contains "/" or exclude_files contains file.name %}
-    {% assign filtered_files = filtered_files | push: file %}
-  {% endunless %}
-{% endfor %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
+{% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
+{% assign unique_completed = "" | split: "" %}
 
-{% assign total_files = filtered_files | size %}
-{% assign unique_missions = "" | split: "" %}
-
-{% for file in mission_files %}
+{% for file in completed_missions %}
   {% assign mission_number = file.name | split: '_' | first %}
-  {% unless unique_missions contains mission_number %}
-    {% assign unique_missions = unique_missions | push: mission_number %}
+  {% unless unique_completed contains mission_number %}
+    {% assign unique_completed = unique_completed | push: mission_number %}
   {% endunless %}
 {% endfor %}
 
-<div class="completion-stats">
-  <div class="stat-card">
-    <div class="stat-number">{{ unique_missions.size }}</div>
-    <div class="stat-label">완료된 미션</div>
+{% assign working_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
+{% assign working_missions = working_files | where_exp: "file", "file.name contains '미션'" %}
+
+<div class="progress-overview">
+  <div class="progress-card">
+    <div class="progress-number">{{ unique_completed.size }}</div>
+    <div class="progress-label">완료된 미션</div>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 100%"></div>
+    </div>
   </div>
-  <div class="stat-card">
-    <div class="stat-number">{{ total_files }}</div>
-    <div class="stat-label">총 파일 수</div>
+  
+  <div class="progress-card{% if working_missions.size > 0 %} working{% else %} waiting{% endif %}">
+    <div class="progress-number">{% if working_missions.size > 0 %}진행중{% else %}?{% endif %}</div>
+    <div class="progress-label">{% if working_missions.size > 0 %}작업 중인 미션{% else %}다음 미션{% endif %}</div>
+    <div class="progress-bar">
+      <div class="progress-fill {% if working_missions.size > 0 %}working-fill{% else %}waiting-fill{% endif %}" style="width: {% if working_missions.size > 0 %}50{% else %}0{% endif %}%"></div>
+    </div>
   </div>
-<!--
-  <div class="stat-card">
-    <div class="stat-number">100%</div>
-    <div class="stat-label">진행률</div>
-  </div>
--->
+</div>
+
+## 🔗 관련 링크
+
+<div class="related-links">
+  <a href="{{ site.baseurl }}/스프린트미션_완료/" class="related-link">
+    <span class="link-icon">✅</span>
+    <span class="link-text">완료된 미션들 보기</span>
+  </a>
+  
+  <a href="{{ site.baseurl }}/위클리페이퍼/" class="related-link">
+    <span class="link-icon">📰</span>
+    <span class="link-text">위클리페이퍼 확인</span>
+  </a>
+  
+  <a href="{{ site.baseurl }}/멘토/" class="related-link">
+    <span class="link-icon">👨‍🏫</span>
+    <span class="link-text">멘토 자료 참고</span>
+  </a>
 </div>
 
 ---
@@ -226,140 +276,285 @@ pragma: no-cache
 </div>
 
 <style>
-/* File Grid Styles */
 .file-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 15px;
   margin: 20px 0;
 }
 
 .file-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
   background: white;
-  border: 1px solid #e1e8ed;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  position: relative;
 }
 
 .file-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  border-color: #007acc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-color: #3498db;
+}
+
+.folder-item {
+  border-left: 4px solid #f39c12;
+}
+
+.file-item:not(.folder-item) {
+  border-left: 4px solid #3498db;
 }
 
 .file-icon {
-  font-size: 48px;
+  font-size: 24px;
+  margin-right: 15px;
+  width: 40px;
   text-align: center;
-  margin-bottom: 15px;
 }
 
 .file-info {
-  text-align: center;
-  margin-bottom: 15px;
+  flex: 1;
 }
 
 .file-name {
-  margin: 0 0 8px 0;
-  font-size: 16px;
-  font-weight: 600;
+  margin: 0 0 4px 0;
+  font-size: 1em;
   color: #2c3e50;
-  word-break: break-word;
+  font-weight: 600;
 }
 
 .file-type {
-  margin: 0 0 5px 0;
+  margin: 0 0 2px 0;
+  font-size: 0.85em;
   color: #666;
-  font-size: 14px;
 }
 
 .file-size {
   margin: 0;
+  font-size: 0.8em;
   color: #999;
-  font-size: 12px;
 }
 
 .file-actions {
   display: flex;
-  justify-content: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .file-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
+  padding: 6px 8px;
   background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  border-radius: 4px;
   text-decoration: none;
   font-size: 16px;
-  transition: all 0.2s ease;
-  color: #495057;
+  transition: background 0.3s ease;
 }
 
 .file-action:hover {
-  background: #007acc;
-  color: white;
-  border-color: #007acc;
-  transform: scale(1.1);
+  background: #e9ecef;
   text-decoration: none;
 }
 
 .empty-message {
+  grid-column: 1 / -1;
   text-align: center;
   padding: 60px 20px;
-  color: #666;
-  grid-column: 1 / -1;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.empty-folder {
+  margin: 30px 0;
 }
 
 .empty-icon {
   font-size: 64px;
+  display: block;
   margin-bottom: 20px;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .empty-message h3 {
-  margin: 0 0 10px 0;
-  color: #999;
+  color: #6c757d;
+  margin-bottom: 10px;
 }
 
 .empty-message p {
+  color: #6c757d;
   margin: 0;
-  color: #bbb;
+  font-style: italic;
 }
 
-.completion-stats {
+.preparation-section {
+  margin: 40px 0;
+  padding: 30px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+}
+
+.preparation-section h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.prep-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border-left: 4px solid #17a2b8;
+}
+
+.prep-card:last-child {
+  margin-bottom: 0;
+}
+
+.prep-icon {
+  font-size: 24px;
+  margin-right: 15px;
+  width: 40px;
+  text-align: center;
+  color: #17a2b8;
+}
+
+.prep-content h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+  font-size: 1em;
+}
+
+.prep-content p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.progress-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin: 30px 0;
 }
 
-.stat-card {
+.progress-card {
   background: white;
   border-radius: 10px;
   padding: 20px;
   text-align: center;
-  border: 2px solid #3498db;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+  border: 2px solid #28a745;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
 }
 
-.stat-number {
+.progress-card.waiting {
+  border-color: #ffc107;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
+}
+
+.progress-card.working {
+  border-color: #17a2b8;
+  box-shadow: 0 2px 8px rgba(23, 162, 184, 0.1);
+}
+
+.progress-number {
   font-size: 2.5em;
   font-weight: bold;
-  color: #3498db;
+  color: #28a745;
   margin-bottom: 5px;
 }
 
-.stat-label {
+.progress-card.waiting .progress-number {
+  color: #ffc107;
+}
+
+.progress-card.working .progress-number {
+  color: #17a2b8;
+}
+
+.progress-label {
   color: #666;
   font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #28a745;
+  transition: width 0.3s ease;
+}
+
+.waiting-fill {
+  background: linear-gradient(90deg, #ffc107, #fd7e14);
+  animation: pulse 2s infinite;
+}
+
+.working-fill {
+  background: linear-gradient(90deg, #17a2b8, #20c997);
+  animation: progress 3s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes progress {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.related-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.related-link {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.related-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-decoration: none;
+  background: #f8f9fa;
+  border-color: #3498db;
+}
+
+.link-icon {
+  font-size: 20px;
+  margin-right: 12px;
+  color: #3498db;
+}
+
+.link-text {
+  color: #2c3e50;
+  font-weight: 500;
 }
 
 .navigation-footer {
@@ -378,7 +573,6 @@ pragma: no-cache
   border-radius: 6px;
   text-decoration: none;
   transition: all 0.3s ease;
-  margin: 0 10px;
 }
 
 .nav-button:hover {
