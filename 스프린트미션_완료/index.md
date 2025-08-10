@@ -13,7 +13,7 @@ pragma: no-cache
 
 ## 📁 폴더 목록
 
-{% assign current_folder = "/sprint_mission/스프린트미션_완료/" %}
+{% assign current_folder = "스프린트미션_완료/" %}
 {% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
 {% assign unique_folders = "" | split: "" %}
 
@@ -76,19 +76,21 @@ pragma: no-cache
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
   
   {% assign all_files = "" | split: "" %}
-  
+  {% assign all_file_names = "" | split: "" %}
+
   <!-- Add static files -->
   {% for file in static_files %}
-    {% assign relative_path = file.path | remove: current_folder %}
-    {% unless file.name == "index.md" %}
+    {% unless file.name == "index.md" or all_file_names contains file.name %}
       {% assign all_files = all_files | push: file %}
+      {% assign all_file_names = all_file_names | push: file.name %}
     {% endunless %}
   {% endfor %}
-  
+
   <!-- Add markdown pages -->
   {% for page in markdown_pages %}
-    {% unless page.name == "index.md" %}
+    {% unless page.name == "index.md" or all_file_names contains page.name %}
       {% assign all_files = all_files | push: page %}
+      {% assign all_file_names = all_file_names | push: page.name %}
     {% endunless %}
   {% endfor %}
   

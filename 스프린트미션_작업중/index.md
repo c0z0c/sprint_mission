@@ -75,25 +75,27 @@ pragma: no-cache
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_작업중'" %}
   
   {% assign all_files = "" | split: "" %}
-  
+  {% assign all_file_names = "" | split: "" %}
+
   <!-- Add static files -->
   {% for file in static_files %}
-    {% assign relative_path = file.path | remove: current_path %}
-    {% unless relative_path contains "/" or file.name == "index.md" %}
+    {% unless file.name == "index.md" or all_file_names contains file.name %}
       {% assign all_files = all_files | push: file %}
+      {% assign all_file_names = all_file_names | push: file.name %}
     {% endunless %}
   {% endfor %}
-  
+
   <!-- Add markdown pages -->
   {% for page in markdown_pages %}
-    {% assign relative_path = page.path | remove_first: "스프린트미션_작업중" | remove_first: "/" %}
-    {% unless relative_path contains "/" or page.name == "index.md" %}
+    {% unless page.name == "index.md" or all_file_names contains page.name %}
       {% assign all_files = all_files | push: page %}
+      {% assign all_file_names = all_file_names | push: page.name %}
     {% endunless %}
   {% endfor %}
   
   {% if all_files.size > 0 %}
     {% for file in all_files %}
+      <!-- file {{ file }} -->
       {% assign file_ext = file.extname | downcase %}
       {% if file_ext == "" and file.path %}
         {% assign file_name = file.path | split: "/" | last %}
