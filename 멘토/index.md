@@ -13,13 +13,28 @@ pragma: no-cache
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "멘토/" %}
   {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
+  {% assign filtered_static_files = "" | split: "" %}
+  {% for file in static_files %}
+    {% assign relative_path = file.path | remove_first: current_folder %}
+    {% unless relative_path contains "/" %}
+      {% assign filtered_static_files = filtered_static_files | push: file %}
+    {% endunless %}
+  {% endfor %}
+
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '멘토'" %}
+  {% assign filtered_markdown_pages = "" | split: "" %}
+  {% for page in markdown_pages %}
+    {% assign relative_path = page.path | remove_first: "멘토/" %}
+    {% unless relative_path contains "/" %}
+      {% assign filtered_markdown_pages = filtered_markdown_pages | push: page %}
+    {% endunless %}
+  {% endfor %}
   
   {% assign all_files = "" | split: "" %}
   {% assign all_file_names = "" | split: "" %}
 
   <!-- Add static files -->
-  {% for file in static_files %}
+  {% for file in filtered_static_files %}
     {% unless file.name == "index.md" or all_file_names contains file.name %}
       {% assign all_files = all_files | push: file %}
       {% assign all_file_names = all_file_names | push: file.name %}
@@ -27,7 +42,7 @@ pragma: no-cache
   {% endfor %}
 
   <!-- Add markdown pages -->
-  {% for page in markdown_pages %}
+  {% for page in filtered_markdown_pages %}
     {% unless page.name == "index.md" or all_file_names contains page.name %}
       {% assign all_files = all_files | push: page %}
       {% assign all_file_names = all_file_names | push: page.name %}
