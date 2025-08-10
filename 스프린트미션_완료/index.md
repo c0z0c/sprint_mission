@@ -13,108 +13,162 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<details>
+<div class="file-grid">
+  {% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
+  
+  {% assign all_files = "" | split: "" %}
+  
+  <!-- Add static files -->
+  {% for file in static_files %}
+    {% assign relative_path = file.path | remove: current_path %}
+    {% unless relative_path contains "/" or file.name == "index.md" %}
+      {% assign all_files = all_files | push: file %}
+    {% endunless %}
+  {% endfor %}
+  
+  <!-- Add markdown pages -->
+  {% for page in markdown_pages %}
+    {% assign relative_path = page.path | remove_first: "스프린트미션_완료" | remove_first: "/" %}
+    {% unless relative_path contains "/" or page.name == "index.md" %}
+      {% assign all_files = all_files | push: page %}
+    {% endunless %}
+  {% endfor %}
+  
+  {% assign sorted_files = all_files | sort: "name" %}
+  
+  {% if sorted_files.size > 0 %}
+    {% for file in sorted_files %}
+      {% assign file_ext = file.extname | downcase %}
+      {% if file_ext == "" and file.path %}
+        {% assign file_name = file.path | split: "/" | last %}
+        {% assign file_ext = file_name | split: "." | last | downcase %}
+        {% assign file_ext = "." | append: file_ext %}
+      {% endif %}
+      {% assign file_icon = "📄" %}
+      {% assign file_type = "파일" %}
+      
+      {% if file_ext == ".ipynb" %}
+        {% assign file_icon = "📓" %}
+        {% assign file_type = "Jupyter Notebook" %}
+      {% elsif file_ext == ".docx" %}
+        {% assign file_icon = "📄" %}
+        {% assign file_type = "Word 문서" %}
+      {% elsif file_ext == ".pdf" %}
+        {% assign file_icon = "📄" %}
+        {% assign file_type = "PDF 문서" %}
+      {% elsif file_ext == ".html" %}
+        {% assign file_icon = "🌐" %}
+        {% assign file_type = "HTML 문서" %}
+      {% elsif file_ext == ".md" %}
+        {% assign file_icon = "📝" %}
+        {% assign file_type = "Markdown 문서" %}
+      {% elsif file_ext == ".py" %}
+        {% assign file_icon = "🐍" %}
+        {% assign file_type = "Python 파일" %}
+      {% elsif file_ext == ".json" %}
+        {% assign file_icon = "⚙️" %}
+        {% assign file_type = "JSON 설정" %}
+      {% elsif file_ext == ".zip" %}
+        {% assign file_icon = "📦" %}
+        {% assign file_type = "압축 파일" %}
+      {% elsif file_ext == ".csv" %}
+        {% assign file_icon = "📊" %}
+        {% assign file_type = "데이터 파일" %}
+      {% endif %}
+      
+      <div class="file-item">
+        <div class="file-icon">{{ file_icon }}</div>
+        <div class="file-info">
+          <h4 class="file-name">{% if file.name %}{{ file.name }}{% else %}{{ file.path | split: "/" | last }}{% endif %}</h4>
+          <p class="file-type">{{ file_type }}</p>
+          <p class="file-size">{% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}</p>
+        </div>
+        <div class="file-actions">
+          {% if file_ext == ".ipynb" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
+          {% elsif file_ext == ".pdf" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://docs.google.com/viewer?url=https://github.com/c0z0c/sprint_mission/raw/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Google Docs Viewer에서 열기" target="_blank">👁️</a>
+          {% elsif file_ext == ".docx" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://docs.google.com/viewer?url=https://github.com/c0z0c/sprint_mission/raw/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Google Docs에서 열기" target="_blank">�</a>
+          {% elsif file_ext == ".html" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+          {% elsif file_ext == ".md" and file.name != "index.md" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            {% assign md_name_clean = file_name_clean | remove: '.md' %}
+            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+          {% else %}
+            <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-message">
+      <span class="empty-icon">�</span>
+      <h3>파일이 없습니다</h3>
+      <p>현재 이 위치에는 파일이 없습니다.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Debugging Section -->
+<details style="margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+<summary style="cursor: pointer; font-weight: bold;">� 디버깅 정보 (파일 감지 상태)</summary>
+<h4>Static Files in /sprint_mission/스프린트미션_완료/:</h4>
 <ul>
 {% for file in site.static_files %}
-  {% if file.path contains '스프린트미션_완료' %}
-    <li>Static File: {{ file.path }} ({{ file.name }})</li>
+  {% if file.path contains '/sprint_mission/스프린트미션_완료/' %}
+    <li>{{ file.path }} ({{ file.name }}) - {{ file.extname }}</li>
   {% endif %}
 {% endfor %}
+</ul>
+<h4>Pages containing '스프린트미션_완료':</h4>
+<ul>
 {% for page in site.pages %}
   {% if page.path contains '스프린트미션_완료' %}
-    <li>Page: {{ page.path }} ({{ page.name }})</li>
+    <li>{{ page.path }} ({{ page.name }}) - {{ page.url }}</li>
   {% endif %}
 {% endfor %}
 </ul>
 </details>
 
-
-<table>
-  <thead>
-    <tr>
-      <th>파일명</th>
-      <th>타입</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% assign folder_path = '/sprint_mission/스프린트미션_완료/' %}
-    {% assign exclude_files = "index.md,info.md" | split: "," %}
-    {% assign files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
-    {% assign sorted_files = files | sort: 'name' | reverse %}
-    
-    {% for file in sorted_files %}
-      {% unless exclude_files contains file.name %}
-        <tr>
-          <td>
-            {% if file.extname == '.ipynb' %}
-              <div>
-                <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-                <br>
-                <small>
-                  <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #f57c00;">🔗 Colab에서 열기</a>
-                </small>
-              </div>
-            {% elsif file.extname == '.docx' %}
-              <div>
-                <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-                <br>
-                <small>
-                  <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #4285f4;">🔗 Google에서 열기</a>
-                </small>
-              </div>
-            {% elsif file.extname == '.pdf' %}
-              <div>
-                <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-                <br>
-                <small>
-                  <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #dc3545;">🔗 PDF 뷰어로 열기</a>
-                </small>
-              </div>
-            {% elsif file.extname == '.html' %}
-              <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-            {% elsif file.extname == '.md' and file.name != 'index.md' %}
-              {% assign md_name = file.name | remove: '.md' %}
-              <div>
-                <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ md_name }}" target="_blank">{{ file.name }}</a>
-                <br>
-                <small>
-                  <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank" style="color: #6c757d;">🔗 GitHub에서 원본 보기</a>
-                </small>
-              </div>
-            {% else %}
-              <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file.name }}" target="_blank">{{ file.name }}</a>
-            {% endif %}
-          </td>
-          <td>
-            {% if file.extname == '.ipynb' %}
-              <span style="background: #ff9800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📓 Notebook</span>
-            {% elsif file.extname == '.docx' %}
-              <span style="background: #2196f3; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📄 Word</span>
-            {% elsif file.extname == '.pdf' %}
-              <span style="background: #f44336; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📋 PDF</span>
-            {% elsif file.extname == '.html' %}
-              <span style="background: #4caf50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">🌐 HTML</span>
-            {% elsif file.extname == '.md' %}
-              <span style="background: #9c27b0; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📝 Markdown</span>
-            {% else %}
-              <span style="background: #757575; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">📎 기타</span>
-            {% endif %}
-          </td>
-        </tr>
-      {% endunless %}
-    {% endfor %}
-  </tbody>
-</table>
-
 ## 📊 완료 현황
 
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
+{% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains current_path" %}
 {% assign mission_files = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign exclude_files = "index.md,info.md,info.html" | split: "," %}
 {% assign filtered_files = "" | split: "" %}
 
 {% for file in completed_files %}
-  {% unless exclude_files contains file.name %}
+  {% assign relative_path = file.path | remove: current_path %}
+  {% unless relative_path contains "/" or exclude_files contains file.name %}
     {% assign filtered_files = filtered_files | push: file %}
   {% endunless %}
 {% endfor %}
@@ -155,113 +209,112 @@ pragma: no-cache
 </div>
 
 <style>
-.file-list {
+/* File Grid Styles */
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
   margin: 20px 0;
 }
 
 .file-item {
-  margin-bottom: 8px;
-}
-
-.file-item.featured {
-  margin-bottom: 20px;
-}
-
-.mission-group {
-  margin: 30px 0;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  border-left: 4px solid #3498db;
-}
-
-.mission-group h3 {
-  margin: 0 0 15px 0;
-  color: #2c3e50;
-  font-size: 1.2em;
-}
-
-.item-link {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
   background: white;
-  border-radius: 6px;
-  text-decoration: none;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 20px;
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   position: relative;
 }
 
-.item-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+.file-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border-color: #007acc;
+}
+
+.file-icon {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.file-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.file-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+.file-type {
+  margin: 0 0 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.file-size {
+  margin: 0;
+  color: #999;
+  font-size: 12px;
+}
+
+.file-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.file-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  color: #495057;
+}
+
+.file-action:hover {
+  background: #007acc;
+  color: white;
+  border-color: #007acc;
+  transform: scale(1.1);
   text-decoration: none;
 }
 
-.item-link.readme:hover {
-  background: #e3f2fd;
-  border-color: #2196f3;
-}
-
-.item-link.notebook:hover {
-  background: #fff3e0;
-  border-color: #ff9800;
-}
-
-.item-link.document:hover {
-  background: #e8f5e8;
-  border-color: #4caf50;
-}
-
-.item-link.pdf:hover {
-  background: #ffebee;
-  border-color: #f44336;
-}
-
-.item-link.python:hover {
-  background: #f3e5f5;
-  border-color: #9c27b0;
-}
-
-.file-display {
-  cursor: default;
-}
-
-.file-display:hover {
-  background: #f5f5f5;
-  border-color: #ccc;
-}
-
-.item-icon {
-  font-size: 20px;
-  margin-right: 12px;
-  width: 25px;
+.empty-message {
   text-align: center;
-}
-
-.item-name {
-  font-weight: bold;
-  color: #2c3e50;
-  margin-right: 15px;
-  flex: 1;
-}
-
-.item-desc {
+  padding: 60px 20px;
   color: #666;
-  font-size: 0.85em;
-  font-style: italic;
+  grid-column: 1 / -1;
 }
 
-.item-badge {
-  background: #e74c3c;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75em;
-  font-weight: bold;
-  margin-left: 10px;
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-message h3 {
+  margin: 0 0 10px 0;
+  color: #999;
+}
+
+.empty-message p {
+  margin: 0;
+  color: #bbb;
 }
 
 .completion-stats {
@@ -321,68 +374,5 @@ pragma: no-cache
 .nav-icon {
   margin-right: 8px;
   font-size: 16px;
-}
-
-.file-actions {
-  margin-top: 8px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.action-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  text-decoration: none;
-  border-radius: 4px;
-  font-size: 0.85em;
-  transition: all 0.3s ease;
-  border: 1px solid;
-}
-
-.action-link.github {
-  background: #f6f8fa;
-  color: #24292e;
-  border-color: #d0d7de;
-}
-
-.action-link.github:hover {
-  background: #24292e;
-  color: white;
-  text-decoration: none;
-}
-
-.action-link.nbviewer {
-  background: #fff8e1;
-  color: #e65100;
-  border-color: #ffb74d;
-}
-
-.action-link.nbviewer:hover {
-  background: #e65100;
-  color: white;
-  text-decoration: none;
-}
-
-.action-link.colab {
-  background: #fff3e0;
-  color: #f57c00;
-  border-color: #ffb74d;
-}
-
-.action-link.colab:hover {
-  background: #f57c00;
-  color: white;
-  text-decoration: none;
-}
-
-.action-icon {
-  margin-right: 6px;
-  font-size: 14px;
-}
-
-.action-text {
-  font-size: 0.8em;
 }
 </style>
