@@ -10,7 +10,6 @@ pragma: no-cache
 # ✅ 위클리페이퍼
 
 {% assign current_folder = "위클리페이퍼/" %}
-{% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
 {% assign unique_folders = "" | split: "" %}
 
 <div class="file-grid">
