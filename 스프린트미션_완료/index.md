@@ -1,25 +1,25 @@
 ---
 layout: default
-title: 스프린트미션_완료 - 스프린트 미션 보관함
-description: 진행 중인 미션들
+title: 스프린트미션_완료 - 완료된 미션 보관함
+description: 완료된 스프린트 미션 자료들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# 🚧 스프린트미션_완료
+# ✅ 스프린트미션_완료
 
-현재 진행 중인 스프린트 미션들을 모아둔 폴더입니다.
+완료된 스프린트 미션 자료들을 모아둔 폴더입니다.
 
 ## 📁 폴더 목록
 
-{% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
-{% assign folders = site.static_files | where_exp: "item", "item.path contains current_path" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
+{% assign current_folder = "스프린트미션_완료/" %}
+{% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
 {% assign unique_folders = "" | split: "" %}
 
 {% for file in site.static_files %}
-  {% if file.path contains current_path and file.path != current_path %}
-    {% assign path_parts = file.path | remove: current_path | split: "/" %}
+  {% if file.path contains current_folder and file.path != current_folder %}
+    {% assign path_parts = file.path | remove: current_folder | split: "/" %}
     {% if path_parts.size > 1 %}
       {% assign folder_name = path_parts[0] %}
       {% unless unique_folders contains folder_name %}
@@ -70,15 +70,15 @@ pragma: no-cache
 
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
-  {% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
-  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
+  {% assign current_folder = "스프린트미션_완료/" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
   
   {% assign all_files = "" | split: "" %}
   
   <!-- Add static files -->
   {% for file in static_files %}
-    {% assign relative_path = file.path | remove: current_path %}
+    {% assign relative_path = file.path | remove: current_folder %}
     {% unless relative_path contains "/" or file.name == "index.md" %}
       {% assign all_files = all_files | push: file %}
     {% endunless %}
@@ -180,43 +180,43 @@ pragma: no-cache
     <div class="empty-message">
       <span class="empty-icon">📄</span>
       <h3>파일이 없습니다</h3>
-      <p>새로운 미션이 시작되면 여기에 작업 파일들이 추가됩니다.</p>
+      <p>현재 이 위치에는 완료된 미션 파일이 없습니다.</p>
     </div>
   {% endif %}
 </div>
 
-## 🎯 다음 미션 준비
+## 📊 완료 요약
 
 <div class="preparation-section">
-  <h3>📋 준비 사항</h3>
+  <h3>✅ 성과 정리</h3>
   <div class="prep-card">
-    <div class="prep-icon">⚡</div>
+    <div class="prep-icon">🏆</div>
     <div class="prep-content">
-      <h4>개발 환경 설정</h4>
-      <p>Jupyter Notebook과 필요한 라이브러리들이 준비되어 있습니다.</p>
+      <h4>미션 완료</h4>
+      <p>모든 스프린트 미션이 성공적으로 완료되었습니다.</p>
     </div>
   </div>
   
   <div class="prep-card">
     <div class="prep-icon">📚</div>
     <div class="prep-content">
-      <h4>학습 자료</h4>
-      <p>이전 미션들의 경험과 위클리페이퍼를 통한 학습 정리가 완료되었습니다.</p>
+      <h4>학습 성과</h4>
+      <p>다양한 형태의 결과물(Jupyter Notebook, PDF, Word 문서)을 통해 학습 내용을 정리했습니다.</p>
     </div>
   </div>
   
   <div class="prep-card">
     <div class="prep-icon">🔧</div>
     <div class="prep-content">
-      <h4>헬퍼 모듈</h4>
-      <p>helper_c0z0c_dev.py 모듈을 통한 효율적인 개발 환경이 구축되어 있습니다.</p>
+      <h4>기술 습득</h4>
+      <p>AI, 머신러닝, 데이터 분석 등의 기술을 실습을 통해 체득했습니다.</p>
     </div>
   </div>
 </div>
 
 ## 📈 진행률
 
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
 {% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign unique_completed = "" | split: "" %}
 
@@ -227,7 +227,7 @@ pragma: no-cache
   {% endunless %}
 {% endfor %}
 
-{% assign working_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
+{% assign working_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
 {% assign working_missions = working_files | where_exp: "file", "file.name contains '미션'" %}
 
 <div class="progress-overview">
@@ -251,9 +251,9 @@ pragma: no-cache
 ## 🔗 관련 링크
 
 <div class="related-links">
-  <a href="{{ site.baseurl }}/스프린트미션_완료/" class="related-link">
-    <span class="link-icon">✅</span>
-    <span class="link-text">완료된 미션들 보기</span>
+  <a href="{{ site.baseurl }}/스프린트미션_작업중/" class="related-link">
+    <span class="link-icon">🚧</span>
+    <span class="link-text">진행 중인 미션 보기</span>
   </a>
   
   <a href="{{ site.baseurl }}/위클리페이퍼/" class="related-link">
