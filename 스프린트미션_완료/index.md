@@ -9,8 +9,48 @@ pragma: no-cache
 
 # ✅ 스프린트미션_완료
 
+완료된 스프린트 미션 자료들을 모아둔 폴더입니다.
+
+## 📁 폴더 목록
+
 {% assign current_folder = "스프린트미션_완료/" %}
 {% assign unique_folders = "" | split: "" %}
+
+{% for file in site.static_files %}
+  {% if file.path contains current_folder and file.path != current_folder %}
+    {% assign path_parts = file.path | remove: current_folder | split: "/" %}
+    {% if path_parts.size > 1 %}
+      {% assign folder_name = path_parts[0] %}
+      {% unless unique_folders contains folder_name %}
+        {% assign unique_folders = unique_folders | push: folder_name %}
+      {% endunless %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+<div class="file-grid">
+  {% if unique_folders.size > 0 %}
+    {% for folder in unique_folders %}
+      {% unless folder == "" %}
+        <div class="file-item folder-item">
+          <div class="file-icon">📁</div>
+          <div class="file-info">
+            <h4 class="file-name">{{ folder }}</h4>
+            <p class="file-type">폴더</p>
+          </div>
+        </div>
+      {% endunless %}
+    {% endfor %}
+  {% else %}
+    <div class="empty-message">
+      <span class="empty-icon">�</span>
+      <h3>폴더가 없습니다</h3>
+      <p>현재 이 위치에는 하위 폴더가 없습니다.</p>
+    </div>
+  {% endif %}
+</div>
+
+## 📄 파일 목록
 
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
