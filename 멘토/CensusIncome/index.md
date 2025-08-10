@@ -10,7 +10,14 @@ pragma: no-cache
 # ✅ CensusIncome
 
 {% assign current_folder = "CensusIncome/" %}
-{% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
+
+{% assign folders = site.static_files
+  | where_exp: "item", "item.path contains current_folder"
+  | where_exp: "item", "item.path != item.name"
+  | map: "path"
+  | join: "|" 
+  | split: "|" %}
+
 {% assign unique_folders = "" | split: "" %}
 
 <div class="file-grid">
