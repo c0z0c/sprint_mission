@@ -5,24 +5,41 @@ description: 완료된 스프린트 미션 자료들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
----
-
-# ✅ 스프린트미션_완료
+-<!-- Debugging Section -->
+<details style="margin: 20px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+<summary style="cursor: pointer; font-weight: bold;">🔍 디버깅 정보 (파일 감지 상태)</summary>
+<h4>Static Files in 스프린트미션_완료/:</h4>
+<ul>
+{% for file in site.static_files %}
+  {% if file.path contains '스프린트미션_완료/' %}
+    <li>{{ file.path }} ({{ file.name }}) - {{ file.extname }}</li>
+  {% endif %}
+{% endfor %}
+</ul>
+<h4>Pages containing '스프린트미션_완료':</h4>
+<ul>
+{% for page in site.pages %}
+  {% if page.path contains '스프린트미션_완료' %}
+    <li>{{ page.path }} ({{ page.name }}) - {{ page.url }}</li>
+  {% endif %}
+{% endfor %}
+</ul>
+</details>
 
 완료된 스프린트 미션 자료들을 모아둔 폴더입니다.
 
 ## 📄 파일 목록
 
 <div class="file-grid">
-  {% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
-  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
+  {% assign current_folder = "스프린트미션_완료/" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
   
   {% assign all_files = "" | split: "" %}
   
   <!-- Add static files -->
   {% for file in static_files %}
-    {% assign relative_path = file.path | remove: current_path %}
+    {% assign relative_path = file.path | remove: current_folder %}
     {% unless relative_path contains "/" or file.name == "index.md" %}
       {% assign all_files = all_files | push: file %}
     {% endunless %}
@@ -160,14 +177,14 @@ pragma: no-cache
 
 ## 📊 완료 현황
 
-{% assign current_path = "/sprint_mission/스프린트미션_완료/" %}
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains current_path" %}
+{% assign current_folder = "스프린트미션_완료/" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains current_folder" %}
 {% assign mission_files = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign exclude_files = "index.md,info.md,info.html" | split: "," %}
 {% assign filtered_files = "" | split: "" %}
 
 {% for file in completed_files %}
-  {% assign relative_path = file.path | remove: current_path %}
+  {% assign relative_path = file.path | remove: current_folder %}
   {% unless relative_path contains "/" or exclude_files contains file.name %}
     {% assign filtered_files = filtered_files | push: file %}
   {% endunless %}
