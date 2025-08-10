@@ -98,7 +98,7 @@ pragma: no-cache
   
   {% if all_files.size > 0 %}
     {% for file in all_files %}
-      <!-- file {% file %} -->
+      <!-- file {{ file }} -->
       {% assign file_ext = file.extname | downcase %}
       {% if file_ext == "" and file.path %}
         {% assign file_name = file.path | split: "/" | last %}
@@ -159,8 +159,8 @@ pragma: no-cache
           </p>
         </div>
         <div class="file-actions">
-        <!-- file_ext {% file_ext %} -->
-        <!-- display_name {% display_name %} -->
+        <!-- file_ext {{ file_ext }} -->
+        <!-- display_name {{ display_name }} -->
           {% if file_ext == ".md" and display_name != "index.md" %}
             {% assign file_name_clean = display_name %}
             {% assign md_name_clean = file_name_clean | remove: '.md' %}
