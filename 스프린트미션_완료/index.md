@@ -81,8 +81,11 @@ pragma: no-cache
   <!-- Debug: Show what files are being processed -->
   <!-- Total files found: {{ all_files.size }} -->
   
-  {% if all_files.size > 0 %}
-    {% for file in all_files %}
+  <!-- 파일을 최근 수정/생성일 순으로 내림차순 정렬 -->
+  {% assign sorted_files = all_files | sort: "modified_time" | reverse %}
+
+  {% if sorted_files.size > 0 %}
+    {% for file in sorted_files %}
       <!-- file {{ file.name }} -->
       {% assign file_ext = file.extname | downcase %}
       {% if file_ext == "" and file.path %}
