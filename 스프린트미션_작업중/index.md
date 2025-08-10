@@ -9,49 +9,6 @@ pragma: no-cache
 
 # ✅ 스프린트미션_작업중
 
-스프린트미션_작업중 자료들을 모아둔 폴더입니다.
-
-## 📁 폴더 목록
-
-{% assign current_folder = "스프린트미션_작업중/" %}
-{% assign unique_folders = "" | split: "" %}
-
-{% for file in site.static_files %}
-  {% if file.path contains current_folder and file.path != current_folder %}
-    {% assign path_parts = file.path | remove: current_folder | split: "/" %}
-    {% if path_parts.size > 1 %}
-      {% assign folder_name = path_parts[0] %}
-      {% unless unique_folders contains folder_name %}
-        {% assign unique_folders = unique_folders | push: folder_name %}
-      {% endunless %}
-    {% endif %}
-  {% endif %}
-{% endfor %}
-
-<div class="file-grid">
-  {% if unique_folders.size > 0 %}
-    {% for folder in unique_folders %}
-      {% unless folder == "" %}
-        <div class="file-item folder-item">
-          <div class="file-icon">📁</div>
-          <div class="file-info">
-            <h4 class="file-name">{{ folder }}</h4>
-            <p class="file-type">폴더</p>
-          </div>
-        </div>
-      {% endunless %}
-    {% endfor %}
-  {% else %}
-    <div class="empty-message">
-      <span class="empty-icon">�</span>
-      <h3>폴더가 없습니다</h3>
-      <p>현재 이 위치에는 하위 폴더가 없습니다.</p>
-    </div>
-  {% endif %}
-</div>
-
-## 📄 파일 목록
-
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스프린트미션_작업중/" %}
@@ -79,11 +36,12 @@ pragma: no-cache
   
   <!-- Debug: Show what files are being processed -->
   <!-- Total files found: {{ all_files.size }} -->
-  
-  <!-- 파일을 최근 수정/생성일 순으로 내림차순 정렬 -->
-  {% assign sorted_files = all_files | sort: "modified_time" %}
-
-  {% if sorted_files.size > 0 %}
+  {% if all_files.size > 0 %}
+    <!-- Sort files by date (newest first) -->
+    {% assign sorted_files = all_files | sort: 'modified_time' | reverse %}
+    {% if sorted_files.size == 0 or sorted_files[0].modified_time == nil %}
+      {% assign sorted_files = all_files | sort: 'date' | reverse %}
+    {% endif %}
     {% for file in sorted_files %}
       <!-- file {{ file.name }} -->
       {% assign file_ext = file.extname | downcase %}
@@ -186,88 +144,6 @@ pragma: no-cache
       <p>현재 이 위치에는 완료된 미션 파일이 없습니다.</p>
     </div>
   {% endif %}
-</div>
-
-## 📊 완료 요약
-
-<div class="preparation-section">
-  <h3>✅ 성과 정리</h3>
-  <div class="prep-card">
-    <div class="prep-icon">🏆</div>
-    <div class="prep-content">
-      <h4>미션 완료</h4>
-      <p>모든 스프린트 미션이 성공적으로 완료되었습니다.</p>
-    </div>
-  </div>
-  
-  <div class="prep-card">
-    <div class="prep-icon">📚</div>
-    <div class="prep-content">
-      <h4>학습 성과</h4>
-      <p>다양한 형태의 결과물(Jupyter Notebook, PDF, Word 문서)을 통해 학습 내용을 정리했습니다.</p>
-    </div>
-  </div>
-  
-  <div class="prep-card">
-    <div class="prep-icon">🔧</div>
-    <div class="prep-content">
-      <h4>기술 습득</h4>
-      <p>AI, 머신러닝, 데이터 분석 등의 기술을 실습을 통해 체득했습니다.</p>
-    </div>
-  </div>
-</div>
-
-## 📈 진행률
-
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_작업중/'" %}
-{% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
-{% assign unique_completed = "" | split: "" %}
-
-{% for file in completed_missions %}
-  {% assign mission_number = file.name | split: '_' | first %}
-  {% unless unique_completed contains mission_number %}
-    {% assign unique_completed = unique_completed | push: mission_number %}
-  {% endunless %}
-{% endfor %}
-
-{% assign working_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_작업중/'" %}
-{% assign working_missions = working_files | where_exp: "file", "file.name contains '미션'" %}
-
-<div class="progress-overview">
-  <div class="progress-card">
-    <div class="progress-number">{{ unique_completed.size }}</div>
-    <div class="progress-label">완료된 미션</div>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: 100%"></div>
-    </div>
-  </div>
-  
-  <div class="progress-card{% if working_missions.size > 0 %} working{% else %} waiting{% endif %}">
-    <div class="progress-number">{% if working_missions.size > 0 %}진행중{% else %}?{% endif %}</div>
-    <div class="progress-label">{% if working_missions.size > 0 %}작업 중인 미션{% else %}다음 미션{% endif %}</div>
-    <div class="progress-bar">
-      <div class="progress-fill {% if working_missions.size > 0 %}working-fill{% else %}waiting-fill{% endif %}" style="width: {% if working_missions.size > 0 %}50{% else %}0{% endif %}%"></div>
-    </div>
-  </div>
-</div>
-
-## 🔗 관련 링크
-
-<div class="related-links">
-  <a href="{{ site.baseurl }}/스프린트미션_작업중/" class="related-link">
-    <span class="link-icon">🚧</span>
-    <span class="link-text">진행 중인 미션 보기</span>
-  </a>
-  
-  <a href="{{ site.baseurl }}/위클리페이퍼/" class="related-link">
-    <span class="link-icon">📰</span>
-    <span class="link-text">위클리페이퍼 확인</span>
-  </a>
-  
-  <a href="{{ site.baseurl }}/멘토/" class="related-link">
-    <span class="link-icon">👨‍🏫</span>
-    <span class="link-text">멘토 자료 참고</span>
-  </a>
 </div>
 
 ---
