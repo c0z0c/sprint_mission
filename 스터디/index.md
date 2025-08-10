@@ -53,22 +53,6 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<details>
-<summary>세부정보</summary>
-<ul>
-{% for file in site.static_files %}
-  {% if file.path contains '스터디' %}
-    <li>Static File: {{ file.path }} ({{ file.name }})</li>
-  {% endif %}
-{% endfor %}
-{% for page in site.pages %}
-  {% if page.path contains '스터디' %}
-    <li>Page: {{ page.path }} ({{ page.name }})</li>
-  {% endif %}
-{% endfor %}
-</ul>
-</details>
-
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스터디/" %}

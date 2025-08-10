@@ -1,19 +1,19 @@
 ---
 layout: default
-title: 위클리페이퍼 - 위클리페이퍼 보관함
-description: 위클리페이퍼 자료들
+title: 학습 - 학습 보관함
+description: 학습 자료들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# ✅ 위클리페이퍼
+# ✅ 학습
 
-위클리페이퍼 자료들을 모아둔 폴더입니다.
+학습 자료들을 모아둔 폴더입니다.
 
 ## 📁 폴더 목록
 
-{% assign current_folder = "위클리페이퍼/" %}
+{% assign current_folder = "/" %}
 {% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
 {% assign unique_folders = "" | split: "" %}
 
@@ -53,27 +53,11 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<details>
-<summary>세부정보</summary>
-<ul>
-{% for file in site.static_files %}
-  {% if file.path contains '위클리페이퍼' %}
-    <li>Static File: {{ file.path }} ({{ file.name }})</li>
-  {% endif %}
-{% endfor %}
-{% for page in site.pages %}
-  {% if page.path contains '위클리페이퍼' %}
-    <li>Page: {{ page.path }} ({{ page.name }})</li>
-  {% endif %}
-{% endfor %}
-</ul>
-</details>
-
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
-  {% assign current_folder = "위클리페이퍼/" %}
+  {% assign current_folder = "/" %}
   {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
-  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '위클리페이퍼'" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '/'" %}
   
   {% assign all_files = "" | split: "" %}
   {% assign all_file_names = "" | split: "" %}
@@ -165,24 +149,24 @@ pragma: no-cache
           {% if file_ext == ".md" and display_name != "index.md" %}
             {% assign file_name_clean = display_name %}
             {% assign md_name_clean = file_name_clean | remove: '.md' %}
-            <a href="https://c0z0c.github.io/sprint_mission/위클리페이퍼/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+            <a href="https://c0z0c.github.io/sprint_mission/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
           {% elsif file_ext == ".ipynb" %}
             {% assign file_name_clean = display_name %}
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
           {% elsif file_ext == ".pdf" %}
             {% assign file_name_clean = display_name %}
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/{{ file_name_clean }}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>
           {% elsif file_ext == ".docx" %}
             {% assign file_name_clean = display_name %}
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="Google에서 열기" target="_blank">📊</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/{{ file_name_clean }}" class="file-action" title="Google에서 열기" target="_blank">📊</a>
           {% elsif file_ext == ".html" %}
             {% assign file_name_clean = display_name %}
-            <a href="https://c0z0c.github.io/sprint_mission/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/위클리페이퍼/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+            <a href="https://c0z0c.github.io/sprint_mission/{{ file_name_clean }}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
           {% else %}
             {% if is_page %}
               <a href="{{ file.url | relative_url }}" class="file-action" title="페이지 열기">🌐</a>
@@ -233,7 +217,7 @@ pragma: no-cache
 
 ## 📈 진행률
 
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains ''" %}
 {% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign unique_completed = "" | split: "" %}
 
@@ -244,7 +228,7 @@ pragma: no-cache
   {% endunless %}
 {% endfor %}
 
-{% assign working_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign working_files = site.static_files | where_exp: "file", "file.path contains ''" %}
 {% assign working_missions = working_files | where_exp: "file", "file.name contains '미션'" %}
 
 <div class="progress-overview">
@@ -273,12 +257,12 @@ pragma: no-cache
     <span class="link-text">진행 중인 미션 보기</span>
   </a>
   
-  <a href="{{ site.baseurl }}/위클리페이퍼/" class="related-link">
+  <a href="{{ site.baseurl }}/" class="related-link">
     <span class="link-icon">📰</span>
     <span class="link-text">위클리페이퍼 확인</span>
   </a>
   
-  <a href="{{ site.baseurl }}/위클리페이퍼/" class="related-link">
+  <a href="{{ site.baseurl }}/" class="related-link">
     <span class="link-icon">👨‍🏫</span>
     <span class="link-text">위클리페이퍼 자료 참고</span>
   </a>
