@@ -89,7 +89,16 @@ pragma: no-cache
 
 {% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
 {% assign mission_files = completed_files | where_exp: "file", "file.name contains '미션'" %}
-{% assign total_files = completed_files | where_exp: "file", "file.name != 'index.md' and file.name != 'info.md' and file.name != 'info.html'" | size %}
+{% assign exclude_files = "index.md,info.md,info.html" | split: "," %}
+{% assign filtered_files = "" | split: "" %}
+
+{% for file in completed_files %}
+  {% unless exclude_files contains file.name %}
+    {% assign filtered_files = filtered_files | push: file %}
+  {% endunless %}
+{% endfor %}
+
+{% assign total_files = filtered_files | size %}
 {% assign unique_missions = "" | split: "" %}
 
 {% for file in mission_files %}
