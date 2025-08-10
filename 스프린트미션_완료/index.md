@@ -54,6 +54,7 @@ pragma: no-cache
 ## 📄 파일 목록
 
 <details>
+<summary>세부정보</summary>
 <ul>
 {% for file in site.static_files %}
   {% if file.path contains '스프린트미션_완료' %}
@@ -92,14 +93,25 @@ pragma: no-cache
     {% endunless %}
   {% endfor %}
   
+  <!-- Debug: Show what files are being processed -->
+  <!-- Total files found: {{ all_files.size }} -->
+  
   {% if all_files.size > 0 %}
     {% for file in all_files %}
+      <!-- file {% file %} -->
       {% assign file_ext = file.extname | downcase %}
       {% if file_ext == "" and file.path %}
         {% assign file_name = file.path | split: "/" | last %}
         {% assign file_ext = file_name | split: "." | last | downcase %}
         {% assign file_ext = "." | append: file_ext %}
       {% endif %}
+      
+      <!-- Handle page objects differently from static files -->
+      {% assign is_page = false %}
+      {% if file.url %}
+        {% assign is_page = true %}
+      {% endif %}
+      
       {% assign file_icon = "📄" %}
       {% assign file_type = "파일" %}
       
@@ -129,49 +141,53 @@ pragma: no-cache
       <div class="file-item">
         <div class="file-icon">{{ file_icon }}</div>
         <div class="file-info">
-          <h4 class="file-name">{% if file.name %}{{ file.name }}{% else %}{{ file.path | split: "/" | last }}{% endif %}</h4>
+          <h4 class="file-name">
+            {% if is_page %}
+              {% assign display_name = file.name | default: file.path | split: "/" | last %}
+            {% else %}
+              {% assign display_name = file.name | default: file.path | split: "/" | last %}
+            {% endif %}
+            {{ display_name }}
+          </h4>
           <p class="file-type">{{ file_type }}</p>
-          <p class="file-size">{% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}</p>
+          <p class="file-size">
+            {% if is_page %}
+              {% if file.date %}{{ file.date | date: "%Y-%m-%d" }}{% else %}Page{% endif %}
+            {% else %}
+              {% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}
+            {% endif %}
+          </p>
         </div>
         <div class="file-actions">
-          {% if file_ext == ".md" and file.name != "index.md" %}
-            {% assign file_name_clean = file.name %}
-            {% if file_name_clean == nil %}
-              {% assign file_name_clean = file.path | split: "/" | last %}
-            {% endif %}
+        <!-- file_ext {% file_ext %} -->
+        <!-- display_name {% display_name %} -->
+          {% if file_ext == ".md" and display_name != "index.md" %}
+            {% assign file_name_clean = display_name %}
             {% assign md_name_clean = file_name_clean | remove: '.md' %}
             <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
           {% elsif file_ext == ".ipynb" %}
-            {% assign file_name_clean = file.name %}
-            {% if file_name_clean == nil %}
-              {% assign file_name_clean = file.path | split: "/" | last %}
-            {% endif %}
+            {% assign file_name_clean = display_name %}
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
             <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
           {% elsif file_ext == ".pdf" %}
-            {% assign file_name_clean = file.name %}
-            {% if file_name_clean == nil %}
-              {% assign file_name_clean = file.path | split: "/" | last %}
-            {% endif %}
+            {% assign file_name_clean = display_name %}
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
             <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>
           {% elsif file_ext == ".docx" %}
-            {% assign file_name_clean = file.name %}
-            {% if file_name_clean == nil %}
-              {% assign file_name_clean = file.path | split: "/" | last %}
-            {% endif %}
+            {% assign file_name_clean = display_name %}
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
             <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="Google에서 열기" target="_blank">📊</a>
           {% elsif file_ext == ".html" %}
-            {% assign file_name_clean = file.name %}
-            {% if file_name_clean == nil %}
-              {% assign file_name_clean = file.path | split: "/" | last %}
-            {% endif %}
+            {% assign file_name_clean = display_name %}
             <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>
             <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
           {% else %}
-            <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+            {% if is_page %}
+              <a href="{{ file.url | relative_url }}" class="file-action" title="페이지 열기">🌐</a>
+            {% else %}
+              <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+            {% endif %}
           {% endif %}
         </div>
       </div>
