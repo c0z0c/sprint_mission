@@ -13,7 +13,7 @@ pragma: no-cache
 
 ## 📁 폴더 목록
 
-{% assign current_folder = "스프린트미션_완료/" %}
+{% assign current_folder = "/sprint_mission/스프린트미션_완료/" %}
 {% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
 {% assign unique_folders = "" | split: "" %}
 
@@ -71,9 +71,9 @@ pragma: no-cache
 
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
-  {% assign current_folder = "스프린트미션_완료/" %}
+  {% assign current_folder = "/sprint_mission/스프린트미션_완료/" %}
   {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
-  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '/sprint_mission/스프린트미션_완료/'" %}
   
   {% assign all_files = "" | split: "" %}
   
