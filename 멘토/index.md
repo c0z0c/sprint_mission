@@ -49,7 +49,7 @@ pragma: no-cache
   <!-- Total files found: {{ all_files.size }} -->
   
   <!-- 파일을 최근 수정/생성일 순으로 내림차순 정렬 -->
-  {% assign sorted_files = all_files | sort: "modified_time" | reverse %}
+  {% assign sorted_files = all_files | sort: "modified_time" %}
 
   {% if sorted_files.size > 0 %}
     {% for file in sorted_files %}
