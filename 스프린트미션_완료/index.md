@@ -24,7 +24,7 @@ pragma: no-cache
   <tbody>
     {% assign folder_path = 'sprint_mission/스프린트미션_완료/' %}
     {% assign exclude_files = "index.md,info.md" | split: "," %}
-    {% assign files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+    {% assign files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
     {% assign sorted_files = files | sort: 'name' | reverse %}
     
     {% for file in sorted_files %}
@@ -87,7 +87,7 @@ pragma: no-cache
 
 ## 📊 완료 현황
 
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
 {% assign mission_files = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign exclude_files = "index.md,info.md,info.html" | split: "," %}
 {% assign filtered_files = "" | split: "" %}

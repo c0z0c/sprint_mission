@@ -23,7 +23,7 @@ pragma: no-cache
   <tbody>
     {% assign folder_path = 'sprint_mission/위클리페이퍼/' %}
     {% assign exclude_files = "index.md,info.md" | split: "," %}
-    {% assign files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+    {% assign files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/위클리페이퍼/'" %}
     {% assign sorted_files = files | sort: 'name' | reverse %}
     
     {% for file in sorted_files %}
@@ -86,7 +86,7 @@ pragma: no-cache
 
 ## 📊 위클리페이퍼 현황
 
-{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/위클리페이퍼/'" %}
 {% assign weekly_papers = weekly_files | where_exp: "file", "file.name contains '위클리_페이퍼_'" %}
 {% assign total_files = weekly_files | where_exp: "file", "file.name != 'index.md'" | size %}
 {% assign completed_papers = weekly_papers | size %}
@@ -108,7 +108,7 @@ pragma: no-cache
 
 ## 📈 학습 진행사항
 
-{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/위클리페이퍼/'" %}
 {% assign weekly_papers = weekly_files | where_exp: "file", "file.name contains '위클리_페이퍼_'" %}
 {% assign sorted_papers = weekly_papers | sort: 'name' %}
 

@@ -66,7 +66,7 @@ pragma: no-cache
 
 ## 📋 최근 업데이트
 
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
 {% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign unique_completed = "" | split: "" %}
 
@@ -77,7 +77,7 @@ pragma: no-cache
   {% endunless %}
 {% endfor %}
 
-{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '위클리페이퍼/'" %}
+{% assign weekly_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/위클리페이퍼/'" %}
 {% assign weekly_papers = weekly_files | where_exp: "file", "file.name contains '위클리_페이퍼_'" %}
 {% assign latest_weekly = weekly_papers | sort: 'name' | last %}
 {% assign latest_weekly_number = latest_weekly.name | remove: '위클리_페이퍼_' | remove: '_AI4기_김명환.ipynb' | remove: '_AI4기_김명환.md' | remove: '_AI4기_김명환.html' %}

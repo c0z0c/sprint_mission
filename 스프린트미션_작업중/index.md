@@ -13,7 +13,7 @@ pragma: no-cache
 
 ## 📁 폴더 목록
 
-{% assign current_path = "/스프린트미션/스프린트미션_작업중/" %}
+{% assign current_path = "/sprint_mission/스프린트미션_작업중/" %}
 {% assign folders = site.static_files | where_exp: "item", "item.path contains current_path" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
 {% assign unique_folders = "" | split: "" %}
 
@@ -54,19 +54,43 @@ pragma: no-cache
 ## 📄 파일 목록
 
 <div class="file-grid">
-  {% assign current_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
-  {% assign direct_files = "" | split: "" %}
+  <!-- Static files (non-markdown) -->
+  {% assign current_path = "/sprint_mission/스프린트미션_작업중/" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_작업중'" %}
   
-  {% for file in current_files %}
+  {% assign all_files = "" | split: "" %}
+  
+  <!-- Add static files -->
+  {% for file in static_files %}
     {% assign relative_path = file.path | remove: current_path %}
-    {% unless relative_path contains "/" %}
-      {% assign direct_files = direct_files | push: file %}
+    {% unless relative_path contains "/" or file.name == "index.md" %}
+      {% assign all_files = all_files | push: file %}
     {% endunless %}
   {% endfor %}
   
-  {% if direct_files.size > 0 %}
-    {% for file in direct_files %}
+  <!-- Add markdown pages -->
+  {% for page in markdown_pages %}
+    {% assign relative_path = page.path | remove_first: "스프린트미션_작업중" | remove_first: "/" %}
+    {% unless relative_path contains "/" or page.name == "index.md" %}
+      {% assign page_obj = site.static_files | where: "name", page.name | first %}
+      {% unless page_obj %}
+        {% assign fake_file = page %}
+        {% assign fake_file_name = page.path | split: "/" | last %}
+        {% assign fake_file_ext = fake_file_name | split: "." | last %}
+        {% assign all_files = all_files | push: fake_file %}
+      {% endunless %}
+    {% endunless %}
+  {% endfor %}
+  
+  {% if all_files.size > 0 %}
+    {% for file in all_files %}
       {% assign file_ext = file.extname | downcase %}
+      {% if file_ext == "" and file.path %}
+        {% assign file_name = file.path | split: "/" | last %}
+        {% assign file_ext = file_name | split: "." | last | downcase %}
+        {% assign file_ext = "." | append: file_ext %}
+      {% endif %}
       {% assign file_icon = "📄" %}
       {% assign file_type = "파일" %}
       
@@ -96,9 +120,9 @@ pragma: no-cache
       <div class="file-item">
         <div class="file-icon">{{ file_icon }}</div>
         <div class="file-info">
-          <h4 class="file-name">{{ file.name }}</h4>
+          <h4 class="file-name">{% if file.name %}{{ file.name }}{% else %}{{ file.path | split: "/" | last }}{% endif %}</h4>
           <p class="file-type">{{ file_type }}</p>
-          <p class="file-size">{{ file.modified_time | date: "%Y-%m-%d" }}</p>
+          <p class="file-size">{% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}</p>
         </div>
         <div class="file-actions">
           <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
@@ -145,7 +169,7 @@ pragma: no-cache
 
 ## 📈 진행률
 
-{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_완료/'" %}
+{% assign completed_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_완료/'" %}
 {% assign completed_missions = completed_files | where_exp: "file", "file.name contains '미션'" %}
 {% assign unique_completed = "" | split: "" %}
 
@@ -156,7 +180,7 @@ pragma: no-cache
   {% endunless %}
 {% endfor %}
 
-{% assign working_files = site.static_files | where_exp: "file", "file.path contains '스프린트미션_작업중/'" %}
+{% assign working_files = site.static_files | where_exp: "file", "file.path contains '/sprint_mission/스프린트미션_작업중/'" %}
 {% assign working_missions = working_files | where_exp: "file", "file.name contains '미션'" %}
 
 <div class="progress-overview">
