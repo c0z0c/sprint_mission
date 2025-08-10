@@ -80,15 +80,14 @@ pragma: no-cache
   <!-- Add static files -->
   {% for file in static_files %}
     {% assign relative_path = file.path | remove: current_folder %}
-    {% unless relative_path contains "/" or file.name == "index.md" %}
+    {% unless file.name == "index.md" %}
       {% assign all_files = all_files | push: file %}
     {% endunless %}
   {% endfor %}
   
   <!-- Add markdown pages -->
   {% for page in markdown_pages %}
-    {% assign relative_path = page.path | remove_first: "스프린트미션_완료" | remove_first: "/" %}
-    {% unless relative_path contains "/" or page.name == "index.md" %}
+    {% unless page.name == "index.md" %}
       {% assign all_files = all_files | push: page %}
     {% endunless %}
   {% endfor %}
