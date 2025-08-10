@@ -13,9 +13,7 @@ Census Income 데이터 분석 프로젝트입니다.
 
 ## 📁 폴더 목록
 
-<!-- 디버깅: 모든 파일 출력 -->
 <details>
-<summary>🔍 디버깅: 감지된 모든 파일들</summary>
 <ul>
 {% for file in site.static_files %}
   {% if file.path contains 'CensusIncome' %}
@@ -58,38 +56,93 @@ Census Income 데이터 분석 프로젝트입니다.
 
 ## 📄 파일 목록
 
-<div class="file-list">
-  <div class="file-item">
-    <a href="{{ site.baseurl }}/멘토/CensusIncome/CensusIncome.ipynb" class="item-link file" target="_blank">
-      <span class="item-icon">📓</span>
-      <span class="item-name">CensusIncome.ipynb</span>
-      <span class="item-desc">메인 분석 노트북</span>
-    </a>
-  </div>
+<div class="file-grid">
+  {% assign current_path = "/sprint_mission/멘토/CensusIncome/" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_path" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains 'CensusIncome'" %}
   
-  <div class="file-item">
-    <a href="{{ site.baseurl }}/멘토/CensusIncome/helper_c0z0c_dev.py" class="item-link file" target="_blank">
-      <span class="item-icon">🐍</span>
-      <span class="item-name">helper_c0z0c_dev.py</span>
-      <span class="item-desc">헬퍼 유틸리티 모듈</span>
-    </a>
-  </div>
+  {% assign all_files = "" | split: "" %}
   
-  <div class="file-item">
-    <a href="{{ site.baseurl }}/멘토/CensusIncome/readme.md" class="item-link file" target="_blank">
-      <span class="item-icon">📖</span>
-      <span class="item-name">readme.md</span>
-      <span class="item-desc">프로젝트 설명 문서</span>
-    </a>
-  </div>
+  <!-- Add static files -->
+  {% for file in static_files %}
+    {% assign relative_path = file.path | remove: current_path %}
+    {% unless relative_path contains "/" or file.name == "index.md" %}
+      {% assign all_files = all_files | push: file %}
+    {% endunless %}
+  {% endfor %}
   
-  <div class="file-item">
-    <div class="item-link file-display">
-      <span class="item-icon">⚙️</span>
-      <span class="item-name">.gitignore</span>
-      <span class="item-desc">Git 무시 파일 목록</span>
+  <!-- Add markdown pages -->
+  {% for page in markdown_pages %}
+    {% assign relative_path = page.path | remove_first: "CensusIncome" | remove_first: "/" %}
+    {% unless relative_path contains "/" or page.name == "index.md" %}
+      {% assign all_files = all_files | push: page %}
+    {% endunless %}
+  {% endfor %}
+  
+  {% if all_files.size > 0 %}
+    {% for file in all_files %}
+      {% assign file_ext = file.extname | downcase %}
+      {% if file_ext == "" and file.path %}
+        {% assign file_name = file.path | split: "/" | last %}
+        {% assign file_ext = file_name | split: "." | last | downcase %}
+        {% assign file_ext = "." | append: file_ext %}
+      {% endif %}
+      {% assign file_icon = "📄" %}
+      {% assign file_type = "파일" %}
+      
+      {% if file_ext == ".ipynb" %}
+        {% assign file_icon = "📓" %}
+        {% assign file_type = "Jupyter Notebook" %}
+      {% elsif file_ext == ".py" %}
+        {% assign file_icon = "🐍" %}
+        {% assign file_type = "Python 파일" %}
+      {% elsif file_ext == ".md" %}
+        {% assign file_icon = "📝" %}
+        {% assign file_type = "Markdown 문서" %}
+      {% elsif file_ext == ".json" %}
+        {% assign file_icon = "⚙️" %}
+        {% assign file_type = "JSON 설정" %}
+      {% elsif file_ext == ".csv" %}
+        {% assign file_icon = "📊" %}
+        {% assign file_type = "데이터 파일" %}
+      {% endif %}
+      
+      <div class="file-item">
+        <div class="file-icon">{{ file_icon }}</div>
+        <div class="file-info">
+          <h4 class="file-name">{% if file.name %}{{ file.name }}{% else %}{{ file.path | split: "/" | last }}{% endif %}</h4>
+          <p class="file-type">{{ file_type }}</p>
+          <p class="file-size">{% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}</p>
+        </div>
+        <div class="file-actions">
+          {% if file_ext == ".md" and file.name != "index.md" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            {% assign md_name_clean = file_name_clean | remove: '.md' %}
+            <a href="https://c0z0c.github.io/sprint_mission/멘토/CensusIncome/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/CensusIncome/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+          {% elsif file_ext == ".ipynb" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/CensusIncome/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/멘토/CensusIncome/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
+          {% else %}
+            <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-message">
+      <span class="empty-icon">📄</span>
+      <h3>파일이 없습니다</h3>
+      <p>현재 이 위치에는 파일이 없습니다.</p>
     </div>
-  </div>
+  {% endif %}
 </div>
 
 ## 📋 프로젝트 정보
@@ -169,6 +222,114 @@ Census Income 데이터 분석 프로젝트입니다.
   color: #666;
   font-size: 0.9em;
   font-style: italic;
+}
+
+/* File Grid Styles */
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.file-item {
+  background: white;
+  border: 1px solid #e1e8ed;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.file-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border-color: #007acc;
+}
+
+.file-icon {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.file-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.file-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+.file-type {
+  margin: 0 0 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.file-size {
+  margin: 0;
+  color: #999;
+  font-size: 12px;
+}
+
+.file-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.file-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  color: #495057;
+}
+
+.file-action:hover {
+  background: #007acc;
+  color: white;
+  border-color: #007acc;
+  transform: scale(1.1);
+  text-decoration: none;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  grid-column: 1 / -1;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-message h3 {
+  margin: 0 0 10px 0;
+  color: #999;
+}
+
+.empty-message p {
+  margin: 0;
+  color: #bbb;
 }
 
 .navigation-footer {

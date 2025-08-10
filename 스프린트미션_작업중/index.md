@@ -53,9 +53,7 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
-<!-- 디버깅: 모든 파일 출력 -->
 <details>
-<summary>🔍 디버깅: 감지된 모든 파일들</summary>
 <ul>
 {% for file in site.static_files %}
   {% if file.path contains '스프린트미션_작업중' %}
@@ -136,7 +134,45 @@ pragma: no-cache
           <p class="file-size">{% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}</p>
         </div>
         <div class="file-actions">
-          <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+          {% if file_ext == ".md" and file.name != "index.md" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            {% assign md_name_clean = file_name_clean | remove: '.md' %}
+            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_작업중/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+          {% elsif file_ext == ".ipynb" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
+          {% elsif file_ext == ".pdf" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>
+          {% elsif file_ext == ".docx" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="Google에서 열기" target="_blank">📊</a>
+          {% elsif file_ext == ".html" %}
+            {% assign file_name_clean = file.name %}
+            {% if file_name_clean == nil %}
+              {% assign file_name_clean = file.path | split: "/" | last %}
+            {% endif %}
+            <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>
+            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
+          {% else %}
+            <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
+          {% endif %}
         </div>
       </div>
     {% endfor %}

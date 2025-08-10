@@ -13,9 +13,7 @@ pragma: no-cache
 
 ## 📁 폴더 목록
 
-<!-- 디버깅: 모든 파일 출력 -->
 <details>
-<summary>🔍 디버깅: 감지된 모든 파일들</summary>
 <ul>
 {% for file in site.static_files %}
   {% if file.path contains '멘토' %}
@@ -50,7 +48,7 @@ pragma: no-cache
     </tr>
   </thead>
   <tbody>
-    {% assign folder_path = 'sprint_mission/멘토/' %}
+    {% assign folder_path = '/sprint_mission/멘토/' %}
     {% assign exclude_files = "index.md,info.md,.gitignore" | split: "," %}
     {% assign files = site.static_files | where_exp: "file", "file.path contains '멘토/'" %}
     {% assign sorted_files = files | sort: 'name' | reverse %}
@@ -87,7 +85,13 @@ pragma: no-cache
               <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% elsif file.extname == '.md' and file.name != 'index.md' %}
               {% assign md_name = file.name | remove: '.md' %}
-              <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ md_name }}" target="_blank">{{ file.name }}</a>
+              <div>
+                <a href="https://c0z0c.github.io/sprint_mission/멘토/{{ md_name }}" target="_blank">{{ file.name }}</a>
+                <br>
+                <small>
+                  <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank" style="color: #6c757d;">🔗 GitHub에서 원본 보기</a>
+                </small>
+              </div>
             {% else %}
               <a href="https://github.com/c0z0c/sprint_mission/blob/master/멘토/{{ file.name }}" target="_blank">{{ file.name }}</a>
             {% endif %}
