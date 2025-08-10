@@ -13,6 +13,23 @@ Census Income 데이터 분석 프로젝트입니다.
 
 ## 📁 폴더 목록
 
+<!-- 디버깅: 모든 파일 출력 -->
+<details>
+<summary>🔍 디버깅: 감지된 모든 파일들</summary>
+<ul>
+{% for file in site.static_files %}
+  {% if file.path contains 'CensusIncome' %}
+    <li>Static File: {{ file.path }} ({{ file.name }})</li>
+  {% endif %}
+{% endfor %}
+{% for page in site.pages %}
+  {% if page.path contains 'CensusIncome' %}
+    <li>Page: {{ page.path }} ({{ page.name }})</li>
+  {% endif %}
+{% endfor %}
+</ul>
+</details>
+
 <div class="file-list">
   <div class="folder-item">
     <div class="item-link folder-display">

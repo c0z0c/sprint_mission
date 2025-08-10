@@ -13,6 +13,23 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
+<!-- 디버깅: 모든 파일 출력 -->
+<details>
+<summary>🔍 디버깅: 감지된 모든 파일들</summary>
+<ul>
+{% for file in site.static_files %}
+  {% if file.path contains '위클리페이퍼' %}
+    <li>Static File: {{ file.path }} ({{ file.name }})</li>
+  {% endif %}
+{% endfor %}
+{% for page in site.pages %}
+  {% if page.path contains '위클리페이퍼' %}
+    <li>Page: {{ page.path }} ({{ page.name }})</li>
+  {% endif %}
+{% endfor %}
+</ul>
+</details>
+
 <table>
   <thead>
     <tr>

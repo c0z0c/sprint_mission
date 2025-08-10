@@ -94,20 +94,6 @@ pragma: no-cache
     {% endunless %}
   {% endfor %}
   
-  <!-- Manual file entries for files that might not be auto-detected -->
-  <div class="file-item manual-entry">
-    <div class="file-icon">📝</div>
-    <div class="file-info">
-      <h4 class="file-name">미션5_4팀_김명환.md</h4>
-      <p class="file-type">Markdown 문서 (수동 등록)</p>
-      <p class="file-size">2025-08-10</p>
-    </div>
-    <div class="file-actions">
-      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/미션5_4팀_김명환.md" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-      <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_작업중/미션5_4팀_김명환" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
-    </div>
-  </div>
-  
   {% if all_files.size > 0 %}
     {% for file in all_files %}
       {% assign file_ext = file.extname | downcase %}
@@ -284,11 +270,6 @@ pragma: no-cache
 
 .file-item:not(.folder-item) {
   border-left: 4px solid #3498db;
-}
-
-.file-item.manual-entry {
-  border-left: 4px solid #e74c3c;
-  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
 }
 
 .file-icon {

@@ -13,6 +13,23 @@ pragma: no-cache
 
 ## 📁 폴더 목록
 
+<!-- 디버깅: 모든 파일 출력 -->
+<details>
+<summary>🔍 디버깅: 감지된 모든 파일들</summary>
+<ul>
+{% for file in site.static_files %}
+  {% if file.path contains '멘토' %}
+    <li>Static File: {{ file.path }} ({{ file.name }})</li>
+  {% endif %}
+{% endfor %}
+{% for page in site.pages %}
+  {% if page.path contains '멘토' %}
+    <li>Page: {{ page.path }} ({{ page.name }})</li>
+  {% endif %}
+{% endfor %}
+</ul>
+</details>
+
 <div class="file-list">
   <div class="folder-item">
     <a href="{{ site.baseurl }}/멘토/CensusIncome/" class="item-link folder">
