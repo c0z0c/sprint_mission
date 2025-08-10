@@ -53,6 +53,23 @@ pragma: no-cache
 
 ## 📄 파일 목록
 
+<!-- 디버깅: 모든 파일 출력 -->
+<details>
+<summary>🔍 디버깅: 감지된 모든 파일들</summary>
+<ul>
+{% for file in site.static_files %}
+  {% if file.path contains '스프린트미션_작업중' %}
+    <li>Static File: {{ file.path }} ({{ file.name }})</li>
+  {% endif %}
+{% endfor %}
+{% for page in site.pages %}
+  {% if page.path contains '스프린트미션_작업중' %}
+    <li>Page: {{ page.path }} ({{ page.name }})</li>
+  {% endif %}
+{% endfor %}
+</ul>
+</details>
+
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_path = "/sprint_mission/스프린트미션_작업중/" %}
@@ -73,15 +90,23 @@ pragma: no-cache
   {% for page in markdown_pages %}
     {% assign relative_path = page.path | remove_first: "스프린트미션_작업중" | remove_first: "/" %}
     {% unless relative_path contains "/" or page.name == "index.md" %}
-      {% assign page_obj = site.static_files | where: "name", page.name | first %}
-      {% unless page_obj %}
-        {% assign fake_file = page %}
-        {% assign fake_file_name = page.path | split: "/" | last %}
-        {% assign fake_file_ext = fake_file_name | split: "." | last %}
-        {% assign all_files = all_files | push: fake_file %}
-      {% endunless %}
+      {% assign all_files = all_files | push: page %}
     {% endunless %}
   {% endfor %}
+  
+  <!-- Manual file entries for files that might not be auto-detected -->
+  <div class="file-item manual-entry">
+    <div class="file-icon">📝</div>
+    <div class="file-info">
+      <h4 class="file-name">미션5_4팀_김명환.md</h4>
+      <p class="file-type">Markdown 문서 (수동 등록)</p>
+      <p class="file-size">2025-08-10</p>
+    </div>
+    <div class="file-actions">
+      <a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_작업중/미션5_4팀_김명환.md" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
+      <a href="https://c0z0c.github.io/sprint_mission/스프린트미션_작업중/미션5_4팀_김명환" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
+    </div>
+  </div>
   
   {% if all_files.size > 0 %}
     {% for file in all_files %}
@@ -259,6 +284,11 @@ pragma: no-cache
 
 .file-item:not(.folder-item) {
   border-left: 4px solid #3498db;
+}
+
+.file-item.manual-entry {
+  border-left: 4px solid #e74c3c;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
 }
 
 .file-icon {
