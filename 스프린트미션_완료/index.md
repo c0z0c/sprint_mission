@@ -11,15 +11,15 @@ pragma: no-cache
 <h4>Static Files in 스프린트미션_완료/:</h4>
 <ul>
 {% for file in site.static_files %}
-  {% if file.path contains '스프린트미션_완료/' %}
+  {% if file.path contains '/sprint_mission/스프린트미션_완료/' %}
     <li>{{ file.path }} ({{ file.name }}) - {{ file.extname }}</li>
   {% endif %}
 {% endfor %}
 </ul>
-<h4>Pages containing '스프린트미션_완료':</h4>
+<h4>Pages containing '/sprint_mission/스프린트미션_완료':</h4>
 <ul>
 {% for page in site.pages %}
-  {% if page.path contains '스프린트미션_완료' %}
+  {% if page.path contains '/sprint_mission/스프린트미션_완료' %}
     <li>{{ page.path }} ({{ page.name }}) - {{ page.url }}</li>
   {% endif %}
 {% endfor %}
@@ -31,7 +31,7 @@ pragma: no-cache
 ## 📄 파일 목록
 
 <div class="file-grid">
-  {% assign current_folder = "스프린트미션_완료/" %}
+  {% assign current_folder = "/sprint_mission/스프린트미션_완료/" %}
   {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
   {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
   
