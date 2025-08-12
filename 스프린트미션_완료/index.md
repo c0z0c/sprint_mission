@@ -16,8 +16,13 @@ pragma: no-cache
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스프린트미션_완료/" %}
-  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
-  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
+  {% assign static_files = site.static_files 
+  | where_exp: "item", "item.path contains current_folder" 
+  | where_exp: "item", "item.path == current_folder | append: item.name" %}
+  
+  {% assign markdown_pages = site.pages 
+  | where_exp: "page", "page.path contains current_folder" 
+  | where_exp: "page", "page.path == current_folder | append: page.name" %}
   
   {% assign all_files = "" | split: "" %}
   {% assign all_file_names = "" | split: "" %}
