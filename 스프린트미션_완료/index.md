@@ -9,16 +9,15 @@ pragma: no-cache
 
 # ✅ 스프린트미션_완료
 
+{% assign current_folder = "스프린트미션_완료/" %}
+{% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
+{% assign unique_folders = "" | split: "" %}
+
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스프린트미션_완료/" %}
-  {% assign static_files = site.static_files 
-  | where_exp: "item", "item.path contains current_folder" 
-  | where_exp: "item", "item.path == current_folder | append: item.name" %}
-  
-  {% assign markdown_pages = site.pages 
-  | where_exp: "page", "page.path contains current_folder" 
-  | where_exp: "page", "page.path == current_folder | append: page.name" %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder and item.path != item.name" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains current_folder and page.path != page.name" %}
   
   {% assign all_files = "" | split: "" %}
   {% assign all_file_names = "" | split: "" %}
