@@ -16,8 +16,25 @@ pragma: no-cache
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스프린트미션_완료/" %}
-  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder and item.path != item.name" %}
-  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains current_folder and page.path != page.name" %}
+  {% assign all_static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
+  {% assign static_files = "" | split: "" %}
+  {% for file in all_static_files %}
+    {% assign file_path_parts = file.path | split: "/" %}
+    {% assign file_directory = file_path_parts | slice: 0, file_path_parts.size | slice: 0, -1 | join: "/" | append: "/" %}
+    {% if file_directory == current_folder %}
+      {% assign static_files = static_files | push: file %}
+    {% endif %}
+  {% endfor %}
+  
+  {% assign all_markdown_pages = site.pages | where_exp: "page", "page.path contains current_folder" %}
+  {% assign markdown_pages = "" | split: "" %}
+  {% for page in all_markdown_pages %}
+    {% assign page_path_parts = page.path | split: "/" %}
+    {% assign page_directory = page_path_parts | slice: 0, page_path_parts.size | slice: 0, -1 | join: "/" | append: "/" %}
+    {% if page_directory == current_folder %}
+      {% assign markdown_pages = markdown_pages | push: page %}
+    {% endif %}
+  {% endfor %}
   
   {% assign all_files = "" | split: "" %}
   {% assign all_file_names = "" | split: "" %}
