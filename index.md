@@ -7,10 +7,6 @@ expires: 0
 pragma: no-cache
 ---
 
-# 📚 스프린트 미션 보관함
-
-코드잇 AI 4기 과정의 스프린트 미션 결과물들을 보관하는 공간입니다.
-
 <div class="nav-sections">
   <div class="section-card">
     <h2>📂 폴더별 탐색</h2>
