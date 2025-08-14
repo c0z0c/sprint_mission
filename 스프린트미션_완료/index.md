@@ -21,6 +21,7 @@ pragma: no-cache
   <!-- Add static files -->
   {% for file in static_files %}
     <!-- Check if file is directly in current folder (not in subdirectory) -->
+    <!-- {{file}} -->
     {% assign file_depth = file.path | remove: current_folder | split: "/" | size %}
     {% if file_depth == 1 %}
       {% unless file.name == "index.md" or all_file_names contains file.name %}
@@ -33,6 +34,7 @@ pragma: no-cache
   <!-- Add markdown pages -->
   {% for page in markdown_pages %}
     <!-- Check if page is directly in current folder (not in subdirectory) -->
+    <!-- {{page}} -->
     {% assign page_depth = page.path | remove: current_folder | split: "/" | size %}
     {% if page_depth == 1 %}
       {% unless page.name == "index.md" or all_file_names contains page.name %}
