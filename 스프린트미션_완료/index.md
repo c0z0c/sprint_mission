@@ -9,50 +9,37 @@ pragma: no-cache
 
 # ✅ 스프린트미션_완료
 
-{% assign current_folder = "스프린트미션_완료/" %}
-{% assign folders = site.static_files | where_exp: "item", "item.path contains current_folder" | where_exp: "item", "item.path != item.name" | map: "path" | join: "|" | split: "|" %}
-{% assign unique_folders = "" | split: "" %}
-
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스프린트미션_완료/" %}
-  {% assign all_static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
-  {% assign static_files = "" | split: "" %}
-  {% for file in all_static_files %}
-    {% assign file_path_parts = file.path | split: "/" %}
-    {% assign file_directory = file_path_parts | slice: 0, file_path_parts.size | slice: 0, -1 | join: "/" | append: "/" %}
-    {% if file_directory == current_folder %}
-      {% assign static_files = static_files | push: file %}
-    {% endif %}
-  {% endfor %}
-  
-  {% assign all_markdown_pages = site.pages | where_exp: "page", "page.path contains current_folder" %}
-  {% assign markdown_pages = "" | split: "" %}
-  {% for page in all_markdown_pages %}
-    {% assign page_path_parts = page.path | split: "/" %}
-    {% assign page_directory = page_path_parts | slice: 0, page_path_parts.size | slice: 0, -1 | join: "/" | append: "/" %}
-    {% if page_directory == current_folder %}
-      {% assign markdown_pages = markdown_pages | push: page %}
-    {% endif %}
-  {% endfor %}
+  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
+  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스프린트미션_완료'" %}
   
   {% assign all_files = "" | split: "" %}
   {% assign all_file_names = "" | split: "" %}
 
   <!-- Add static files -->
   {% for file in static_files %}
-    {% unless file.name == "index.md" or all_file_names contains file.name %}
-      {% assign all_files = all_files | push: file %}
-      {% assign all_file_names = all_file_names | push: file.name %}
-    {% endunless %}
+    <!-- Check if file is directly in current folder (not in subdirectory) -->
+    {% assign file_depth = file.path | remove: current_folder | split: "/" | size %}
+    {% if file_depth == 1 %}
+      {% unless file.name == "index.md" or all_file_names contains file.name %}
+        {% assign all_files = all_files | push: file %}
+        {% assign all_file_names = all_file_names | push: file.name %}
+      {% endunless %}
+    {% endif %}
   {% endfor %}
 
   <!-- Add markdown pages -->
   {% for page in markdown_pages %}
-    {% unless page.name == "index.md" or all_file_names contains page.name %}
-      {% assign all_files = all_files | push: page %}
-      {% assign all_file_names = all_file_names | push: page.name %}
-    {% endunless %}
+    <!-- Check if page is directly in current folder (not in subdirectory) -->
+    {% assign page_depth = page.path | remove: current_folder | split: "/" | size %}
+    {% if page_depth == 1 %}
+      {% unless page.name == "index.md" or all_file_names contains page.name %}
+        {% assign all_files = all_files | push: page %}
+        {% assign all_file_names = all_file_names | push: page.name %}
+      {% endunless %}
+    {% endif %}
   {% endfor %}
   
   <!-- Debug: Show what files are being processed -->
