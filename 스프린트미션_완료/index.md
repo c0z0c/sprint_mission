@@ -21,7 +21,7 @@ pragma: no-cache
   <!-- Add static files -->
   {% for file in static_files %}
     <!-- Check if file is directly in current folder (not in subdirectory) -->
-    <!-- {{file}} -->
+    <!-- {{file.name}} -->
     {% assign file_depth = file.path | remove: current_folder | split: "/" | size %}
     {% if file_depth == 1 %}
       {% unless file.name == "index.md" or all_file_names contains file.name %}
@@ -34,7 +34,7 @@ pragma: no-cache
   <!-- Add markdown pages -->
   {% for page in markdown_pages %}
     <!-- Check if page is directly in current folder (not in subdirectory) -->
-    <!-- {{page}} -->
+    <!-- {{page.name}} -->
     {% assign page_depth = page.path | remove: current_folder | split: "/" | size %}
     {% if page_depth == 1 %}
       {% unless page.name == "index.md" or all_file_names contains page.name %}
@@ -43,6 +43,54 @@ pragma: no-cache
       {% endunless %}
     {% endif %}
   {% endfor %}
+
+  <!-- JavaScript 디버그 콘솔 출력 -->
+  <script>
+    console.group('🔍 스프린트미션_완료 파일 목록 디버그');
+    console.log('Current folder:', '{{ current_folder }}');
+    console.log('Static files found:', {{ static_files.size }});
+    console.log('Markdown pages found:', {{ markdown_pages.size }});
+    console.log('Final all_files count:', {{ all_files.size }});
+    
+    // Static files 세부 정보
+    console.group('📁 Static Files Details');
+    {% for file in static_files %}
+      {% assign file_depth = file.path | remove: current_folder | split: "/" | size %}
+      console.log('File: {{ file.path }}', {
+        name: '{{ file.name }}',
+        path: '{{ file.path }}',
+        depth: {{ file_depth }},
+        included: {{ file_depth == 1 and file.name != "index.md" }}
+      });
+    {% endfor %}
+    console.groupEnd();
+    
+    // Markdown pages 세부 정보  
+    console.group('📝 Markdown Pages Details');
+    {% for page in markdown_pages %}
+      {% assign page_depth = page.path | remove: current_folder | split: "/" | size %}
+      console.log('Page: {{ page.path }}', {
+        name: '{{ page.name }}',
+        path: '{{ page.path }}',
+        depth: {{ page_depth }},
+        included: {{ page_depth == 1 and page.name != "index.md" }}
+      });
+    {% endfor %}
+    console.groupEnd();
+    
+    // 최종 포함된 파일들
+    console.group('✅ Final Included Files');
+    {% for file in all_files %}
+      console.log('Included file:', {
+        name: '{{ file.name }}',
+        path: '{{ file.path }}',
+        type: '{% if file.url %}page{% else %}static{% endif %}'
+      });
+    {% endfor %}
+    console.groupEnd();
+    
+    console.groupEnd();
+  </script>
   
   <!-- Debug: Show what files are being processed -->
   <!-- Total files found: {{ all_files.size }} -->
