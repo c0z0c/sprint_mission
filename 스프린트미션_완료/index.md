@@ -22,7 +22,8 @@ pragma: no-cache
   {% for file in static_files %}
     <!-- Check if file is directly in current folder (not in subdirectory) -->
     <!-- {{file.name}} -->
-    {% assign file_depth = file.path | remove: current_folder | split: "/" | size %}
+    {% assign normalized_path = file.path | remove_first: "/" %}
+    {% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %}
     {% if file_depth == 1 %}
       {% unless file.name == "index.md" or all_file_names contains file.name %}
         {% assign all_files = all_files | push: file %}
@@ -35,7 +36,8 @@ pragma: no-cache
   {% for page in markdown_pages %}
     <!-- Check if page is directly in current folder (not in subdirectory) -->
     <!-- {{page.name}} -->
-    {% assign page_depth = page.path | remove: current_folder | split: "/" | size %}
+    {% assign normalized_page_path = page.path | remove_first: "/" %}
+    {% assign page_depth = normalized_page_path | remove: current_folder | split: "/" | size %}
     {% if page_depth == 1 %}
       {% unless page.name == "index.md" or all_file_names contains page.name %}
         {% assign all_files = all_files | push: page %}
@@ -55,10 +57,13 @@ pragma: no-cache
     // Static files 세부 정보
     console.group('📁 Static Files Details');
     {% for file in static_files %}
-      {% assign file_depth = file.path | remove: current_folder | split: "/" | size %}
+      {% assign normalized_path = file.path | remove_first: "/" %}
+      {% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %}
       console.log('File: {{ file.path }}', {
         name: '{{ file.name }}',
-        path: '{{ file.path }}',
+        originalPath: '{{ file.path }}',
+        normalizedPath: '{{ normalized_path }}',
+        afterRemove: '{{ normalized_path | remove: current_folder }}',
         depth: {{ file_depth }},
         included: {{ file_depth == 1 and file.name != "index.md" }}
       });
@@ -68,10 +73,13 @@ pragma: no-cache
     // Markdown pages 세부 정보  
     console.group('📝 Markdown Pages Details');
     {% for page in markdown_pages %}
-      {% assign page_depth = page.path | remove: current_folder | split: "/" | size %}
+      {% assign normalized_page_path = page.path | remove_first: "/" %}
+      {% assign page_depth = normalized_page_path | remove: current_folder | split: "/" | size %}
       console.log('Page: {{ page.path }}', {
         name: '{{ page.name }}',
-        path: '{{ page.path }}',
+        originalPath: '{{ page.path }}',
+        normalizedPath: '{{ normalized_page_path }}',
+        afterRemove: '{{ normalized_page_path | remove: current_folder }}',
         depth: {{ page_depth }},
         included: {{ page_depth == 1 and page.name != "index.md" }}
       });
