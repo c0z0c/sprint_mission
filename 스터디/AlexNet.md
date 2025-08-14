@@ -42,9 +42,11 @@ AlexNet은 2012년 Alex Krizhevsky, Ilya Sutskever, Geoffrey Hinton에 의해 �
 ```mermaid
 graph TD
     A[Input<br/>227×227×3] --> B[Conv1<br/>96ch 55×55]
-    B --> C[Pool1<br/>96ch 27×27]
+    B --> B1[ReLU + LRN]
+    B1 --> C[Pool1<br/>96ch 27×27]
     C --> D[Conv2<br/>256ch 27×27]
-    D --> E[Pool2<br/>256ch 13×13]
+    D --> D1[ReLU + LRN]
+    D1 --> E[Pool2<br/>256ch 13×13]
     E --> F[Conv3<br/>384ch 13×13]
     F --> G[Conv4<br/>384ch 13×13]
     G --> H[Conv5<br/>256ch 13×13]
