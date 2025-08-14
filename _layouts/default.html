@@ -583,37 +583,65 @@
             </div>
 
             {{ content }}
-        </div>
-    </div>
-</div>
+                </div> <!-- .container -->
+        </div> <!-- .main-wrapper -->
 
-        <!-- mermaid.js: 클라이언트에서 mermaid 코드블록을 렌더링하도록 추가 -->
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                try {
-                    // fenced 코드블록으로 렌더링된 mermaid (pre > code.language-mermaid)를
-                    // div.mermaid로 교체하면 mermaid.initialize로 클라이언트에서 렌더링됩니다.
-                    document.querySelectorAll('pre code.language-mermaid, pre code.lang-mermaid').forEach(function(code){
-                        var pre = code.parentElement;
-                        var mermaidDiv = document.createElement('div');
-                        mermaidDiv.className = 'mermaid';
-                        // 텍스트 그대로 넣어야 parsing이 정상동작합니다.
-                        mermaidDiv.textContent = code.textContent;
-                        pre.parentNode.replaceChild(mermaidDiv, pre);
-                    });
+<!-- mermaid: preload + single script + style + init -->
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" as="script">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" defer></script>
 
-                    if (window.mermaid) {
-                        // securityLevel 'loose'를 사용하면 노드 내의 HTML(<br/> 등)을 허용합니다.
-                        mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
-                        // 이미 생성된 .mermaid 요소가 있다면 바로 렌더
-                        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                    }
-                } catch (e) {
-                    // 오류가 나도 렌더링 전체가 실패하지 않도록 콘솔에 기록
-                    console.error('mermaid init error:', e);
-                }
+<style>
+    /* mermaid 컨테이너/글자/높이/간격 조정 */
+    .mermaid {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto 30px;
+        font-size: 18px;
+    }
+    .mermaid svg {
+        width: 100% !important;
+        height: 700px !important; /* 필요시 조정 */
+        display: block;
+    }
+    .mermaid.diagram-large svg {
+        height: 1000px !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    try {
+        // fenced mermaid 코드블록을 div.mermaid로 교체
+        document.querySelectorAll('pre > code.language-mermaid, pre > code.lang-mermaid').forEach(function(code){
+            var pre = code.parentElement;
+            var mermaidDiv = document.createElement('div');
+            mermaidDiv.className = 'mermaid';
+            // info string에 large가 있으면 클래스 추가
+            var info = (code.getAttribute('data-info') || '') + ' ' + (code.className || '');
+            if (/\blarge\b/.test(info)) mermaidDiv.classList.add('diagram-large');
+            mermaidDiv.textContent = code.textContent;
+            pre.parentNode.replaceChild(mermaidDiv, pre);
+        });
+
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: false,
+                securityLevel: 'loose',
+                flowchart: {
+                    useMaxWidth: true,
+                    nodeSpacing: 60,
+                    rankSpacing: 120
+                },
+                theme: 'neutral',
+                themeVariables: { fontSize: '18px' }
             });
-        </script>
+            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+        }
+    } catch (e) {
+        console.error('mermaid init error:', e);
+    }
+});
+</script>
+
 </body>
 </html>
