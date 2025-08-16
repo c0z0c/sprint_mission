@@ -128,28 +128,28 @@ plugins:
 
 ```liquid
 <!-- 현재 폴더의 파일만 필터링 -->
-{% assign current_folder = "스프린트미션_완료/" %}
-{% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
+｛% assign current_folder = "스프린트미션_완료/" %｝
+｛% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %｝
 
 <!-- 깊이 체크로 직접 파일만 선택 -->
-{% for file in static_files %}
-  {% assign normalized_path = file.path | remove_first: "/" %}
-  {% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %}
-  {% if file_depth == 1 %}
+｛% for file in static_files %｝
+  ｛% assign normalized_path = file.path | remove_first: "/" %｝
+  ｛% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %｝
+  ｛% if file_depth == 1 %｝
     <!-- 직접 파일만 처리 -->
-  {% endif %}
-{% endfor %}
+  ｛% endif %｝
+｛% endfor %｝
 ```
 
 ### 파일 타입별 아이콘 및 액션 설정
 ```liquid
-{% if file_ext == ".ipynb" %}
-  {% assign file_icon = "📓" %}
-  <a href="https://colab.research.google.com/github/username/repo/blob/master/{{ file_name }}" target="_blank">🚀</a>
-{% elsif file_ext == ".md" %}
-  {% assign file_icon = "📝" %}
-  <a href="https://username.github.io/repo/{{ file_name | remove: '.md' }}" target="_blank">🌐</a>
-{% endif %}
+｛% if file_ext == ".ipynb" %｝
+  ｛% assign file_icon = "📓" %｝
+  <a href="https://colab.research.google.com/github/username/repo/blob/master/⦃⦃ file_name ⦄⦄" target="_blank">🚀</a>
+｛% elsif file_ext == ".md" %｝
+  ｛% assign file_icon = "📝" %｝
+  <a href="https://username.github.io/repo/⦃⦃ file_name | remove: '.md' ⦄⦄" target="_blank">🌐</a>
+｛% endif %｝
 ```
 
 ---
@@ -195,16 +195,16 @@ graph TD
 ### 🐛 일반적인 빌드 오류 및 해결법
 
 #### 1. Liquid 템플릿 문법 오류
-```
+```liquid
 # ❌ 잘못된 예시
-{% for file in files
-  {{ file.name }}
-{% endfor %}
+｛% for file in files
+  ⦃⦃ file.name ⦄⦄
+｛% endfor %｝
 
 # ✅ 올바른 예시  
-{% for file in files %}
-  {{ file.name }}
-{% endfor %}
+｛% for file in files %｝
+  ⦃⦃ file.name ⦄⦄
+｛% endfor %｝
 ```
 
 #### 2. YAML Front Matter 오류
@@ -280,21 +280,21 @@ bundle exec jekyll build --verbose
 #### 디버깅 JavaScript 추가
 Jekyll 템플릿에 디버깅 코드를 삽입하여 파일 로딩 과정을 모니터링할 수 있습니다.
 
-```liquid
+```javascript
 <script>
 console.group('🔍 파일 목록 디버깅');
-console.log('Current folder:', '{{ current_folder }}');
-console.log('Static files found:', {{ static_files.size }});
+console.log('Current folder:', '⦃⦃ current_folder ⦄⦄');
+console.log('Static files found:', ⦃⦃ static_files.size ⦄⦄);
 
-{% for file in static_files %}
-  {% assign normalized_path = file.path | remove_first: "/" %}
-  {% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %}
-  console.log('File: {{ file.path }}', {
-    name: '{{ file.name }}',
-    depth: {{ file_depth }},
-    included: {{ file_depth == 1 }}
+｛% for file in static_files %｝
+  ｛% assign normalized_path = file.path | remove_first: "/" %｝
+  ｛% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %｝
+  console.log('File: ⦃⦃ file.path ⦄⦄', {
+    name: '⦃⦃ file.name ⦄⦄',
+    depth: ⦃⦃ file_depth ⦄⦄,
+    included: ⦃⦃ file_depth == 1 ⦄⦄
   });
-{% endfor %}
+｛% endfor %｝
 console.groupEnd();
 </script>
 ```
@@ -306,15 +306,15 @@ console.groupEnd();
 4. **Network 탭**에서 리소스 로딩 상태 확인
 
 #### 실시간 디버깅 팁
-```liquid
+```javascript
 <script>
 // 파일 필터링 결과 확인
-console.table({{ all_files | jsonify }});
+console.table(⦃⦃ all_files | jsonify ⦄⦄);
 
 // 깊이 계산 검증
-{% for file in static_files %}
-console.log('{{ file.path }}', '깊이: {{ file_depth }}');
-{% endfor %}
+｛% for file in static_files %｝
+console.log('⦃⦃ file.path ⦄⦄', '깊이: ⦃⦃ file_depth ⦄⦄');
+｛% endfor %｝
 </script>
 ```
 
@@ -411,7 +411,7 @@ graph LR
 2. **CSS/JS 최소화**
    ```liquid
    <!-- 인라인 스타일 최소화 -->
-   <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+   <link rel="stylesheet" href="⦃⦃ '/assets/css/main.css' | relative_url ⦄⦄">
    ```
 
 3. **캐시 활용**
