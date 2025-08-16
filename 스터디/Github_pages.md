@@ -126,7 +126,7 @@ plugins:
 
 ### 동적 파일 로딩 구현
 
-```liquid
+```
 <!-- 현재 폴더의 파일만 필터링 -->
 {% assign current_folder = "스프린트미션_완료/" %}
 {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
@@ -142,7 +142,7 @@ plugins:
 ```
 
 ### 파일 타입별 아이콘 및 액션 설정
-```liquid
+```
 {% if file_ext == ".ipynb" %}
   {% assign file_icon = "📓" %}
   <a href="https://colab.research.google.com/github/username/repo/blob/master/{{ file_name }}" target="_blank">🚀</a>
@@ -195,7 +195,7 @@ graph TD
 ### 🐛 일반적인 빌드 오류 및 해결법
 
 #### 1. Liquid 템플릿 문법 오류
-```yaml
+```
 # ❌ 잘못된 예시
 {% for file in files
   {{ file.name }}
@@ -280,13 +280,13 @@ bundle exec jekyll build --verbose
 #### 디버깅 JavaScript 추가
 Jekyll 템플릿에 디버깅 코드를 삽입하여 파일 로딩 과정을 모니터링할 수 있습니다.
 
-```html
+```
 <script>
 console.group('🔍 파일 목록 디버깅');
-console.log('Current folder:', '{%raw%}{{ current_folder }}{%endraw%}');
-console.log('Static files found:', {%raw%}{{ static_files.size }}{%endraw%});
+console.log('Current folder:', '{{ current_folder }}');
+console.log('Static files found:', {{ static_files.size }});
 
-{%raw%}{% for file in static_files %}
+{% for file in static_files %}
   {% assign normalized_path = file.path | remove_first: "/" %}
   {% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %}
   console.log('File: {{ file.path }}', {
@@ -294,7 +294,7 @@ console.log('Static files found:', {%raw%}{{ static_files.size }}{%endraw%});
     depth: {{ file_depth }},
     included: {{ file_depth == 1 }}
   });
-{% endfor %}{%endraw%}
+{% endfor %}
 console.groupEnd();
 </script>
 ```
@@ -306,15 +306,15 @@ console.groupEnd();
 4. **Network 탭**에서 리소스 로딩 상태 확인
 
 #### 실시간 디버깅 팁
-```html
+```
 <script>
 // 파일 필터링 결과 확인
-console.table({%raw%}{{ all_files | jsonify }}{%endraw%});
+console.table({{ all_files | jsonify }});
 
 // 깊이 계산 검증
-{%raw%}{% for file in static_files %}
+{% for file in static_files %}
 console.log('{{ file.path }}', '깊이: {{ file_depth }}');
-{% endfor %}{%endraw%}
+{% endfor %}
 </script>
 ```
 
@@ -409,7 +409,7 @@ graph LR
    - 지연 로딩 구현
 
 2. **CSS/JS 최소화**
-   ```html
+   ```
    <!-- 인라인 스타일 최소화 -->
    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
    ```
@@ -498,13 +498,13 @@ git push origin main
 5. **배포 완료까지 대기** (보통 5-10분)
 
 #### 한글 파일명 문제
-```yaml
+```
 # _config.yml
 encoding: utf-8
 ```
 
 #### Mermaid 다이어그램 오류
-```markdown
+```
 <!-- 올바른 형식 -->
 graph TD
     A["한글 노드"] --> B["다음 단계"]
