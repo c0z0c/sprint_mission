@@ -280,13 +280,13 @@ bundle exec jekyll build --verbose
 #### 디버깅 JavaScript 추가
 Jekyll 템플릿에 디버깅 코드를 삽입하여 파일 로딩 과정을 모니터링할 수 있습니다.
 
-```javascript
+```html
 <script>
 console.group('🔍 파일 목록 디버깅');
-console.log('Current folder:', '{{ current_folder }}');
-console.log('Static files found:', {{ static_files.size }});
+console.log('Current folder:', '{%raw%}{{ current_folder }}{%endraw%}');
+console.log('Static files found:', {%raw%}{{ static_files.size }}{%endraw%});
 
-{% for file in static_files %}
+{%raw%}{% for file in static_files %}
   {% assign normalized_path = file.path | remove_first: "/" %}
   {% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %}
   console.log('File: {{ file.path }}', {
@@ -294,7 +294,7 @@ console.log('Static files found:', {{ static_files.size }});
     depth: {{ file_depth }},
     included: {{ file_depth == 1 }}
   });
-{% endfor %}
+{% endfor %}{%endraw%}
 console.groupEnd();
 </script>
 ```
@@ -306,14 +306,16 @@ console.groupEnd();
 4. **Network 탭**에서 리소스 로딩 상태 확인
 
 #### 실시간 디버깅 팁
-```javascript
+```html
+<script>
 // 파일 필터링 결과 확인
-console.table({{ all_files | jsonify }});
+console.table({%raw%}{{ all_files | jsonify }}{%endraw%});
 
 // 깊이 계산 검증
-{% for file in static_files %}
+{%raw%}{% for file in static_files %}
 console.log('{{ file.path }}', '깊이: {{ file_depth }}');
-{% endfor %}
+{% endfor %}{%endraw%}
+</script>
 ```
 
 ### 📋 빌드 체크리스트
