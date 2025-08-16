@@ -126,7 +126,7 @@ plugins:
 
 ### 동적 파일 로딩 구현
 
-```
+```liquid
 <!-- 현재 폴더의 파일만 필터링 -->
 {% assign current_folder = "스프린트미션_완료/" %}
 {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
@@ -142,7 +142,7 @@ plugins:
 ```
 
 ### 파일 타입별 아이콘 및 액션 설정
-```
+```liquid
 {% if file_ext == ".ipynb" %}
   {% assign file_icon = "📓" %}
   <a href="https://colab.research.google.com/github/username/repo/blob/master/{{ file_name }}" target="_blank">🚀</a>
@@ -280,7 +280,7 @@ bundle exec jekyll build --verbose
 #### 디버깅 JavaScript 추가
 Jekyll 템플릿에 디버깅 코드를 삽입하여 파일 로딩 과정을 모니터링할 수 있습니다.
 
-```
+```liquid
 <script>
 console.group('🔍 파일 목록 디버깅');
 console.log('Current folder:', '{{ current_folder }}');
@@ -306,7 +306,7 @@ console.groupEnd();
 4. **Network 탭**에서 리소스 로딩 상태 확인
 
 #### 실시간 디버깅 팁
-```
+```liquid
 <script>
 // 파일 필터링 결과 확인
 console.table({{ all_files | jsonify }});
@@ -409,7 +409,7 @@ graph LR
    - 지연 로딩 구현
 
 2. **CSS/JS 최소화**
-   ```
+   ```liquid
    <!-- 인라인 스타일 최소화 -->
    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
    ```
@@ -498,13 +498,13 @@ git push origin main
 5. **배포 완료까지 대기** (보통 5-10분)
 
 #### 한글 파일명 문제
-```
+```yaml
 # _config.yml
 encoding: utf-8
 ```
 
 #### Mermaid 다이어그램 오류
-```
+```markdown
 <!-- 올바른 형식 -->
 graph TD
     A["한글 노드"] --> B["다음 단계"]
