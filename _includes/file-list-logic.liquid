@@ -1,0 +1,51 @@
+{%- comment -%} 현재 페이지의 디렉토리 경로를 가져온다 {%- endcomment -%} 
+
+{%- assign current_folder = page.dir -%}
+{%- if current_folder == "" -%}{%- assign current_folder = "/" -%}{%- endif- %}
+
+{%- assign sub_all_files                = site.static_files | where_exp: "f", "f.path contains current_folder" -%}
+{%- assign sub_all_files_sorted         = sub_all_files | sort: "modified_time" | reverse -%}
+{%- assign sub_all_files_pages_org_all  = site.pages | where_exp: "p", "p.dir contains current_folder" -%}
+{%- assign sub_all_files_pages_org_cur  = site.pages | where_exp: "p", "p.dir == current_folder" -%}
+
+{%- comment -%} 현재 폴더의 직접 하위폴더 추출 {%- endcomment -%}
+{%- assign cur_paths_raw = "" -%}
+{%- for f in sub_all_files_sorted -%}
+  {%- assign file_path_without_current = f.path | remove_first: current_folder -%}
+  {%- if current_folder == "/" -%}
+    {%- assign file_path_without_current = f.path | remove_first: "/" -%}
+  {%- endif -%}
+  {%- if file_path_without_current contains "/" -%}
+    {%- assign first_dir = file_path_without_current | split: "/" | first -%}
+    {%- unless cur_paths_raw contains first_dir -%}
+      {%- capture cur_paths_raw -%}{{ cur_paths_raw }}{{ first_dir }},{%- endcapture -%}
+    {%- endunless -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign cur_paths = cur_paths_raw | split: "," | uniq | sort -%}
+
+{%- comment -%} 현재 폴더의 직접 파일 추출 {%- endcomment -%}
+{%- assign cur_files_raw = "" -%}
+{%- for f in sub_all_files_sorted -%}
+  {%- assign file_path_without_current = f.path | remove_first: current_folder -%}
+  {%- if current_folder == "/" -%}
+    {%- assign file_path_without_current = f.path | remove_first: "/" -%}
+  {%- endif -%}
+  {%- unless file_path_without_current contains "/" -%}
+    {%- capture cur_files_raw -%}{{ cur_files_raw }}{{ f.path }},{%- endcapture -%}
+  {%- endunless -%}
+{%- endfor -%}
+{%- assign cur_files = cur_files_raw | split: "," | reject: "" -%}
+
+{%- comment -%} 현재 폴더의 직접 페이지 파일도 추출 {%- endcomment -%}
+{%- assign cur_page_files_raw = "" -%}
+{%- for p in sub_all_files_pages_org_all -%}
+  {%- assign page_path_without_current = p.path | remove_first: current_folder -%}
+  {%- if current_folder == "/" -%}
+    {%- assign page_path_without_current = p.path -%}
+  {%- endif -%}
+  {%- unless page_path_without_current contains "/" -%}
+    {%- capture cur_page_files_raw -%}{{ cur_page_files_raw }}{{ p.path }},{%- endcapture -%}
+  {%- endunless -%}
+{%- endfor -%}
+{%- assign cur_page_files = cur_page_files_raw | split: "," | reject: "" -%}

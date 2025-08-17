@@ -124,32 +124,240 @@ plugins:
 > **주의**: Jekyll의 `site.static_files`는 **하위 폴더의 모든 파일**을 읽어옵니다!
 > 처음에는 폴더별로 구분될 것으로 예상했지만, 실제로는 전체 하위 구조를 탐색합니다.
 
+### 📁 Jekyll 파일 탐색 메커니즘
+
+Jekyll은 프로젝트의 모든 파일을 다음과 같이 분류합니다:
+
+```mermaid
+graph TD
+    A["Jekyll 파일 시스템"] --> B["site.static_files"]
+    A --> C["site.pages"]
+    B --> D["이미지, PDF, 문서 등"]
+    C --> E["Markdown, HTML 페이지"]
+    
+    F["현재 폴더 탐색"] --> G["page.dir 활용"]
+    G --> H["경로 필터링"]
+    H --> I["깊이 체크"]
+    I --> J["직접 파일만 선택"]
+```
+
 ### 동적 파일 로딩 구현
 
+#### 1단계: 현재 폴더 경로 확인
 ```liquid
-<!-- 현재 폴더의 파일만 필터링 -->
-｛% assign current_folder = "스프린트미션_완료/" %｝
-｛% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %｝
+｛%- comment -%｝ 현재 페이지의 디렉토리 경로를 가져온다 ｛%- endcomment -%｝
+｛%- assign current_folder = page.dir -%｝
+｛%- if current_folder == "" -%｝｛%- assign current_folder = "/" -%｝｛%- endif -%｝
+```
 
-<!-- 깊이 체크로 직접 파일만 선택 -->
-｛% for file in static_files %｝
-  ｛% assign normalized_path = file.path | remove_first: "/" %｝
-  ｛% assign file_depth = normalized_path | remove: current_folder | split: "/" | size %｝
-  ｛% if file_depth == 1 %｝
-    <!-- 직접 파일만 처리 -->
-  ｛% endif %｝
-｛% endfor %｝
+#### 2단계: 정적 파일과 페이지 파일 분리
+```liquid
+｛%- comment -%｝ 현재 폴더 포함 하위의 모든 정적 파일 ｛%- endcomment -%｝
+｛%- assign sub_all_files = site.static_files | where_exp: "f", "f.path contains current_folder" -%｝
+｛%- assign sub_all_files_sorted = sub_all_files | sort: "modified_time" | reverse -%｝
+
+｛%- comment -%｝ 현재 폴더 포함 하위의 모든 페이지 파일 ｛%- endcomment -%｝
+｛%- assign sub_all_files_pages_org_all = site.pages | where_exp: "p", "p.dir contains current_folder" -%｝
+｛%- assign sub_all_files_pages_org_cur = site.pages | where_exp: "p", "p.dir == current_folder" -%｝
+```
+
+#### 3단계: 직접 하위폴더 추출
+```liquid
+｛%- comment -%｝ 현재 폴더의 직접 하위폴더만 추출 ｛%- endcomment -%｝
+｛%- assign cur_paths_raw = "" -%｝
+｛%- for f in sub_all_files_sorted -%｝
+  ｛%- assign file_path_without_current = f.path | remove_first: current_folder -%｝
+  ｛%- if current_folder == "/" -%｝
+    ｛%- assign file_path_without_current = f.path | remove_first: "/" -%｝
+  ｛%- endif -%｝
+  ｛%- if file_path_without_current contains "/" -%｝
+    ｛%- assign first_dir = file_path_without_current | split: "/" | first -%｝
+    ｛%- unless cur_paths_raw contains first_dir -%｝
+      ｛%- capture cur_paths_raw -%｝⦃⦃ cur_paths_raw ⦄⦄⦃⦃ first_dir ⦄⦄,｛%- endcapture -%｝
+    ｛%- endunless -%｝
+  ｛%- endif -%｝
+｛%- endfor -%｝
+｛%- assign cur_paths = cur_paths_raw | split: "," | uniq | sort -%｝
+```
+
+#### 4단계: 직접 파일만 필터링
+```liquid
+｛%- comment -%｝ 현재 폴더의 직접 파일만 추출 (하위폴더 제외) ｛%- endcomment -%｝
+｛%- assign cur_files_raw = "" -%｝
+｛%- for f in sub_all_files_sorted -%｝
+  ｛%- assign file_path_without_current = f.path | remove_first: current_folder -%｝
+  ｛%- if current_folder == "/" -%｝
+    ｛%- assign file_path_without_current = f.path | remove_first: "/" -%｝
+  ｛%- endif -%｝
+  ｛%- unless file_path_without_current contains "/" -%｝
+    ｛%- capture cur_files_raw -%｝⦃⦃ cur_files_raw ⦄⦄⦃⦃ f.path ⦄⦄,｛%- endcapture -%｝
+  ｛%- endunless -%｝
+｛%- endfor -%｝
+｛%- assign cur_files = cur_files_raw | split: "," | reject: "" -%｝
+```
+
+#### 5단계: 페이지 파일도 동일하게 처리
+```liquid
+｛%- comment -%｝ 현재 폴더의 직접 페이지 파일도 추출 ｛%- endcomment -%｝
+｛%- assign cur_page_files_raw = "" -%｝
+｛%- for p in sub_all_files_pages_org_all -%｝
+  ｛%- assign page_path_without_current = p.path | remove_first: current_folder -%｝
+  ｛%- if current_folder == "/" -%｝
+    ｛%- assign page_path_without_current = p.path -%｝
+  ｛%- endif -%｝
+  ｛%- unless page_path_without_current contains "/" -%｝
+    ｛%- capture cur_page_files_raw -%｝⦃⦃ cur_page_files_raw ⦄⦄⦃⦃ p.path ⦄⦄,｛%- endcapture -%｝
+  ｛%- endunless -%｝
+｛%- endfor -%｝
+｛%- assign cur_page_files = cur_page_files_raw | split: "," | reject: "" -%｝
+```
+
+### 🎯 실제 활용 예시
+
+#### 폴더 목록 표시
+```liquid
+｛%- if cur_paths.size > 0 -%｝
+  ‹h3›📁 하위 폴더‹/h3›
+  ‹ul›
+  ｛%- for folder_path in cur_paths -%｝
+    ‹li›
+      ‹a href="⦃⦃ current_folder ⦄⦄⦃⦃ folder_path ⦄⦄/"›
+        📁 ⦃⦃ folder_path ⦄⦄
+      ‹/a›
+    ‹/li›
+  ｛%- endfor -%｝
+  ‹/ul›
+｛%- endif -%｝
+```
+
+#### 파일 목록 표시
+```liquid
+｛%- if cur_files.size > 0 -%｝
+  ‹h3›📄 파일 목록‹/h3›
+  ‹ul›
+  ｛%- for file_path in cur_files -%｝
+    ｛%- assign file_name = file_path | split: "/" | last -%｝
+    ｛%- assign file_ext = file_name | split: "." | last | downcase -%｝
+    ‹li›
+      ｛%- case file_ext -%｝
+        ｛%- when "ipynb" -%｝
+          📓 ⦃⦃ file_name ⦄⦄
+          ‹a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/⦃⦃ file_path ⦄⦄" target="_blank"›🚀 Colab‹/a›
+        ｛%- when "pdf" -%｝
+          📕 ‹a href="⦃⦃ file_path ⦄⦄" target="_blank"›⦃⦃ file_name ⦄⦄‹/a›
+        ｛%- when "md" -%｝
+          📝 ‹a href="⦃⦃ file_path | remove: '.md' ⦄⦄"›⦃⦃ file_name ⦄⦄‹/a›
+        ｛%- else -%｝
+          📄 ‹a href="⦃⦃ file_path ⦄⦄" target="_blank"›⦃⦃ file_name ⦄⦄‹/a›
+      ｛%- endcase -%｝
+    ‹/li›
+  ｛%- endfor -%｝
+  ‹/ul›
+｛%- endif -%｝
 ```
 
 ### 파일 타입별 아이콘 및 액션 설정
+
+#### 📊 지원하는 파일 형식
+
+| 확장자 | 아이콘 | 액션 | 설명 |
+|--------|--------|------|------|
+| `.ipynb` | 📓 | Colab 연결 | Jupyter 노트북 |
+| `.md` | 📝 | 페이지 이동 | 마크다운 문서 |
+| `.pdf` | 📕 | 직접 열기 | PDF 문서 |
+| `.docx` | 📘 | 다운로드 | Word 문서 |
+| `.txt` | 📄 | 직접 보기 | 텍스트 파일 |
+| `.py` | 🐍 | 소스 보기 | Python 스크립트 |
+| `.js` | 🟨 | 소스 보기 | JavaScript 파일 |
+| `.css` | 🎨 | 소스 보기 | 스타일시트 |
+| `.html` | 🌐 | 직접 열기 | HTML 페이지 |
+| `.json` | 📋 | 소스 보기 | JSON 데이터 |
+| `.yml/.yaml` | ⚙️ | 소스 보기 | 설정 파일 |
+
+#### 고급 파일 처리 로직
 ```liquid
-｛% if file_ext == ".ipynb" %｝
-  ｛% assign file_icon = "📓" %｝
-  <a href="https://colab.research.google.com/github/username/repo/blob/master/⦃⦃ file_name ⦄⦄" target="_blank">🚀</a>
-｛% elsif file_ext == ".md" %｝
-  ｛% assign file_icon = "📝" %｝
-  <a href="https://username.github.io/repo/⦃⦃ file_name | remove: '.md' ⦄⦄" target="_blank">🌐</a>
-｛% endif %｝
+｛%- assign file_ext = file_name | split: "." | last | downcase -%｝
+｛%- assign file_name_without_ext = file_name | remove: file_ext | remove: "." -%｝
+
+｛%- case file_ext -%｝
+  ｛%- when "ipynb" -%｝
+    ｛%- assign file_icon = "📓" -%｝
+    ｛%- assign colab_url = "https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/" | append: file_path -%｝
+    ‹a href="⦃⦃ colab_url ⦄⦄" target="_blank" title="Colab에서 열기"›🚀‹/a›
+    
+  ｛%- when "md" -%｝
+    ｛%- assign file_icon = "📝" -%｝
+    ｛%- assign page_url = file_path | remove: '.md' -%｝
+    ‹a href="⦃⦃ page_url ⦄⦄" title="페이지로 이동"›🌐‹/a›
+    
+  ｛%- when "pdf" -%｝
+    ｛%- assign file_icon = "📕" -%｝
+    ‹a href="⦃⦃ file_path ⦄⦄" target="_blank" title="PDF 열기"›�️‹/a›
+    
+  ｛%- when "py" -%｝
+    ｛%- assign file_icon = "🐍" -%｝
+    ‹a href="⦃⦃ file_path ⦄⦄" target="_blank" title="Python 소스 보기"›‹/›‹/a›
+    
+  ｛%- else -%｝
+    ｛%- assign file_icon = "�" -%｝
+    ‹a href="⦃⦃ file_path ⦄⦄" target="_blank" title="파일 열기"›📎‹/a›
+｛%- endcase -%｝
+```
+
+### 🔧 JSON 데이터 활용
+
+디버깅과 고급 기능을 위해 Jekyll 데이터를 JSON으로 변환할 수 있습니다:
+
+```liquid
+｛%- capture all_pages_json -%｝
+[
+｛%- for p in site.pages -%｝
+  {
+    "path": ⦃⦃ p.path | jsonify ⦄⦄,
+    "url": ⦃⦃ p.url | jsonify ⦄⦄,
+    "name": ⦃⦃ p.name | jsonify ⦄⦄,
+    "dir": ⦃⦃ p.dir | jsonify ⦄⦄,
+    "title": ⦃⦃ p.title | default: "" | jsonify ⦄⦄,
+    "layout": ⦃⦃ p.layout | default: "" | jsonify ⦄⦄
+  }｛%- unless forloop.last -%｝,｛%- endunless -%｝
+｛%- endfor -%｝
+]
+｛%- endcapture -%｝
+```
+
+### 💡 고급 활용 팁
+
+#### 1. 조건부 파일 표시
+```liquid
+｛%- comment -%｝ 특정 조건에 맞는 파일만 표시 ｛%- endcomment -%｝
+｛%- for file_path in cur_files -%｝
+  ｛%- assign file_name = file_path | split: "/" | last -%｝
+  ｛%- unless file_name contains "temp" or file_name contains "draft" -%｝
+    ‹li›⦃⦃ file_name ⦄⦄‹/li›
+  ｛%- endunless -%｝
+｛%- endfor -%｝
+```
+
+#### 2. 파일 크기별 정렬
+```liquid
+｛%- comment -%｝ 파일을 수정 시간 역순으로 정렬 ｛%- endcomment -%｝
+｛%- assign sorted_files = site.static_files | sort: "modified_time" | reverse -%｝
+```
+
+#### 3. 동적 네비게이션 생성
+```liquid
+｛%- comment -%｝ 현재 경로 기반 breadcrumb 생성 ｛%- endcomment -%｝
+｛%- assign path_parts = page.dir | split: "/" -%｝
+｛%- assign breadcrumb_path = "" -%｝
+‹nav›
+  ‹a href="/"›🏠 홈‹/a›
+  ｛%- for part in path_parts -%｝
+    ｛%- if part != "" -%｝
+      ｛%- assign breadcrumb_path = breadcrumb_path | append: "/" | append: part -%｝
+      › ‹a href="⦃⦃ breadcrumb_path ⦄⦄/"›⦃⦃ part ⦄⦄‹/a›
+    ｛%- endif -%｝
+  ｛%- endfor -%｝
+‹/nav›
 ```
 
 ---
