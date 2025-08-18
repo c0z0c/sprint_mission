@@ -570,78 +570,82 @@
             }
         }
     </style>
+
+    <style>
+        /* mermaid 컨테이너/글자/높이/간격 조정 */
+        .mermaid {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto 30px;
+            font-size: 24px;
+        }
+        .mermaid svg {
+            width: 100% !important;
+            height: 700px !important; /* 필요시 조정 */
+            display: block;
+        }
+        .mermaid.diagram-large svg {
+            height: 1000px !important;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- mermaid: preload + single script + style + init -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" as="script">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" defer></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            // fenced mermaid 코드블록을 div.mermaid로 교체
+            document.querySelectorAll('pre > code.language-mermaid, pre > code.lang-mermaid').forEach(function(code){
+                var pre = code.parentElement;
+                var mermaidDiv = document.createElement('div');
+                mermaidDiv.className = 'mermaid';
+                // info string에 large가 있으면 클래스 추가
+                var info = (code.getAttribute('data-info') || '') + ' ' + (code.className || '');
+                if (/\blarge\b/.test(info)) mermaidDiv.classList.add('diagram-large');
+                mermaidDiv.textContent = code.textContent;
+                pre.parentNode.replaceChild(mermaidDiv, pre);
+            });
+
+            if (window.mermaid) {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    securityLevel: 'loose',
+                    flowchart: {
+                        useMaxWidth: true,
+                        nodeSpacing: 60,
+                        rankSpacing: 120
+                    },
+                    theme: 'neutral',
+                    themeVariables: { fontSize: '24px' }
+                });
+                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+            }
+        } catch (e) {
+            console.error('mermaid init error:', e);
+        }
+    });
+    </script>
+  
+  {% include file-list-logic.liquid %}
+  {% include json-capture.liquid %}
+  {% include debug-script.html %}
+
 </head>
 <body>
     <div class="main-wrapper">
         <div class="container">
             <div class="nav-bar">
                 <a href="{{ site.baseurl }}/">🏠 홈</a>
-                <a href="{{ site.baseurl }}/스터디/">�‍🏫 스터디</a>
+                <a href="{{ site.baseurl }}/스터디/">‍🏫 스터디</a>
                 <a href="{{ site.baseurl }}/스프린트미션_완료/">✅ 완료된 미션</a>
                 <a href="{{ site.baseurl }}/스프린트미션_작업중/">🚧 작업중</a>
                 <a href="{{ site.baseurl }}/위클리페이퍼/">📰 위클리페이퍼</a>
             </div>
-
             {{ content }}
-                </div> <!-- .container -->
+            </div> <!-- .container -->
         </div> <!-- .main-wrapper -->
-
-<!-- mermaid: preload + single script + style + init -->
-<link rel="preload" href="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" as="script">
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" defer></script>
-
-<style>
-    /* mermaid 컨테이너/글자/높이/간격 조정 */
-    .mermaid {
-        width: 100%;
-        max-width: 1400px;
-        margin: 0 auto 30px;
-        font-size: 24px;
-    }
-    .mermaid svg {
-        width: 100% !important;
-        height: 700px !important; /* 필요시 조정 */
-        display: block;
-    }
-    .mermaid.diagram-large svg {
-        height: 1000px !important;
-    }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    try {
-        // fenced mermaid 코드블록을 div.mermaid로 교체
-        document.querySelectorAll('pre > code.language-mermaid, pre > code.lang-mermaid').forEach(function(code){
-            var pre = code.parentElement;
-            var mermaidDiv = document.createElement('div');
-            mermaidDiv.className = 'mermaid';
-            // info string에 large가 있으면 클래스 추가
-            var info = (code.getAttribute('data-info') || '') + ' ' + (code.className || '');
-            if (/\blarge\b/.test(info)) mermaidDiv.classList.add('diagram-large');
-            mermaidDiv.textContent = code.textContent;
-            pre.parentNode.replaceChild(mermaidDiv, pre);
-        });
-
-        if (window.mermaid) {
-            mermaid.initialize({
-                startOnLoad: false,
-                securityLevel: 'loose',
-                flowchart: {
-                    useMaxWidth: true,
-                    nodeSpacing: 60,
-                    rankSpacing: 120
-                },
-                theme: 'neutral',
-                themeVariables: { fontSize: '24px' }
-            });
-            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-        }
-    } catch (e) {
-        console.error('mermaid init error:', e);
-    }
-});
-</script>
-
 </body>
 </html>
