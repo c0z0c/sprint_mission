@@ -38,7 +38,7 @@ pragma: no-cache
   <!-- Total files found: {{ all_files.size }} -->
   {% if all_files.size > 0 %}
     <!-- Sort files by date (newest first) -->
-    {% assign sorted_files = all_files | sort: 'modified_time' | reverse %}
+    {% assign sorted_files = all_files | sort: 'name' | reverse %}
     {% if sorted_files.size == 0 or sorted_files[0].modified_time == nil %}
       {% assign sorted_files = all_files | sort: 'date' | reverse %}
     {% endif %}
