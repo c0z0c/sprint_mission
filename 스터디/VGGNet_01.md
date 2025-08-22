@@ -57,51 +57,63 @@ graph TD
 
 ```mermaid
 graph TD
-    subgraph "Block 1"
+    subgraph G10["Block 1"]
         direction LR
+
         A[Input<br/>224×224×3] --> B1[Conv3x3<br/>64ch]
         B1 --> B2[Conv3x3<br/>64ch]
         B2 --> B3[MaxPool2x2<br/>112×112×64]
     end
     
-    subgraph "Block 2"
+    subgraph G11["Block 2"]
         direction LR
-        B3 --> C1[Conv3x3<br/>128ch]
+
+        C1[Conv3x3<br/>128ch]
         C1 --> C2[Conv3x3<br/>128ch]
         C2 --> C3[MaxPool2x2<br/>56×56×128]
     end
     
-    subgraph "Block 3"
+    subgraph G12["Block 3"]
         direction LR
-        C3 --> D1[Conv3x3<br/>256ch]
+
+        D1[Conv3x3<br/>256ch]
         D1 --> D2[Conv3x3<br/>256ch]
         D2 --> D3[Conv3x3<br/>256ch]
         D3 --> D4[MaxPool2x2<br/>28×28×256]
     end
     
-    subgraph "Block 4"
+    subgraph G13["Block 4"]
         direction LR
-        D4 --> E1[Conv3x3<br/>512ch]
+
+        E1[Conv3x3<br/>512ch]
         E1 --> E2[Conv3x3<br/>512ch]
         E2 --> E3[Conv3x3<br/>512ch]
         E3 --> E4[MaxPool2x2<br/>14×14×512]
     end
     
-    subgraph "Block 5"
+    subgraph G14["Block 5"]
         direction LR
-        E4 --> F1[Conv3x3<br/>512ch]
+
+        F1[Conv3x3<br/>512ch]
         F1 --> F2[Conv3x3<br/>512ch]
         F2 --> F3[Conv3x3<br/>512ch]
         F3 --> F4[MaxPool2x2<br/>7×7×512]
     end
     
-    subgraph "Classifier"
+    subgraph G15["Classifier"]
         direction LR
-        F4 --> G1[Flatten<br/>25088]
+        
+        G1[Flatten<br/>25088]
         G1 --> G2[FC 4096<br/>+ Dropout]
         G2 --> G3[FC 4096<br/>+ Dropout]
         G3 --> G4[FC 1000<br/>Softmax]
     end
+
+    G10 --> G11
+    G11 --> G12
+    G12 --> G13
+    G13 --> G14
+    G14 --> G15
 ```
 
 ## 각 블록 상세 설명

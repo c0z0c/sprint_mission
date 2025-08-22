@@ -35,7 +35,7 @@ graph TD
     A[입력 x] --> B[Conv Layer]
     B --> C[ReLU]
     C --> D[Conv Layer]
-    D --> E[+]
+    D --> E[✚]
     A --> E
     E --> F[ReLU]
     F --> G[출력]
