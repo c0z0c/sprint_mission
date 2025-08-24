@@ -10,6 +10,7 @@ pragma: no-cache
 # ✅ 스프린트미션_완료
 
 <script>
+{%- assign cur_dir = "/스프린트미션_완료/" -%}
 
 </script>
 
