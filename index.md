@@ -2,97 +2,191 @@
 layout: default
 title: 스프린트 미션 보관함
 description: 코드잇 AI 4기 스프린트 미션 결과물 보관함
+date: 2025-08-24
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-<div class="nav-sections">
-  <div class="section-card">
-    <h2>📂 폴더별 탐색</h2>
-    <div class="folder-links">
-      {% assign folder_set = "" | split: "" %}
-      {% assign folder_icons = "멘토:👨‍🏫,스프린트미션_완료:✅,스프린트미션_작업중:🚧,위클리페이퍼:📰,스터디:📒,실습:🔬,백업:💾" | split: "," %}
-      {% assign folder_descs = "멘토:멘토 관련 자료,스프린트미션_완료:완료된 스프린트 미션들,스프린트미션_작업중:진행 중인 미션들,위클리페이퍼:주간 학습 리포트,스터디:학습,실습:실습 자료,백업:백업 파일들" | split: "," %}
-      
-      <!-- 정적 파일에서 폴더 추출 -->
-      {% for file in site.static_files %}
-        {% assign path_parts = file.path | split: '/' %}
-        {% if path_parts.size > 1 %}
-          {% assign folder = path_parts[0] %}
-          {% unless folder_set contains folder or folder == '' or folder contains '.' or folder == 'assets' or folder == '_layouts' %}
-            {% assign folder_set = folder_set | push: folder %}
-          {% endunless %}
-        {% endif %}
-      {% endfor %}
-      
-      <!-- 페이지에서 폴더 추출 -->
-      {% for page in site.pages %}
-        {% assign path_parts = page.path | split: '/' %}
-        {% if path_parts.size > 1 %}
-          {% assign folder = path_parts[0] %}
-          {% unless folder_set contains folder or folder == '' or folder contains '.' or folder == 'assets' or folder == '_layouts' %}
-            {% assign folder_set = folder_set | push: folder %}
-          {% endunless %}
-        {% endif %}
-      {% endfor %}
-      
-      <!-- 폴더 목록 출력 -->
-      {% assign sorted_folders = folder_set | sort %}
-      {% for folder in sorted_folders %}
-        {% assign folder_icon = "📁" %}
-        {% assign folder_desc = "" %}
-        
-        <!-- 아이콘 찾기 -->
-        {% for icon_pair in folder_icons %}
-          {% assign icon_parts = icon_pair | split: ":" %}
-          {% if icon_parts[0] == folder %}
-            {% assign folder_icon = icon_parts[1] %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-        
-        <!-- 설명 찾기 -->
-        {% for desc_pair in folder_descs %}
-          {% assign desc_parts = desc_pair | split: ":" %}
-          {% if desc_parts[0] == folder %}
-            {% assign folder_desc = desc_parts[1] %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-        
-        <a href="{{ site.baseurl }}/{{ folder }}/" class="folder-link">
-          <span class="folder-icon">{{ folder_icon }}</span>
-          <span class="folder-name">{{ folder }}</span>
-          {% if folder_desc != "" %}
-            <span class="folder-desc">{{ folder_desc }}</span>
-          {% endif %}
-        </a>
-      {% endfor %}
-    </div>
-  </div>
+<script>
 
-  <div class="section-card">
-    <h2>🔗 빠른 링크</h2>
-    <div class="quick-links">
-      <a href="https://c0z0c.github.io/" target="_blank">
-        <span class="link-icon">🌐</span> 메인
-      </a>
-      <a href="https://github.com/c0z0c/sprint_mission" target="_blank">
-        <span class="link-icon">📱</span> GitHub 저장소
-      </a>
-      <a href="{{ site.baseurl }}/스프린트미션_완료/info">
-        <span class="link-icon">📖</span> Info
-      </a>
-    </div>
-  </div>
+{%- assign cur_dir = "/Learning/" -%}
+{%- include cur_files.liquid -%}
+
+  var curDir = '{{- cur_file_dir -}}';
+  var curFiles = {{- cur_files_json -}};
+  var curPages = {{- cur_pages_json -}};
+  
+  console.log('curDir:', curDir);
+  console.log('curFiles:', curFiles);
+  console.log('curPages:', curPages);
+
+  curPages.forEach(page => {
+  // curFiles에 같은 name과 path가 있는지 확인
+  const exists = curFiles.some(file => file.name === page.name && file.path === page.path);
+
+  if (!exists) {
+    // 확장자 추출
+    let extname = '';
+    if (page.name && page.name.includes('.')) {
+      extname = '.' + page.name.split('.').pop();
+    }
+
+    // basename 추출
+    let basename = page.name ? page.name.replace(/\.[^/.]+$/, '') : '';
+
+    // modified_time 처리 (page.date가 없으면 빈 문자열)
+    let modified_time = page.date || '';
+
+    // curFiles 포맷에 맞게 변환해서 추가
+    curFiles.push({
+      name: page.name || '',
+      path: page.path || '',
+      extname: extname,
+      modified_time: modified_time,
+      basename: basename,
+      url: page.url || ''
+    });
+  }
+});
+
+// curFiles.sort((a, b) => {
+//   // 날짜가 ISO 형식이 아니면 Date 파싱이 안 될 수 있으니, 우선 문자열 비교
+//   // 최신 날짜가 앞으로 오도록 내림차순
+//   if (!a.modified_time) return 1;
+//   if (!b.modified_time) return -1;
+//   return b.modified_time.localeCompare(a.modified_time);
+// });
+
+curFiles.sort((a, b) => {
+  // 파일명으로 한글/영문 구분하여 정렬
+  if (!a.name) return 1;
+  if (!b.name) return -1;
+  return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+});
+
+// 정렬 후 출력
+curFiles.forEach(f => {
+/*
+      "name": "Grad-CAM_정상.png",
+      "path": "/스프린트미션_완료/image/06_4팀_김명환/Grad-CAM_정상.png",
+      "extname": ".png",
+      "modified_time": "2025-08-24 12:11:59 +0900",
+      "basename": "Grad-CAM_정상",
+*/  
+  console.log('curfiles:', JSON.stringify(f, null, 2));
+});
+
+
+  console.log('총 파일 수:', curFiles.length);
+  console.log('파일 목록:', curFiles);
+
+  // 파일 아이콘 및 타입 결정 함수
+  function getFileInfo(extname) {
+    switch(extname.toLowerCase()) {
+      case '.ipynb':
+        return { icon: '📓', type: 'Jupyter Notebook' };
+      case '.py':
+        return { icon: '🐍', type: 'Python 파일' };
+      case '.md':
+        return { icon: '📝', type: 'Markdown 문서' };
+      case '.json':
+        return { icon: '⚙️', type: 'JSON 설정' };
+      case '.zip':
+        return { icon: '📦', type: '압축 파일' };
+      case '.png':
+      case '.jpg':
+      case '.jpeg':
+        return { icon: '🖼️', type: '이미지 파일' };
+      case '.csv':
+        return { icon: '📊', type: '데이터 파일' };
+      case '.pdf':
+        return { icon: '📄', type: 'PDF 문서' };
+      case '.docx':
+        return { icon: '📊', type: 'Word 문서' };
+      default:
+        return { icon: '📄', type: '파일' };
+    }
+  }
+
+  // 파일 액션 버튼 생성 함수
+  function getFileActions(file) {
+    const fileName = file.name;
+    const fileExt = file.extname.toLowerCase();
+    
+    let actions = '';
+    
+    if (fileExt === '.md' && fileName !== 'index.md') {
+      const mdName = fileName.replace('.md', '');
+      actions += `<a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/${mdName}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
+      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+    } else if (fileExt === '.ipynb') {
+      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>`;
+    } else if (fileExt === '.pdf') {
+      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/${fileName}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
+    } else if (fileExt === '.docx') {
+      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/${fileName}" class="file-action" title="Google에서 열기" target="_blank">📊</a>`;
+    } else if (fileExt === '.html') {
+      actions += `<a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
+      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+    } else {
+      actions += `<a href="${file.path}" class="file-action" title="파일 열기">📖</a>`;
+    }
+    
+    return actions;
+  }
+
+  // DOM이 로드된 후 파일 목록 렌더링
+  document.addEventListener('DOMContentLoaded', function() {
+    const fileGrid = document.querySelector('.file-grid');
+    
+    if (curFiles.length === 0) {
+      fileGrid.innerHTML = `
+        <div class="empty-message">
+          <span class="empty-icon">📄</span>
+          <h3>파일이 없습니다</h3>
+          <p>현재 이 위치에는 완료된 미션 파일이 없습니다.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    curFiles.forEach(file => {
+      const fileInfo = getFileInfo(file.extname);
+      const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
+      const actions = getFileActions(file);
+      
+      html += `
+        <div class="file-item">
+          <div class="file-icon">${fileInfo.icon}</div>
+          <div class="file-info">
+            <h4 class="file-name">${file.name}</h4>
+            <p class="file-type">${fileInfo.type}</p>
+            <p class="file-size">${fileDate}</p>
+          </div>
+          <div class="file-actions">
+            ${actions}
+          </div>
+        </div>
+      `;
+    });
+    
+    fileGrid.innerHTML = html;
+  });
+</script>
+
+<div class="file-grid">
+  <!-- 파일 목록이 JavaScript로 동적 생성됩니다 -->
 </div>
 
 ---
 
-<div class="footer-info">
-<small>
-<strong>코드잇 AI 4기</strong> | 5팀 김명환<br>
-마지막 업데이트: {{ site.time | date: "%Y년 %m월 %d일" }}
-</small>
+<div class="navigation-footer">
+  <a href="{{- site.baseurl -}}/" class="nav-button home">
+    <span class="nav-icon">🏠</span> 홈으로
+  </a>
 </div>
