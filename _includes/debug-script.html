@@ -1,4 +1,12 @@
 <script>
+
+  var allFiles = "{{- all_files_json -}}";
+  var allPages = "{{- all_pages_json -}}";
+
+  console.log('allFiles:', allFiles);
+  console.log('allPages:', allPages);
+
+ /*
   var pagePath = "{{- page.path -}}";
   var pageDir  = "{{- page.dir -}}";
   console.log('pagePath:', pagePath, 'pageDir:', pageDir);
@@ -18,15 +26,16 @@
   console.log('curPaths (직접 하위폴더):', curPaths);
   console.log('curFiles (직접 정적파일):', curFiles);
   console.log('curPageFiles (직접 페이지파일):', curPageFiles);
-  console.log('allPages:', allPages);
   console.log('subFiles:', subFiles);
   console.log('subFilesSorted:', subFilesSorted);
+
+  console.log('allPages:', allPages);
   console.log('subFilesPagesAll (with sub):', subFilesPagesAll);
   console.log('subFilesPagesCur (only dir):', subFilesPagesCur);
 
   curPaths.forEach(dir => console.log('[직접폴더]', dir));
   curFiles.forEach(file => console.log('[직접파일]', file));
   curPageFiles.forEach(page => console.log('[직접페이지]', page));
-
+*/
   // Jekyll에서 파일 리스트를 동적으로 받아 콘솔에 출력
 </script>
