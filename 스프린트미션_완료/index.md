@@ -32,14 +32,30 @@ pragma: no-cache
   {% assign cur_files = "" | split: "" %}
   {% for f in all_files %}
     {% assign f_deep = f.path | split: "/" %}
-    
-    console.log('path:', {{ f.path }});
-    console.log('f_deep size:', {{ f_deep | size }});
 
-    {% if f.path | slice: 0, cur_file_dir | size == cur_file_dir %}
+    {% comment %} path의 시작문자 {% endcomment %}
+    {% assign f_s_path = f.path | slice: 0, 1 %}
+
+    {% comment %} path의 종료문자 {% endcomment %}
+    {% assign f_e_path = f.path | slice: -1, 1 %}
+    
+    console.log('path:', '{{- f.path -}}');
+
+    console.log('f_s_path:', '{{- f_s_path -}}');
+    console.log('f_e_path:', '{{- f_e_path -}}');
+
+    console.log('f_deep size:', '{{ f_deep | size }}');
+
+    {% assign cur_file_dir_len = cur_file_dir | size %}
+    {% assign f_path_start = f.path | slice: 0, cur_file_dir_len %}
+
+    console.log('cur_file_dir_len:', '{{ cur_file_dir_len }}');
+    console.log('f_path_start:', '{{ f_path_start }}');
+
+    {% if f_path_start == cur_file_dir %}
       
-      console.log('cur_files:', {{ cur_files }});
-      console.log('f.name:', {{ f.name }});
+      console.log('cur_files:', '{{ cur_files }}');
+      console.log('f.name:', '{{ f.name }}');
 
       {% assign cur_files = cur_files | push: f %}
     {% endif %}
