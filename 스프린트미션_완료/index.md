@@ -23,16 +23,15 @@ pragma: no-cache
   {%- assign cur_dirs = "" -%}
   {%- assign cur_files = "" -%}
 {%- else -%}
-  
-  console.log('cur_file_dir:', {{- cur_file_dir -}});
-  
-  console.log('cur_page_dir:', {{- cur_page_dir -}});
 
   {%- assign cur_deep = cur_file_dir | split: "/" -%}
   {%- assign cur_deep_size = cur_deep | size -%}
 
+  console.log('cur_file_dir:', {{- cur_file_dir -}});
+  console.log('cur_page_dir:', {{- cur_page_dir -}});
   console.log('cur_deep_size:', {{- cur_deep_size -}});
 
+  <!-- fiels -->
   {%- assign cur_files = "" | split: "" -%}
   {%- for f in all_files -%}
     {%- assign f_deep = f.path | split: "/" -%}
@@ -41,33 +40,61 @@ pragma: no-cache
     {%- assign cur_file_dir_len = cur_file_dir | size -%}
     {%- assign f_path_start = f.path | slice: 0, cur_file_dir_len -%}
 
-    {%- if f_path_start == cur_file_dir and cur_deep_size == f_deep_size -%}
+    {%- assign f_s_path = f.path | slice: 0, 1 -%}
+    {%- assign f_e_path = f.path | slice: -1, 1 -%}
 
-      {%- assign f_s_path = f.path | slice: 0, 1 -%}
+    {%- if f_path_start == cur_file_dir -%}
 
-      {%- assign f_e_path = f.path | slice: -1, 1 -%}
+      {%- if cur_deep_size == f_deep_size -%}
 
-      console.log('----------------------------------------');
+        {%- assign f_s_path = f.path | slice: 0, 1 -%}
+        {%- assign f_e_path = f.path | slice: -1, 1 -%}
 
-      {%- if f.extname == .md -%}
-        console.log('f.name:', '{{- f.name -}}');
-        console.log('f.extname:', '{{- f.extname -}}');
+        {{}}
         console.log('f.path:', '{{- f.path -}}');
-      {%- else -%}
-        console.log('*f.name:', '{{- f.name -}}');
-        console.log('*f.extname:', '{{- f.extname -}}');
-        console.log('*f.path:', '{{- f.path -}}');
-      {%- endif -%}
+        {%- assign cur_files = cur_files | push: f -%}
 
-      {%- assign cur_files = cur_files | push: f -%}
+      {% else %}
+        {{}}
+        console.log('path deep:', '({{- cur_deep_size -}}, {{- f_deep_size -}})');
+        console.log('f.path:', '{{- f.path -}}');
+
+      {%- endif -%}
     {%- endif -%}
   {%- endfor -%}
+
+  <!-- pages -->
 
   {%- assign cur_pages = "" | split: "" -%}
   {%- for f in all_pages -%}
     {%- assign f_deep = f.path | split: "/" -%}
-    {%- if f.dir | slice: 0, cur_page_dir | size == cur_page_dir -%}
-      {%- assign cur_pages = cur_pages | push: f -%}
+
+    {%- assign f_deep_size = f_deep | size | minus: 1 -%}
+
+    {%- assign cur_page_dir_len = cur_page_dir | size -%}
+    {%- assign f_path_start = f.path | slice: 0, cur_page_dir_len -%}
+
+    {%- assign f_s_path = f.path | slice: 0, 1 -%}
+    {%- assign f_e_path = f.path | slice: -1, 1 -%}
+
+
+    {%- if f_path_start == cur_page_dir -%}
+
+      {%- if cur_deep_size == f_deep_size -%}
+
+        {%- assign f_s_path = f.path | slice: 0, 1 -%}
+        {%- assign f_e_path = f.path | slice: -1, 1 -%}
+
+        {{}}
+        console.log('*f.path:', '{{- f.path -}}');
+        {%- assign cur_pages = cur_pages | push: f -%}
+
+      {% else %}
+        {{}}
+        console.log('*path deep:', '({{- cur_deep_size -}}, {{- f_deep_size -}})');
+        console.log('*f.path:', '{{- f.path -}}');
+
+      {%- endif -%}
     {%- endif -%}
   {%- endfor -%}
 
@@ -107,10 +134,14 @@ pragma: no-cache
 
 {%- endif -%}
 
+  {{}}
   var curFiles = {{- cur_files_json -}};
+  {{}}
   var curPages = {{- cur_pages_json -}};
 
+  {{}}
   console.log('files:', curFiles);
+  {{}}
   console.log('pages:', curPages);
 
 </script>
