@@ -9,6 +9,15 @@ pragma: no-cache
 
 # ✅ 스프린트미션_완료
 
+<script>
+{%- assign cur_dir = "/스프린트미션_완료/" -%}
+{%- include helper_c0z0c_dev.liquid -%}
+
+  var curFiles = {{- cur_fiels_json -}};
+  var curPages = {{- cur_pages_json -}};
+
+</script>
+
 <div class="file-grid">
   <!-- Static files (non-markdown) -->
   {% assign current_folder = "스프린트미션_완료/" %}
