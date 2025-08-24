@@ -10,7 +10,9 @@ pragma: no-cache
 # ✅ 스프린트미션_완료
 
 <script>
-{%- assign cur_dir = "/스프린트미션_완료/" -%}
+{% assign cur_dir = "/스프린트미션_완료/" %}
+
+{% comment %}
 
 {% assign all_files = site.static_files %}
 {% assign all_pages = site.all_pages_json %}
@@ -18,7 +20,6 @@ pragma: no-cache
 {% assign cur_file_dir = cur_dir %}
 {% assign cur_page_dir = page.dir %}
 
-{% comment %}
 
 {% unless cur_file_dir %}
 
