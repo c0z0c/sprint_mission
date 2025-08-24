@@ -99,8 +99,6 @@ console.group('cur pages');
   {%- endfor -%}
 console.groupEnd();
 
-  <!-- --- capture --- -->
-
   {%- capture cur_files_json -%}
   [
   {%- for f in cur_files -%}
@@ -122,7 +120,7 @@ console.groupEnd();
     {
       "title": {{- p.title | jsonify -}},
       "url": {{- p.url | jsonify -}},
-      "path": {{- p.path | jsonify -}},
+      "path": {{- "/" | append: p.path | jsonify -}},
       "dir": {{- p.dir | jsonify -}},
       "name": {{- p.name | default: "" | jsonify -}},
       "layout": {{- p.layout | default: "" | jsonify -}},
