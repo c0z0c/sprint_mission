@@ -36,7 +36,6 @@ page.categories, page.tags : 카테고리/태그(게시글일 경우
     "description": {{ site.description | jsonify }},
     "url": {{ site.url | jsonify }},
     "baseurl": {{ site.baseurl | jsonify }},
-    "github": {{ site.github | jsonify }},
     "time": {{ site.time | jsonify }},
     "posts": {{ site.posts | size | jsonify }},
     "pages": {{ site.pages | size | jsonify }},
@@ -63,7 +62,6 @@ page.categories, page.tags : 카테고리/태그(게시글일 경우
     "excerpt": {{ page.excerpt | default: "" | jsonify }},
     "categories": {{ page.categories | default: "" | jsonify }},
     "tags": {{ page.tags | default: "" | jsonify }}
-  }
   }
 {%- endcapture -%}
 

@@ -5,6 +5,23 @@
 {%- assign all_pages = site.all_pages_json -%}
 
 
+
+{%- comment -%} 폴더 추출 {%- endcomment -%}
+{%- assign tree_raw = "" -%}
+{%- for f in site.static_files -%}
+  {%- assign paths = f.path | split: "/" -%}
+  {%- assign depth = paths | size | minus: 1 -%}
+  {%- assign cur_path = "" -%}
+  {%- for i in (1..depth) -%}
+    {%- assign cur_path = cur_path | append: "/" | append: paths[i] -%}
+    {%- unless tree_raw contains cur_path -%}
+      {%- capture tree_raw -%}{{ tree_raw }}{{ cur_path }},{%- endcapture -%}
+    {%- endunless -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- assign dir_tree = tree_raw | split: "," | uniq | reject: "" | sort -%}
+
+
 {%- comment -%}
 
 {%- if current_folder == "" -%}{%- assign current_folder = "/" -%}{%- endif- %}
