@@ -79,6 +79,7 @@ console.group('cur pages');
   {%- for f in all_pages -%}
     {%- assign f_path = "/" | append: f.path -%}
     {%- assign f_deep = f_path | split: "/" -%}
+    {%- assign f_deep_sub_size = f_deep | size -%}
     {%- assign f_deep_size = f_deep | size | minus: 1 -%}
     {%- assign cur_page_dir_len = cur_dir | size -%}
     {%- assign f_path_start = f_path | slice: 0, cur_page_dir_len -%}
@@ -90,10 +91,15 @@ console.group('cur pages');
         {%- assign f_s_path = f_path | slice: 0, 1 -%}
         {%- assign f_e_path = f_path | slice: -1, 1 -%}
         {%- assign cur_pages = cur_pages | push: f -%}
-        
         console.log('f.path:', ' ({{ cur_deep_size }},{{ f_deep_size }}) {{- f_path -}}');
+
+      {% elsif cur_deep_size == f_deep_sub_size and f.name == 'index.md' -%}
+        {%- assign cur_pages = cur_pages | push: f -%}
+        console.log('f.path:', ' ({{ cur_deep_size }},{{ f_deep_size }}) {{- f_path -}}');
+
       {% else %}
         console.log('* f.path:', ' ({{ cur_deep_size }},{{ f_deep_size }}) {{- f_path -}}');
+        
       {%- endif -%}
     {%- endif -%}
   {%- endfor -%}
