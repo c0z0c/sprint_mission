@@ -10,24 +10,11 @@ pragma: no-cache
 # ✅ 스프린트미션_완료
 
 <script>
-{% assign cur_dir = "/스프린트미션_완료/" %}
+{%- assign cur_dir = "/스프린트미션_완료/" -%}
+{%- include helper_c0z0c_dev.liquid -%}
 
-
-{% assign all_files = site.static_files %}
-{% assign all_pages = site.all_pages_json %}
-
-{% assign cur_file_dir = cur_dir %}
-{% assign cur_page_dir = page.dir %}
-
-{% if cur_file_dir == nil or cur_file_dir == "" %}
-  {% assign cur_dirs = "" %}
-  {% assign cur_files = "" %}
-
-{% else %}
-  {% assign cur_dirs = "" %}
-  {% assign cur_files = "" %}
-
-{% endif %}
+  var curFiles = {{- cur_files_json -}};
+  var curPages = {{- cur_pages_json -}};
 
 </script>
 
