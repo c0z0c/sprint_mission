@@ -15,8 +15,7 @@ pragma: no-cache
 {%- include cur_files.liquid -%}
 
   var curDir = '{{- cur_file_dir -}}';
-
-var curFiles = {{- cur_files_json -}};
+  var curFiles = {{- cur_files_json -}};
   var curPages = {{- cur_pages_json -}};
   
   console.log('curDir:', curDir);
