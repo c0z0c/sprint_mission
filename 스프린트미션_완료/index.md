@@ -2,6 +2,7 @@
 layout: default
 title: 스프린트미션_완료 - 완료된 미션 보관함
 description: 완료된 스프린트 미션 자료들
+date: 2025-08-23
 cache-control: no-cache
 expires: 0
 pragma: no-cache
@@ -51,6 +52,15 @@ pragma: no-cache
   }
 });
 
+curFiles.sort((a, b) => {
+  // 날짜가 ISO 형식이 아니면 Date 파싱이 안 될 수 있으니, 우선 문자열 비교
+  // 최신 날짜가 앞으로 오도록 내림차순
+  if (!a.modified_time) return 1;
+  if (!b.modified_time) return -1;
+  return b.modified_time.localeCompare(a.modified_time);
+});
+
+// 정렬 후 출력
 curFiles.forEach(f => {
 /*
       "name": "Grad-CAM_정상.png",
@@ -60,8 +70,7 @@ curFiles.forEach(f => {
       "basename": "Grad-CAM_정상",
 */  
   console.log('curfiles:', JSON.stringify(f, null, 2));
-})
-
+});
 
 </script>
 
