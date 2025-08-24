@@ -59,29 +59,30 @@ pragma: no-cache
 
   {%- assign cur_pages = "" | split: "" -%}
   {%- for f in all_pages -%}
-    <!-- ** {{ f.path }} -->
+    {%- assign f_path = "/" | append: f.path -%}
+    <!-- ** {{ f_path }} -->
 
-    {%- assign f_deep = f.path | split: "/" -%}
+    {%- assign f_deep = f_path | split: "/" -%}
 
     {%- assign f_deep_size = f_deep | size | minus: 1 -%}
 
     {%- assign cur_page_dir_len = cur_page_dir | size -%}
-    {%- assign f_path_start = f.path | slice: 0, cur_page_dir_len -%}
+    {%- assign f_path_start = f_path | slice: 0, cur_page_dir_len -%}
 
-    {%- assign f_s_path = f.path | slice: 0, 1 -%}
-    {%- assign f_e_path = f.path | slice: -1, 1 -%}
+    {%- assign f_s_path = f_path | slice: 0, 1 -%}
+    {%- assign f_e_path = f_path | slice: -1, 1 -%}
 
     {%- if f_path_start == cur_page_dir -%}
 
       {%- if cur_deep_size == f_deep_size -%}
 
-        {%- assign f_s_path = f.path | slice: 0, 1 -%}
-        {%- assign f_e_path = f.path | slice: -1, 1 -%}
+        {%- assign f_s_path = f_path | slice: 0, 1 -%}
+        {%- assign f_e_path = f_path | slice: -1, 1 -%}
         {%- assign cur_pages = cur_pages | push: f -%}
         
-        <!-- * {{ f.path }} -->
+        <!-- * {{ f_path }} -->{{}}
       {% else %}
-        <!-- * path deep: ({{ cur_deep_size }},{{ f_deep_size }}) {{ f.path }} -->
+        <!-- * path deep: ({{ cur_deep_size }},{{ f_deep_size }}) {{ f_path }} -->{{}}
 
       {%- endif -%}
     {%- endif -%}
