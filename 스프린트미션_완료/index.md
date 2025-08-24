@@ -23,8 +23,26 @@ pragma: no-cache
   {% assign cur_dirs = "" %}
   {% assign cur_files = "" %}
 {% else %}
-  {% assign cur_dirs = "" %}
-  {% assign cur_files = "" %}
+
+  {% assign cur_files_raw = "" %}
+  {% for f in all_files %}
+    {% assign f_deep = f.path | split "/" %}
+    {% if f.dir | slice: 0, cur_file_dir | size == cur_file_dir %}
+      {% capture cur_files_raw %}{{ cur_files_raw }}|{{ f.path }}{% endcapture %}
+    {% endif %}
+  {% endfor %}
+  {% assign cur_files = cur_files_raw | split: "|" | reject: "" %}
+
+  {% assign cur_pages_raw = "" %}
+  {% for f in all_pages %}
+    {% assign f_deep = f.path | split "/" %}
+    {% if f.dir | slice: 0, cur_page_dir | size == cur_page_dir %}
+      {% capture cur_pages_raw %}{{ cur_pages_raw }}|{{ f.path }}{% endcapture %}
+    {% endif %}
+  {% endfor %}
+  {% assign cur_pages = cur_pages_raw | split: "|" | reject: "" %}
+
+
 {% endif %}
 
 </script>
