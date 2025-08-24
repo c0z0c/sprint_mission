@@ -80,16 +80,16 @@ console.group('cur pages');
     {%- assign f_path = "/" | append: f.path -%}
     {%- assign f_deep = f_path | split: "/" -%}
     {%- assign f_deep_size = f_deep | size | minus: 1 -%}
-    {%- assign cur_page_dir_len = cur_page_dir | size -%}
+    {%- assign cur_page_dir_len = cur_dir | size -%}
     {%- assign f_path_start = f_path | slice: 0, cur_page_dir_len -%}
     {%- assign f_s_path = f_path | slice: 0, 1 -%}
     {%- assign f_e_path = f_path | slice: -1, 1 -%}
 
     console.log('f_path', '{{ f_path }}');
     console.log('f_path_start', '{{ f_path_start }}');
-    console.log('cur_page_dir', '{{ cur_page_dir }}');
+    console.log('cur_dir', '{{ cur_dir }}');
 
-    {%- if f_path_start == cur_page_dir -%}
+    {%- if f_path_start == cur_dir -%}
       {%- if cur_deep_size == f_deep_size -%}
         {%- assign f_s_path = f_path | slice: 0, 1 -%}
         {%- assign f_e_path = f_path | slice: -1, 1 -%}
