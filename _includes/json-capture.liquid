@@ -65,6 +65,31 @@ page.categories, page.tags : 카테고리/태그(게시글일 경우
   }
 {%- endcapture -%}
 
+{%- capture dir_tree_json -%}
+[
+{%- for dir in dir_tree -%}
+  {
+    "path": {{ dir | jsonify }}
+  }{%- unless forloop.last -%},{%- endunless -%}
+{%- endfor -%}
+]
+{%- endcapture -%}  
+
+{%- capture all_files_json -%}
+[
+{%- for p in site.static_files -%}
+  {
+    "name": {{ p.name | jsonify }},
+    "path": {{ p.path | jsonify }},
+    "extname": {{ p.extname | jsonify }},
+    "modified_time": {{ p.modified_time | jsonify }},
+    "basename": {{ p.basename | default: "" | jsonify }},
+    "url": {{ p.url | default: "" | jsonify }}
+  }{%- unless forloop.last -%},{%- endunless -%}
+{%- endfor -%}
+]
+{%- endcapture -%}
+
 
 {%- capture all_files_json -%}
 [
