@@ -49,21 +49,15 @@ pragma: no-cache
 
       console.log('----------------------------------------');
 
-      console.log('cur_file_dir:', '{{- cur_file_dir -}}');
-      
-      console.log('f_path_start:', '{{- f_path_start -}}');
-
-      console.log('cur_deep_size:', '{{- cur_deep_size -}}');
-      
-      console.log('f_deep_size:', '{{- f_deep_size -}}');
-
-      console.log('cur_files:', '{{- cur_files -}}');
-
-      console.log('last:', '{{ f_deep | last }}');
-
-      console.log('f.name:', '{{- f.name -}}');
-
-      console.log('f.path:', '{{- f.path -}}');
+      {%- if f.extname == .md -%}
+        console.log('f.name:', '{{- f.name -}}');
+        console.log('f.extname:', '{{- f.extname -}}');
+        console.log('f.path:', '{{- f.path -}}');
+      {%- else -%}
+        console.log('*f.name:', '{{- f.name -}}');
+        console.log('*f.extname:', '{{- f.extname -}}');
+        console.log('*f.path:', '{{- f.path -}}');
+      {%- endif -%}
 
       {%- assign cur_files = cur_files | push: f -%}
     {%- endif -%}
