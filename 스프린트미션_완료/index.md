@@ -11,7 +11,78 @@ pragma: no-cache
 
 <script>
 {%- assign cur_dir = "/스프린트미션_완료/" -%}
-{%- include helper_c0z0c_dev.liquid -%}
+
+
+
+{% assign all_files = site.static_files %}
+{% assign all_pages = site.all_pages_json %}
+
+{% assign cur_file_dir = cur_dir %}
+{% assign cur_page_dir = page.dir %}
+
+{% unless cur_file_dir %}
+
+{% assign cur_dirs = "" %}
+  {% assign cur_files = "" %}
+
+{% else %}
+
+{% comment %} 현재 폴더 파일만 {% endcomment %}
+  {% assign cur_files = "" %}
+  {% for f in all_files %}
+    {% assign f_deep = f.path | split "/" %}
+    {% if f.dir | slice: 0, cur_file_dir | size == cur_file_dir %}
+      {% assign cur_files = cur_files | push: f %}
+    {% endif %}
+  {% endfor %}
+
+  {% comment %} 현재 폴더 페이지만 {% endcomment %}
+  {% assign cur_pages = "" %}
+  {% for f in all_pages %}
+    {% assign f_deep = f.path | split "/" %}
+    {% if f.dir | slice: 0, cur_page_dir | size == cur_page_dir %}
+      {% assign cur_pages = cur_pages | push: f %}
+    {% endif %}
+  {% endfor %}
+
+  {% comment %} 현재 폴더 파일 JSON {% endcomment %}
+  {% capture cur_files_json %}
+  [
+  {% for f in cur_files %}
+    {
+      "name": {{ f.name | jsonify }},
+      "path": {{ f.path | jsonify }},
+      "extname": {{ f.extname | jsonify }},
+      "modified_time": {{ f.modified_time | jsonify }},
+      "basename": {{ f.basename | default: "" | jsonify }},
+      "url": {{ f.url | default: "" | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ]
+  {% endcapture %}
+
+
+  {% comment %} 현재 폴더 페이지 JSON {% endcomment %}
+  {% capture cur_pages_json %}
+  [
+  {% for p in cur_pages %}
+    {
+      "title": {{ p.title | jsonify }},
+      "url": {{ p.url | jsonify }},
+      "path": {{ p.path | jsonify }},
+      "dir": {{ p.dir | jsonify }},
+      "name": {{ p.name | default: "" | jsonify }},
+      "layout": {{ p.layout | default: "" | jsonify }},
+      "date": {{ p.date | default: "" | jsonify }},
+      "excerpt": {{ p.excerpt | default: "" | jsonify }},
+      "categories": {{ p.categories | default: "" | jsonify }},
+      "tags": {{ p.tags | default: "" | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ]
+  {% endcapture %}
+
+{% endif %}
 
 </script>
 
