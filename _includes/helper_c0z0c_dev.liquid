@@ -3,12 +3,12 @@
 {% assign all_files = site.static_files %}
 {% assign all_pages = site.all_pages_json %}
 
-{% assign cur_file_dir = cur_file_dir %}
+{% assign cur_file_dir = cur_dir %}
 {% assign cur_page_dir = page.dir %}
 
 {% unless cur_file_dir %}
   {% assign cur_dirs = "" %}
-  {% assign cur_fiels = "" %}
+  {% assign cur_files = "" %}
 {% else %}
 
   {% comment %} 현재 폴더만 {% endcomment %}
@@ -33,7 +33,7 @@
   {% endcomment %}
 
   {% comment %} 현재 폴더 파일만 {% endcomment %}
-  {% assign cur_fiels = "" %}
+  {% assign cur_files = "" %}
   {% for f in all_files %}
     {% assign f_deep = f.path | split "/" %}
     {% if f.dir | slice: 0, cur_file_dir | size == cur_file_dir %}
@@ -52,9 +52,9 @@
 
 
   {% comment %} 현재 폴더 파일 JSON {% endcomment %}
-  {% capture cur_fiels_json %}
+  {% capture cur_files_json %}
   [
-  {% for f in cur_fiels %}
+  {% for f in cur_files %}
     {
       "name": {{ f.name | jsonify }},
       "path": {{ f.path | jsonify }},
