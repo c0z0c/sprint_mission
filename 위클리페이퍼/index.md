@@ -59,11 +59,18 @@ pragma: no-cache
 //   return b.modified_time.localeCompare(a.modified_time);
 // });
 
+// curFiles.sort((a, b) => {
+//   // 파일명으로 한글/영문 구분하여 정렬
+//   if (!a.name) return 1;
+//   if (!b.name) return -1;
+//   return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+// });
+
 curFiles.sort((a, b) => {
-  // 파일명으로 한글/영문 구분하여 정렬
+  // 파일명으로 한글/영문 구분하여 내림차순 정렬
   if (!a.name) return 1;
   if (!b.name) return -1;
-  return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+  return b.name.localeCompare(a.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
 });
 
 // // 정렬 후 출력
