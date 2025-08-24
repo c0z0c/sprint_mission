@@ -34,6 +34,8 @@ pragma: no-cache
   <!-- fiels -->
   {%- assign cur_files = "" | split: "" -%}
   {%- for f in all_files -%}
+    <!-- - {{ f.path }} -->
+
     {%- assign f_deep = f.path | split: "/" -%}
     {%- assign f_deep_size = f_deep | size | minus: 1 -%}
 
