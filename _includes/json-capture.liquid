@@ -28,7 +28,7 @@ page.content : 페이지의 실제 내용(HTML로 변환됨)
 page.excerpt : 요약(게시글일 경우)
 page.categories, page.tags : 카테고리/태그(게시글일 경우
 
-{%- endcomment -%} 
+{%- endcomment -%}
 
 {%- capture all_files_json -%}
 [
@@ -64,32 +64,3 @@ page.categories, page.tags : 카테고리/태그(게시글일 경우
 ]
 {%- endcapture -%}
 
-{%- capture sub_all_files_pages_all -%}
-[
-{%- for p in sub_all_files_pages_org_all -%}
-  {
-    "path": {{ p.path | jsonify }},
-    "url": {{ p.url | jsonify }},
-    "name": {{ p.name | jsonify }},
-    "dir": {{ p.dir | jsonify }},
-    "title": {{ p.title | default: "" | jsonify }},
-    "layout": {{ p.layout | default: "" | jsonify }}
-  }{%- unless forloop.last -%},{%- endunless -%}
-{%- endfor -%}
-]
-{%- endcapture -%}
-
-{%- capture sub_all_files_pages_cur -%}
-[
-{%- for p in sub_all_files_pages_org_cur -%}
-  {
-    "path": {{ p.path | jsonify }},
-    "url": {{ p.url | jsonify }},
-    "name": {{ p.name | jsonify }},
-    "dir": {{ p.dir | jsonify }},
-    "title": {{ p.title | default: "" | jsonify }},
-    "layout": {{ p.layout | default: "" | jsonify }}
-  }{%- unless forloop.last -%},{%- endunless -%}
-{%- endfor -%}
-]
-{%- endcapture -%}

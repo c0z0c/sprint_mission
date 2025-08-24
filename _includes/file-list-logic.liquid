@@ -1,6 +1,12 @@
 {%- comment -%} 현재 페이지의 디렉토리 경로를 가져온다 {%- endcomment -%} 
 
-{%- assign current_folder = page.dir -%}
+{%- assign cur_dir = page.dir -%}
+{%- assign all_files = site.static_files -%}
+{%- assign all_pages = site.all_pages_json -%}
+
+
+{%- comment -%}
+
 {%- if current_folder == "" -%}{%- assign current_folder = "/" -%}{%- endif- %}
 
 {%- assign sub_all_files                = site.static_files | where_exp: "f", "f.path contains current_folder" -%}
@@ -49,3 +55,5 @@
   {%- endunless -%}
 {%- endfor -%}
 {%- assign cur_page_files = cur_page_files_raw | split: "," | reject: "" -%}
+
+{%- endcomment -%}
