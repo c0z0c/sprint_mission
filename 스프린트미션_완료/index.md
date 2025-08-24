@@ -10,11 +10,6 @@ pragma: no-cache
 # ✅ 스프린트미션_완료
 
 <script>
-{%- assign cur_dir = "/스프린트미션_완료/" -%}
-{%- include helper_c0z0c_dev.liquid -%}
-
-  var curFiles = {{- cur_files_json -}};
-  var curPages = {{- cur_pages_json -}};
 
 </script>
 
