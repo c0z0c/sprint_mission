@@ -38,13 +38,16 @@ pragma: no-cache
     {%- assign f_deep = f.path | split: "/" -%}
     {%- assign f_deep_size = f_deep | size -%}
 
-    {%- assign f_s_path = f.path | slice: 0, 1 -%}
-    {%- assign f_e_path = f.path | slice: -1, 1 -%}
-    
     {%- assign cur_file_dir_len = cur_file_dir | size -%}
     {%- assign f_path_start = f.path | slice: 0, cur_file_dir_len -%}
 
     {%- if f_path_start == cur_file_dir and cur_deep_size | plus: 1 == f_deep_size -%}
+
+      {%- assign f_s_path = f.path | slice: 0, 1 -%}
+
+      {%- assign f_e_path = f.path | slice: -1, 1 -%}
+
+      console.log('----------------------------------------');
 
       console.log('cur_file_dir:', '{{- cur_file_dir -}}');
       
@@ -59,7 +62,7 @@ pragma: no-cache
       console.log('last:', '{{ f_deep | last }}');
 
       console.log('f.name:', '{{- f.name -}}');
-      
+
       console.log('f.path:', '{{- f.path -}}');
 
       {%- assign cur_files = cur_files | push: f -%}
