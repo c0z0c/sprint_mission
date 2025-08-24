@@ -9,6 +9,8 @@ pragma: no-cache
 
 # ✅ 스프린트미션_작업중
 
+<script>
+
 {%- assign cur_dir = "/스프린트미션_작업중/" -%}
 {%- include cur_files.liquid -%}
 
