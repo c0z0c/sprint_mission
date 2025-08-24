@@ -1,8 +1,11 @@
 <script>
-
+  var site = {{- site_json -}};
+  var page = {{- page_json -}};
   var allFiles = {{- all_files_json -}};
   var allPages = {{- all_pages_json -}};
 
+  console.log('site:', site);
+  console.log('page:', page);
   console.log('allFiles:', allFiles);
   console.log('allPages:', allPages);
 

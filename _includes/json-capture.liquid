@@ -30,6 +30,44 @@ page.categories, page.tags : 카테고리/태그(게시글일 경우
 
 {%- endcomment -%}
 
+{%- capture site_json -%}
+  {
+    "title": {{ site.title | jsonify }},
+    "description": {{ site.description | jsonify }},
+    "url": {{ site.url | jsonify }},
+    "baseurl": {{ site.baseurl | jsonify }},
+    "github": {{ site.github | jsonify }},
+    "time": {{ site.time | jsonify }},
+    "posts": {{ site.posts | size | jsonify }},
+    "pages": {{ site.pages | size | jsonify }},
+    "static_files": {{ site.static_files | size | jsonify }},
+    "data": {{ site.data | size | jsonify }},
+    "collections": {{ site.collections | size | jsonify }},
+    "documents": {{ site.documents | size | jsonify }},
+    "categories": {{ site.categories | size | jsonify }},
+    "tags": {{ site.tags | size | jsonify }},
+    "config": {{ site.config | size | jsonify }}
+  }
+{%- endcapture -%}
+
+{%- capture page_json -%}
+  {
+    "title": {{ page.title | jsonify }},
+    "url": {{ page.url | jsonify }},
+    "path": {{ page.path | jsonify }},
+    "dir": {{ page.dir | jsonify }},
+    "name": {{ page.name | default: "" | jsonify }},
+    "layout": {{ page.layout | default: "" | jsonify }},
+    "date": {{ page.date | default: "" | jsonify }},
+    "content": {{ page.content | default: "" | size | jsonify }},
+    "excerpt": {{ page.excerpt | default: "" | jsonify }},
+    "categories": {{ page.categories | default: "" | jsonify }},
+    "tags": {{ page.tags | default: "" | jsonify }}
+  }
+  }
+{%- endcapture -%}
+
+
 {%- capture all_files_json -%}
 [
 {%- for p in site.static_files -%}
