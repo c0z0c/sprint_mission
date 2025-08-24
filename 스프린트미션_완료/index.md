@@ -36,7 +36,7 @@ pragma: no-cache
   {%- assign cur_files = "" | split: "" -%}
   {%- for f in all_files -%}
     {%- assign f_deep = f.path | split: "/" -%}
-    {%- assign f_deep_size = f_deep | size | minus: -%}
+    {%- assign f_deep_size = f_deep | size | minus: 1 -%}
 
     {%- assign cur_file_dir_len = cur_file_dir | size -%}
     {%- assign f_path_start = f.path | slice: 0, cur_file_dir_len -%}
