@@ -19,11 +19,11 @@ pragma: no-cache
 {% assign cur_file_dir = cur_dir %}
 {% assign cur_page_dir = page.dir %}
 
-{% unless cur_file_dir %}
+{% if cur_file_dir == nil or cur_file_dir == "" %}
   {% assign cur_dirs = "" %}
   {% assign cur_files = "" %}
-{% else %}
 
+{% else %}
   {% assign cur_dirs = "" %}
   {% assign cur_files = "" %}
 
