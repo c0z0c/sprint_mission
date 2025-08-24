@@ -569,6 +569,119 @@
                 margin: 0;
             }
         }
+
+        /* 파일 목록 스타일 */
+        .file-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .file-controls select,
+        .file-controls input {
+            padding: 0.5rem;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #404040;
+            color: #e0e0e0;
+        }
+
+        .file-controls select:focus,
+        .file-controls input:focus {
+            outline: none;
+            border-color: #87ceeb;
+        }
+
+        .file-grid {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background: #404040;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .file-item:hover {
+            background: #4a4a4a;
+            border-color: #87ceeb;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-name a {
+            text-decoration: none;
+            color: #87ceeb;
+        }
+
+        .file-name a:hover {
+            color: #a0d4f0;
+            text-decoration: underline;
+        }
+
+        .file-ext {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+
+        .file-date {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .colab-btn,
+        .raw-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            text-decoration: none;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .colab-btn {
+            background: #f9ab00;
+            color: white;
+        }
+
+        .colab-btn:hover {
+            background: #e99500;
+            text-decoration: none;
+        }
+
+        .raw-btn {
+            background: #666;
+            color: white;
+        }
+
+        .raw-btn:hover {
+            background: #555;
+            text-decoration: none;
+        }
     </style>
 
     <style>

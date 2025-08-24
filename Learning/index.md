@@ -67,21 +67,31 @@ curFiles.sort((a, b) => {
   return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
 });
 
-// 정렬 후 출력
-curFiles.forEach(f => {
-/*
-      "name": "Grad-CAM_정상.png",
-      "path": "/스프린트미션_완료/image/06_4팀_김명환/Grad-CAM_정상.png",
-      "extname": ".png",
-      "modified_time": "2025-08-24 12:11:59 +0900",
-      "basename": "Grad-CAM_정상",
-*/  
-  console.log('curfiles:', JSON.stringify(f, null, 2));
-});
-
+// // 정렬 후 출력
+// curFiles.forEach(f => {
+// /*
+//       "name": "Grad-CAM_정상.png",
+//       "path": "/스프린트미션_완료/image/06_4팀_김명환/Grad-CAM_정상.png",
+//       "extname": ".png",
+//       "modified_time": "2025-08-24 12:11:59 +0900",
+//       "basename": "Grad-CAM_정상",
+// */  
+//   console.log('curfiles:', JSON.stringify(f, null, 2));
+// });
 
   console.log('총 파일 수:', curFiles.length);
   console.log('파일 목록:', curFiles);
+
+  var project_path = site.baseurl
+  var site_url = `https://c0z0c.github.io${project_path}${curDir}`
+  var raw_url = `https://raw.githubusercontent.com/c0z0c${project_path}/master${curDir}`;
+  var git_url = `https://github.com/c0z0c${project_path}/blob/master${curDir}`
+  var colab_url = `https://colab.research.google.com/github/c0z0c${project_path}/blob/master${curDir}`;
+  
+  console.log('site_url:', site_url);
+  console.log('raw_url:', raw_url);
+  console.log('colab_url:', colab_url);
+
 
   // 파일 아이콘 및 타입 결정 함수
   function getFileInfo(extname) {
@@ -120,20 +130,20 @@ curFiles.forEach(f => {
     
     if (fileExt === '.md' && fileName !== 'index.md') {
       const mdName = fileName.replace('.md', '');
-      actions += `<a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/${mdName}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
-      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+      actions += `<a href="${site_url}${mdName}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
     } else if (fileExt === '.ipynb') {
-      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
-      actions += `<a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="${colab_url}${fileName}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>`;
     } else if (fileExt === '.pdf') {
-      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
-      actions += `<a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/${fileName}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
     } else if (fileExt === '.docx') {
-      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
-      actions += `<a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스프린트미션_완료/${fileName}" class="file-action" title="Google에서 열기" target="_blank">📊</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" class="file-action" title="Google에서 열기" target="_blank">📊</a>`;
     } else if (fileExt === '.html') {
-      actions += `<a href="https://c0z0c.github.io/sprint_mission/스프린트미션_완료/${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
-      actions += `<a href="https://github.com/c0z0c/sprint_mission/blob/master/스프린트미션_완료/${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+      actions += `<a href="${site_url}${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
     } else {
       actions += `<a href="${file.path}" class="file-action" title="파일 열기">📖</a>`;
     }
@@ -158,6 +168,8 @@ curFiles.forEach(f => {
 
     let html = '';
     curFiles.forEach(file => {
+      if (file.name === 'index.md' || file.name === 'info.md') return;
+
       const fileInfo = getFileInfo(file.extname);
       const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
       const actions = getFileActions(file);
