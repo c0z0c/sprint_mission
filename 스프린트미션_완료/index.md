@@ -26,13 +26,17 @@ pragma: no-cache
   console.log('cur_file_dir:', {{ cur_file_dir }});
   console.log('cur_page_dir:', {{ cur_page_dir }});
 
+  {% assign cur_deep = cur_file_dir | split: "/" %}
+  console.log('cur_deep size:', {{ cur_deep | size }});
+
   {% assign cur_files = "" | split: "" %}
   {% for f in all_files %}
     {% assign f_deep = f.path | split: "/" %}
     
-    console.log('f_deep:', {{ f_deep }});
+    console.log('path:', {{ f.path }});
+    console.log('f_deep size:', {{ f_deep | size }});
 
-    {% if f.dir | slice: 0, cur_file_dir | size == cur_file_dir %}
+    {% if f.path | slice: 0, cur_file_dir | size == cur_file_dir %}
       
       console.log('cur_files:', {{ cur_files }});
       console.log('f.name:', {{ f.name }});
