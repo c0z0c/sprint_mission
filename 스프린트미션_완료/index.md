@@ -22,6 +22,47 @@ pragma: no-cache
   console.log('curFiles:', curFiles);
   console.log('curPages:', curPages);
 
+  curPages.forEach(page => {
+  // curFiles에 같은 name과 path가 있는지 확인
+  const exists = curFiles.some(file => file.name === page.name && file.path === page.path);
+
+  if (!exists) {
+    // 확장자 추출
+    let extname = '';
+    if (page.name && page.name.includes('.')) {
+      extname = '.' + page.name.split('.').pop();
+    }
+
+    // basename 추출
+    let basename = page.name ? page.name.replace(/\.[^/.]+$/, '') : '';
+
+    // modified_time 처리 (page.date가 없으면 빈 문자열)
+    let modified_time = page.date || '';
+
+    // curFiles 포맷에 맞게 변환해서 추가
+    curFiles.push({
+      name: page.name || '',
+      path: page.path || '',
+      extname: extname,
+      modified_time: modified_time,
+      basename: basename,
+      url: page.url || ''
+    });
+  }
+});
+
+curFiles.forEach(f => {
+/*
+      "name": "Grad-CAM_정상.png",
+      "path": "/스프린트미션_완료/image/06_4팀_김명환/Grad-CAM_정상.png",
+      "extname": ".png",
+      "modified_time": "2025-08-24 12:11:59 +0900",
+      "basename": "Grad-CAM_정상",
+*/  
+  console.log('curfiles:', JSON.stringify(f, null, 2));
+})
+
+
 </script>
 
 <div class="file-grid">
