@@ -48,7 +48,7 @@ pragma: no-cache
         {%- assign f_s_path = f.path | slice: 0, 1 -%}
         {%- assign f_e_path = f.path | slice: -1, 1 -%}
         {%- assign cur_files = cur_files | push: f -%}
-        console.log('f.path:', '{{- f.path -}}');
+        <!-- {{ f.path }} -->
       {% else %}
         <!-- path deep: ({{ cur_deep_size }},{{ f_deep_size }}) {{ f.path }} -->
       {%- endif -%}
@@ -59,6 +59,8 @@ pragma: no-cache
 
   {%- assign cur_pages = "" | split: "" -%}
   {%- for f in all_pages -%}
+    <!-- ** {{ f.path }} -->
+
     {%- assign f_deep = f.path | split: "/" -%}
 
     {%- assign f_deep_size = f_deep | size | minus: 1 -%}
@@ -77,12 +79,9 @@ pragma: no-cache
         {%- assign f_e_path = f.path | slice: -1, 1 -%}
         {%- assign cur_pages = cur_pages | push: f -%}
         
-        console.log('f.path:', '{{- f.path -}}');
-
+        <!-- * {{ f.path }} -->
       {% else %}
-        
-        console.log('*path deep:', '({{- cur_deep_size -}}, {{- f_deep_size -}})');
-        console.log('*f.path:', '{{- f.path -}}');
+        <!-- * path deep: ({{ cur_deep_size }},{{ f_deep_size }}) {{ f.path }} -->
 
       {%- endif -%}
     {%- endif -%}
