@@ -9,7 +9,7 @@ pragma: no-cache
 
 <div class="nav-sections">
   <div class="section-card">
-    <h2>📂 폴더별 탐색</h2>
+    <h2>� 폴더별 탐색</h2>
     <div class="folder-links">
       {% assign folder_set = "" | split: "" %}
       {% assign folder_icons = "멘토:👨‍🏫,스프린트미션_완료:✅,스프린트미션_작업중:🚧,위클리페이퍼:📰,스터디:📒,실습:🔬,백업:💾" | split: "," %}

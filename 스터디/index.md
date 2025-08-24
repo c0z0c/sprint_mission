@@ -9,147 +9,197 @@ pragma: no-cache
 
 # ✅ 스터디
 
+<script>
+
+{%- assign cur_dir = "/스터디/" -%}
+{%- include cur_files.liquid -%}
+
+  var curDir = '{{- cur_file_dir -}}';
+  var curFiles = {{- cur_files_json -}};
+  var curPages = {{- cur_pages_json -}};
+  
+  console.log('curDir:', curDir);
+  console.log('curFiles:', curFiles);
+  console.log('curPages:', curPages);
+
+  curPages.forEach(page => {
+  // curFiles에 같은 name과 path가 있는지 확인
+  const exists = curFiles.some(file => file.name === page.name && file.path === page.path);
+
+  if (!exists) {
+    // 확장자 추출
+    let extname = '';
+    if (page.name && page.name.includes('.')) {
+      extname = '.' + page.name.split('.').pop();
+    }
+
+    // basename 추출
+    let basename = page.name ? page.name.replace(/\.[^/.]+$/, '') : '';
+
+    // modified_time 처리 (page.date가 없으면 빈 문자열)
+    let modified_time = page.date || '';
+
+    // curFiles 포맷에 맞게 변환해서 추가
+    curFiles.push({
+      name: page.name || '',
+      path: page.path || '',
+      extname: extname,
+      modified_time: modified_time,
+      basename: basename,
+      url: page.url || ''
+    });
+  }
+});
+
+// curFiles.sort((a, b) => {
+//   // 날짜가 ISO 형식이 아니면 Date 파싱이 안 될 수 있으니, 우선 문자열 비교
+//   // 최신 날짜가 앞으로 오도록 내림차순
+//   if (!a.modified_time) return 1;
+//   if (!b.modified_time) return -1;
+//   return b.modified_time.localeCompare(a.modified_time);
+// });
+
+curFiles.sort((a, b) => {
+  // 파일명으로 한글/영문 구분하여 정렬
+  if (!a.name) return 1;
+  if (!b.name) return -1;
+  return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+});
+
+// // 정렬 후 출력
+// curFiles.forEach(f => {
+// /*
+//       "name": "Grad-CAM_정상.png",
+//       "path": "/스프린트미션_완료/image/06_4팀_김명환/Grad-CAM_정상.png",
+//       "extname": ".png",
+//       "modified_time": "2025-08-24 12:11:59 +0900",
+//       "basename": "Grad-CAM_정상",
+// */  
+//   console.log('curfiles:', JSON.stringify(f, null, 2));
+// });
+
+  console.log('총 파일 수:', curFiles.length);
+  console.log('파일 목록:', curFiles);
+
+  var project_path = site.baseurl
+  var site_url = `https://c0z0c.github.io${project_path}${curDir}`
+  var raw_url = `https://raw.githubusercontent.com/c0z0c${project_path}/master${curDir}`;
+  var git_url = `https://github.com/c0z0c${project_path}/blob/master${curDir}`
+  var colab_url = `https://colab.research.google.com/github/c0z0c${project_path}/blob/master${curDir}`;
+  
+  console.log('site_url:', site_url);
+  console.log('raw_url:', raw_url);
+  console.log('colab_url:', colab_url);
+
+
+  // 파일 아이콘 및 타입 결정 함수
+  function getFileInfo(extname) {
+    switch(extname.toLowerCase()) {
+      case '.ipynb':
+        return { icon: '📓', type: 'Jupyter Notebook' };
+      case '.py':
+        return { icon: '🐍', type: 'Python 파일' };
+      case '.md':
+        return { icon: '📝', type: 'Markdown 문서' };
+      case '.json':
+        return { icon: '⚙️', type: 'JSON 설정' };
+      case '.zip':
+        return { icon: '📦', type: '압축 파일' };
+      case '.png':
+      case '.jpg':
+      case '.jpeg':
+        return { icon: '🖼️', type: '이미지 파일' };
+      case '.csv':
+        return { icon: '📊', type: '데이터 파일' };
+      case '.pdf':
+        return { icon: '📄', type: 'PDF 문서' };
+      case '.docx':
+        return { icon: '📊', type: 'Word 문서' };
+      default:
+        return { icon: '📄', type: '파일' };
+    }
+  }
+
+  // 파일 액션 버튼 생성 함수
+  function getFileActions(file) {
+    const fileName = file.name;
+    const fileExt = file.extname.toLowerCase();
+    
+    let actions = '';
+    
+    if (fileExt === '.md' && fileName !== 'index.md') {
+      const mdName = fileName.replace('.md', '');
+      actions += `<a href="${site_url}${mdName}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+    } else if (fileExt === '.ipynb') {
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="${colab_url}${fileName}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>`;
+    } else if (fileExt === '.pdf') {
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
+    } else if (fileExt === '.docx') {
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
+      actions += `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" class="file-action" title="Google에서 열기" target="_blank">📊</a>`;
+    } else if (fileExt === '.html') {
+      actions += `<a href="${site_url}${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+    } else {
+      actions += `<a href="${file.path}" class="file-action" title="파일 열기">📖</a>`;
+    }
+    
+    return actions;
+  }
+
+  // DOM이 로드된 후 파일 목록 렌더링
+  document.addEventListener('DOMContentLoaded', function() {
+    const fileGrid = document.querySelector('.file-grid');
+    
+    if (curFiles.length === 0) {
+      fileGrid.innerHTML = `
+        <div class="empty-message">
+          <span class="empty-icon">📄</span>
+          <h3>파일이 없습니다</h3>
+          <p>현재 이 위치에는 완료된 미션 파일이 없습니다.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    curFiles.forEach(file => {
+      if (file.name === 'index.md' || file.name === 'info.md') return;
+
+      const fileInfo = getFileInfo(file.extname);
+      const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
+      const actions = getFileActions(file);
+      
+      html += `
+        <div class="file-item">
+          <div class="file-icon">${fileInfo.icon}</div>
+          <div class="file-info">
+            <h4 class="file-name">${file.name}</h4>
+            <p class="file-type">${fileInfo.type}</p>
+            <p class="file-size">${fileDate}</p>
+          </div>
+          <div class="file-actions">
+            ${actions}
+          </div>
+        </div>
+      `;
+    });
+    
+    fileGrid.innerHTML = html;
+  });
+</script>
+
 <div class="file-grid">
-  <!-- Static files (non-markdown) -->
-  {% assign current_folder = "스터디/" %}
-  {% assign static_files = site.static_files | where_exp: "item", "item.path contains current_folder" %}
-  {% assign markdown_pages = site.pages | where_exp: "page", "page.path contains '스터디'" %}
-  
-  {% assign all_files = "" | split: "" %}
-  {% assign all_file_names = "" | split: "" %}
-
-  <!-- Add static files -->
-  {% for file in static_files %}
-    {% unless file.name == "index.md" or all_file_names contains file.name %}
-      {% assign all_files = all_files | push: file %}
-      {% assign all_file_names = all_file_names | push: file.name %}
-    {% endunless %}
-  {% endfor %}
-
-  <!-- Add markdown pages -->
-  {% for page in markdown_pages %}
-    {% unless page.name == "index.md" or all_file_names contains page.name %}
-      {% assign all_files = all_files | push: page %}
-      {% assign all_file_names = all_file_names | push: page.name %}
-    {% endunless %}
-  {% endfor %}
-  
-  <!-- Debug: Show what files are being processed -->
-  <!-- Total files found: {{ all_files.size }} -->
-  {% if all_files.size > 0 %}
-    <!-- Sort files by date (newest first) -->
-    {% assign sorted_files = all_files | sort: 'name' | reverse %}
-    {% if sorted_files.size == 0 or sorted_files[0].modified_time == nil %}
-      {% assign sorted_files = all_files | sort: 'date' | reverse %}
-    {% endif %}
-    {% for file in sorted_files %}
-      <!-- file {{ file.name }} -->
-      {% assign file_ext = file.extname | downcase %}
-      {% if file_ext == "" and file.path %}
-        {% assign file_name = file.path | split: "/" | last %}
-        {% assign file_ext = file_name | split: "." | last | downcase %}
-        {% assign file_ext = "." | append: file_ext %}
-      {% endif %}
-      
-      <!-- Handle page objects differently from static files -->
-      {% assign is_page = false %}
-      {% if file.url %}
-        {% assign is_page = true %}
-      {% endif %}
-      
-      {% assign file_icon = "📄" %}
-      {% assign file_type = "파일" %}
-      
-      {% if file_ext == ".ipynb" %}
-        {% assign file_icon = "📓" %}
-        {% assign file_type = "Jupyter Notebook" %}
-      {% elsif file_ext == ".py" %}
-        {% assign file_icon = "🐍" %}
-        {% assign file_type = "Python 파일" %}
-      {% elsif file_ext == ".md" %}
-        {% assign file_icon = "📝" %}
-        {% assign file_type = "Markdown 문서" %}
-      {% elsif file_ext == ".json" %}
-        {% assign file_icon = "⚙️" %}
-        {% assign file_type = "JSON 설정" %}
-      {% elsif file_ext == ".zip" %}
-        {% assign file_icon = "📦" %}
-        {% assign file_type = "압축 파일" %}
-      {% elsif file_ext == ".png" or file_ext == ".jpg" or file_ext == ".jpeg" %}
-        {% assign file_icon = "🖼️" %}
-        {% assign file_type = "이미지 파일" %}
-      {% elsif file_ext == ".csv" %}
-        {% assign file_icon = "📊" %}
-        {% assign file_type = "데이터 파일" %}
-      {% endif %}
-      
-      <div class="file-item">
-        <div class="file-icon">{{ file_icon }}</div>
-        <div class="file-info">
-          <h4 class="file-name">
-            {% if is_page %}
-              {% assign display_name = file.name | default: file.path | split: "/" | last %}
-            {% else %}
-              {% assign display_name = file.name | default: file.path | split: "/" | last %}
-            {% endif %}
-            {{ display_name }}
-          </h4>
-          <p class="file-type">{{ file_type }}</p>
-          <p class="file-size">
-            {% if is_page %}
-              {% if file.date %}{{ file.date | date: "%Y-%m-%d" }}{% else %}Page{% endif %}
-            {% else %}
-              {% if file.modified_time %}{{ file.modified_time | date: "%Y-%m-%d" }}{% else %}{{ file.date | date: "%Y-%m-%d" }}{% endif %}
-            {% endif %}
-          </p>
-        </div>
-        <div class="file-actions">
-        <!-- file_ext {{ file_ext }} -->
-        <!-- display_name {{ display_name }} -->
-          {% if file_ext == ".md" and display_name != "index.md" %}
-            {% assign file_name_clean = display_name %}
-            {% assign md_name_clean = file_name_clean | remove: '.md' %}
-            <a href="https://c0z0c.github.io/sprint_mission/스터디/{{ md_name_clean }}" class="file-action" title="렌더링된 페이지 보기" target="_blank">🌐</a>
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
-          {% elsif file_ext == ".ipynb" %}
-            {% assign file_name_clean = display_name %}
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://colab.research.google.com/github/c0z0c/sprint_mission/blob/master/스터디/{{ file_name_clean }}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>
-          {% elsif file_ext == ".pdf" %}
-            {% assign file_name_clean = display_name %}
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스터디/{{ file_name_clean }}" class="file-action" title="PDF 뷰어로 열기" target="_blank">📄</a>
-          {% elsif file_ext == ".docx" %}
-            {% assign file_name_clean = display_name %}
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file_name_clean }}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>
-            <a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/c0z0c/sprint_mission/master/스터디/{{ file_name_clean }}" class="file-action" title="Google에서 열기" target="_blank">📊</a>
-          {% elsif file_ext == ".html" %}
-            {% assign file_name_clean = display_name %}
-            <a href="https://c0z0c.github.io/sprint_mission/스터디/{{ file_name_clean }}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>
-            <a href="https://github.com/c0z0c/sprint_mission/blob/master/스터디/{{ file_name_clean }}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>
-          {% else %}
-            {% if is_page %}
-              <a href="{{ file.url | relative_url }}" class="file-action" title="페이지 열기">🌐</a>
-            {% else %}
-              <a href="{{ file.path | relative_url }}" class="file-action" title="파일 열기">📖</a>
-            {% endif %}
-          {% endif %}
-        </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <div class="empty-message">
-      <span class="empty-icon">📄</span>
-      <h3>파일이 없습니다</h3>
-      <p>현재 이 위치에는 스터디 파일이 없습니다.</p>
-    </div>
-  {% endif %}
+  <!-- 파일 목록이 JavaScript로 동적 생성됩니다 -->
 </div>
 
 ---
 
 <div class="navigation-footer">
-  <a href="{{ site.baseurl }}/" class="nav-button home">
+  <a href="{{- site.baseurl -}}/" class="nav-button home">
     <span class="nav-icon">🏠</span> 홈으로
   </a>
 </div>
