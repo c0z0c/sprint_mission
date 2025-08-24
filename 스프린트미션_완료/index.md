@@ -48,7 +48,6 @@ pragma: no-cache
   ]
   {% endcapture %}
 
-
   {% capture cur_pages_json %}
   [
   {% for p in cur_pages %}
@@ -69,6 +68,12 @@ pragma: no-cache
   {% endcapture %}
 
 {% endif %}
+
+  var curFiles = {{- cur_files_json -}};
+  var curPages = {{- cur_pages_json -}};
+
+  console.log('files:', curFiles);
+  console.log('pages:', curPages);
 
 </script>
 
