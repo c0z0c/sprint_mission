@@ -18,6 +18,8 @@ pragma: no-cache
 {% assign cur_file_dir = cur_dir %}
 {% assign cur_page_dir = page.dir %}
 
+{% comment %}
+
 {% unless cur_file_dir %}
 
   {% assign cur_dirs = "" %}
@@ -25,23 +27,23 @@ pragma: no-cache
 
 {% else %}
 
-{% comment %}
-
-  {% assign cur_files = "" %}
+  {% assign cur_files_raw = "" %}
   {% for f in all_files %}
     {% assign f_deep = f.path | split "/" %}
     {% if f.dir | slice: 0, cur_file_dir | size == cur_file_dir %}
-      {% assign cur_files = cur_files | push: f %}
+      {% capture cur_files_raw %}{{ cur_files_raw }}|{{ f.path }}{% endcapture %}
     {% endif %}
   {% endfor %}
+  {% assign cur_files = cur_files_raw | split: "|" | reject: "" %}
 
-  {% assign cur_pages = "" %}
+  {% assign cur_pages_raw = "" %}
   {% for f in all_pages %}
     {% assign f_deep = f.path | split "/" %}
     {% if f.dir | slice: 0, cur_page_dir | size == cur_page_dir %}
-      {% assign cur_pages = cur_pages | push: f %}
+      {% capture cur_pages_raw %}{{ cur_pages_raw }}|{{ f.path }}{% endcapture %}
     {% endif %}
   {% endfor %}
+  {% assign cur_pages_raw = cur_pages_raw | split: "|" | reject: "" %}
 
   {% capture cur_files_json %}
   [
@@ -78,8 +80,9 @@ pragma: no-cache
   ]
   {% endcapture %}
 
-{% endcomment %}
 {% endif %}
+
+{% endcomment %}
 
 </script>
 
