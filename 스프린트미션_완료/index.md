@@ -168,8 +168,8 @@ curFiles.forEach(f => {
 
     let html = '';
     curFiles.forEach(file => {
-      if (file.name == 'index.md') continue;
-      if (file.name == 'info.md') continue;
+      //if (file.name == 'index.md') continue;
+      //if (file.name == 'info.md') continue;
 
       const fileInfo = getFileInfo(file.extname);
       const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
