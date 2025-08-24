@@ -14,7 +14,7 @@ pragma: no-cache
 {%- assign cur_dir = "/스프린트미션_완료/" -%}
 
 {%- assign all_files = site.static_files -%}
-{%- assign all_pages = site.all_pages_json -%}
+{%- assign all_pages = site.pages -%}
 
 {%- assign cur_file_dir = cur_dir -%}
 {%- assign cur_page_dir = page.dir -%}
