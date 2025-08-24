@@ -85,11 +85,7 @@ console.group('cur pages');
     {%- assign f_s_path = f_path | slice: 0, 1 -%}
     {%- assign f_e_path = f_path | slice: -1, 1 -%}
 
-    console.log('f_path', '{{ f_path }}');
-    console.log('f_path_start', '{{ f_path_start }}');
-    console.log('cur_dir', '{{ cur_dir }}');
-
-    {%- if f_path_start == cur_dir -%}
+{%- if f_path_start == cur_dir -%}
       {%- if cur_deep_size == f_deep_size -%}
         {%- assign f_s_path = f_path | slice: 0, 1 -%}
         {%- assign f_e_path = f_path | slice: -1, 1 -%}
@@ -141,13 +137,9 @@ console.groupEnd();
 
 {%- endif -%}
 
-  <!-- --- curFiles --- -->
-
-  
   var curFiles = {{- cur_files_json -}};
   
   var curPages = {{- cur_pages_json -}};
-
   
   console.log('files:', curFiles);
   
