@@ -27,7 +27,8 @@ pragma: no-cache
 
 {% else %}
 
-{% comment %} 현재 폴더 파일만 {% endcomment %}
+{% comment %}
+
   {% assign cur_files = "" %}
   {% for f in all_files %}
     {% assign f_deep = f.path | split "/" %}
@@ -36,7 +37,6 @@ pragma: no-cache
     {% endif %}
   {% endfor %}
 
-  {% comment %} 현재 폴더 페이지만 {% endcomment %}
   {% assign cur_pages = "" %}
   {% for f in all_pages %}
     {% assign f_deep = f.path | split "/" %}
@@ -45,7 +45,6 @@ pragma: no-cache
     {% endif %}
   {% endfor %}
 
-  {% comment %} 현재 폴더 파일 JSON {% endcomment %}
   {% capture cur_files_json %}
   [
   {% for f in cur_files %}
@@ -62,7 +61,6 @@ pragma: no-cache
   {% endcapture %}
 
 
-  {% comment %} 현재 폴더 페이지 JSON {% endcomment %}
   {% capture cur_pages_json %}
   [
   {% for p in cur_pages %}
@@ -82,6 +80,7 @@ pragma: no-cache
   ]
   {% endcapture %}
 
+{% endcomment %}
 {% endif %}
 
 </script>
