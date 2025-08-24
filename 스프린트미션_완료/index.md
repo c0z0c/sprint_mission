@@ -48,9 +48,9 @@ pragma: no-cache
         {%- assign f_s_path = f.path | slice: 0, 1 -%}
         {%- assign f_e_path = f.path | slice: -1, 1 -%}
         {%- assign cur_files = cur_files | push: f -%}
-        <!-- {{- f.path -}} -->
+        console.log('f.path:', '{{- f.path -}}');
       {% else %}
-        <!-- path deep: ({{- cur_deep_size -}},{{- f_deep_size -}}) {{- f.path -}} -->
+        <!-- path deep: ({{ cur_deep_size }},{{ f_deep_size }}) {{ f.path }} -->
       {%- endif -%}
     {%- endif -%}
   {%- endfor -%}
@@ -69,20 +69,18 @@ pragma: no-cache
     {%- assign f_s_path = f.path | slice: 0, 1 -%}
     {%- assign f_e_path = f.path | slice: -1, 1 -%}
 
-
     {%- if f_path_start == cur_page_dir -%}
 
       {%- if cur_deep_size == f_deep_size -%}
 
         {%- assign f_s_path = f.path | slice: 0, 1 -%}
         {%- assign f_e_path = f.path | slice: -1, 1 -%}
-
-        {{}}
-        console.log('*f.path:', '{{- f.path -}}');
         {%- assign cur_pages = cur_pages | push: f -%}
+        
+        console.log('f.path:', '{{- f.path -}}');
 
       {% else %}
-        {{}}
+        
         console.log('*path deep:', '({{- cur_deep_size -}}, {{- f_deep_size -}})');
         console.log('*f.path:', '{{- f.path -}}');
 
@@ -130,14 +128,14 @@ pragma: no-cache
 
   <!-- --- curFiles --- -->
 
-  {{}}
+  
   var curFiles = {{- cur_files_json -}};
-  {{}}
+  
   var curPages = {{- cur_pages_json -}};
 
-  {{}}
+  
   console.log('files:', curFiles);
-  {{}}
+  
   console.log('pages:', curPages);
 
 </script>
