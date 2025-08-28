@@ -46,7 +46,8 @@ pragma: no-cache
       extname: extname,
       modified_time: modified_time,
       basename: basename,
-      url: page.url || ''
+      url: page.url || '',
+      title: page.title || page.name || ''
     });
   }
 });
@@ -177,7 +178,7 @@ curFiles.sort((a, b) => {
         <div class="file-item">
           <div class="file-icon">${fileInfo.icon}</div>
           <div class="file-info">
-            <h4 class="file-name">${file.name}</h4>
+            <h4 class="file-name">${file.title}</h4>
             <p class="file-type">${fileInfo.type}</p>
             <p class="file-size">${fileDate}</p>
           </div>
