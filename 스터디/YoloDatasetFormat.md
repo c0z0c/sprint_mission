@@ -133,17 +133,24 @@ COCO 데이터셋은 YOLO 학습에 자주 사용되는 벤치마크 데이터�
 
 **COCO의 JSON 포맷을 YOLO의 TXT 포맷으로 반드시 변환해야 합니다.** 이 과정에서 픽셀 기반의 좌상단 좌표를 YOLO가 요구하는 **정규화된 중심 좌표 및 너비/높이**로 변환해야 합니다.
 
+
 **중심 좌표 계산:**
 
-$$x_{center} = \frac{x_{pixel} + \frac{width_{pixel}}{2}}{image_{width}}$$
+---
 
-$$y_{center} = \frac{y_{pixel} + \frac{height_{pixel}}{2}}{image_{height}}$$
+$$x_{center} = \frac{\text{바운딩박스 왼쪽 x좌표}(x_{pixel}) + \frac{\text{바운딩박스 너비}(width_{pixel})}{2}}{\text{이미지 전체 너비}(image_{width})}$$
+
+$$y_{center} = \frac{\text{바운딩박스 위쪽 y좌표}(y_{pixel}) + \frac{\text{바운딩박스 높이}(height_{pixel})}{2}}{\text{이미지 전체 높이}(image_{height})}$$
+
+---
 
 **정규화된 크기 계산:**
 
-$$normalized_{width} = \frac{width_{pixel}}{image_{width}}$$
+$$정규화된\ 너비(normalized_{width}) = \frac{너비_{픽셀}(width_{pixel})}{이미지_{너비}(image_{width})}$$
 
-$$normalized_{height} = \frac{height_{pixel}}{image_{height}}$$
+$$정규화된\ 높이(normalized_{height}) = \frac{높이_{픽셀}(height_{pixel})}{이미지_{높이}(image_{height})}$$
+
+---
 
 #### 3.2.2. 클래스 ID 재매핑(Remapping, 리매핑)
 
