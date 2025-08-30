@@ -8,8 +8,11 @@ baseurl: "/sprint_mission"
 markdown: kramdown
 highlighter: rouge
 plugins:
-  - jekyll-feed
-  - jekyll-sitemap
+  - jekyll-feed         # RSS 피드 생성
+  - jekyll-sitemap      # 사이트맵 생성
+  - jekyll-seo-tag      # SEO 메타 태그 자동 생성
+  - jekyll-paginate     # 블로그 포스트 페이지네이션
+  - jekyll-include-cache # include 태그 캐싱
 
 # 파일 처리
 include:
