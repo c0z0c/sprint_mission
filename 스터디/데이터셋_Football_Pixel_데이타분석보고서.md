@@ -11,14 +11,14 @@ pragma: no-cache
 
 ## 목차
 
-1. 데이터셋 개요  
-   1.1 다운로드 및 경로  
-   1.2 폴더 구조  
-2. COCO JSON 구조  
-   2.1 주요 필드 설명  
-   2.2 Mermaid 구조도  
-3. 기술적 의견 및 개선 제안  
-4. 용어 목록
+1. [데이터셋 개요](#1-데이터셋-개요)  
+   1.1 [다운로드 및 경로](#11-다운로드-및-경로)  
+   1.2 [폴더 구조](#12-폴더-구조)  
+2. [COCO JSON 구조](#2-coco-json-구조)  
+   2.1 [주요 필드 설명](#21-주요-필드-설명)  
+   2.2 [Mermaid 구조도](#22-mermaid-구조도)  
+3. [기술적 의견 및 개선 제안](#3-기술적-의견-및-개선-제안)  
+4. [용어 목록](#4-용어-목록)
 
 ---
 
@@ -132,22 +132,31 @@ with open(coco_json_path, 'r') as f:
 
 ### 2.2 Mermaid 구조도
 
-> Mermaid 다이어그램은 GitHub Pages 또는 Mermaid 지원 마크다운 뷰어에서만 정상적으로 표시됩니다.
-
 ```mermaid
-graph TD
+graph LR
     A["COCO_Football Pixel.json"]
     A --> B["info"]
     A --> C["licenses"]
     A --> D["images"]
     A --> E["annotations"]
     A --> F["categories"]
-    E --> G["segmentation"]
-    E --> H["bbox"]
-    E --> I["category_id"]
-    D --> J["file_name"]
-    D --> K["width"]
-    D --> L["height"]
+    D --> D1["id (int)"]
+    D --> D2["file_name (str)"]
+    D --> D3["height (int)"]
+    D --> D4["width (int)"]
+    D --> D5["license (int)"]
+    E --> E1["id (int)"]
+    E --> E2["image_id (int)"]
+    E --> E3["segmentation (list)"]
+    E --> E4["iscrowd (int: 0/1)"]
+    E --> E5["bbox (list: [x, y, w, h])"]
+    E --> E6["area (int/float)"]
+    E --> E7["category_id (int)"]
+    F --> F1["id (int)"]
+    F --> F2["name (str)"]
+    F --> F3["supercategory (str)"]
+    F --> F4["isthing (int: 0/1)"]
+    F --> F5["color (list: [R,G,B])"]
 ```
 
 ---
