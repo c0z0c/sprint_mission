@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "Football Semantic Segmentation Dataset"
-description: "Football Semantic Segmentation Dataset"
+title: "COCO Football Semantic Segmentation Dataset"
+description: "COCO Football Semantic Segmentation Dataset"
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# 🧠 Football Semantic Segmentation Dataset
+# 🧠 COCO Football Semantic Segmentation Dataset
 
 ## 목차
 
@@ -37,9 +37,6 @@ def get_path_data():
 
 print("Path to dataset files:", get_path_data())
 ```
-
-> ⚠️ 현재 설치된 `kagglehub` 버전은 `0.3.12`이며, 최신 버전 `0.3.13`으로 업그레이드하는 것이 권장됩니다.
-
 ---
 
 ### 1.2 폴더 구조
