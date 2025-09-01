@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "COCO_Football Pixel.json 구조 분석"
-description: "COCO_Football Pixel.json 구조 분석"
+title: "Football Pixel.json 구조"
+description: "Football Pixel.json 구조"
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# 📁 COCO_Football Pixel.json 구조 분석
+# 📁 Football Pixel.json 구조 분석
 
 ## 목차
 

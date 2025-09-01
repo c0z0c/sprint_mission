@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "Football Semantic Segmentation Dataset 분석 보고서"
-description: "Football Semantic Segmentation Dataset 분석 보고서"
+title: "Football Semantic Segmentation Dataset"
+description: "Football Semantic Segmentation Dataset"
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# 🧠 Football Semantic Segmentation Dataset 분석 보고서
+# 🧠 Football Semantic Segmentation Dataset
 
 ## 목차
 
