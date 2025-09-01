@@ -156,7 +156,7 @@ $$
 \text{Area}_{bbox} = \text{width} \times \text{height}
 $$
 
-예시:
+예시: <br>
 $$
 \text{Area}_{bbox} = 326.0 \times 714.0 = 232164
 $$
