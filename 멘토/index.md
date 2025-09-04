@@ -168,6 +168,7 @@ curFiles.sort((a, b) => {
     let html = '';
     curFiles.forEach(file => {
       if (file.name === 'index.md' || file.name === 'info.md') return;
+      if (file.extname == '.txt') return
 
       const fileInfo = getFileInfo(file.extname);
       const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
