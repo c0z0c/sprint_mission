@@ -145,7 +145,7 @@ curFiles.sort((a, b) => {
       actions += `<a href="${site_url}${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
       actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
     } else {
-      actions += `<a href="${file.path}" class="file-action" title="파일 열기">📖</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="파일 열기" target="_blank">📖</a>`;
     }
     
     return actions;
