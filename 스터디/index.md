@@ -22,6 +22,13 @@ pragma: no-cache
   console.log('curFiles:', curFiles);
   console.log('curPages:', curPages);
 
+  // 기본 타이틀 추가
+  curFiles.forEach(file => {
+    if (!file.title) {
+      file.title = file.name;
+    }
+  });
+
   curPages.forEach(page => {
   // curFiles에 같은 name과 path가 있는지 확인
   const exists = curFiles.some(file => file.name === page.name && file.path === page.path);
@@ -47,7 +54,7 @@ pragma: no-cache
       modified_time: modified_time,
       basename: basename,
       url: page.url || '',
-      title: page.title || page.name || ''
+      title: page.title ? page.title : page.name || ''
     });
   }
 });
