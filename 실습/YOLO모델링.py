@@ -105,7 +105,8 @@ class YOLODetectionThread(QThread):
     
     def run(self):
         # YOLO 모델 로드
-        model = YOLO(self.model_path)
+        #model = YOLO(self.model_path)
+        model = YOLO("yolov8n.pt")
         print("YOLO model loaded successfully")
         
         try:
