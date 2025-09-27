@@ -1,0 +1,70 @@
+model confidence에 따라서 noisy label 달리 분류
+1. stage 그냥 처음 학습 -> f
+
+2. f(x)~y 많이 다른 데이터 필터
+
+3. 이 중에서 더 오차가 심한 애들을 우선적으로 본 다음에
+
+문제상황: 
+알약 4개 있는 이미지에서 알약별로 obejct detection하고, 알약 분류해야함.
+
+<Cleaning Noisy Label by Iterative Semi-supervised Learning>
+1. Noisy Label
+ - bbox가 없거나 
+   한 이미지에 대해서 pseudo labeling된 bbox 개수 > 라벨링 bbox 개수
+   -모델이 잘못했거나, 라벨이 잘못되었거나
+   -> 특정 임계치로 판단해서, 
+ - bbox가 잘못그려졌거나 
+   - 빈 곳에 그렸거나
+   - 겹쳐서 그렸거나
+   -> pseudo label 과 실제 label의 IoU 엄청 낮은 것들 (0인것들)
+   IoU가 매우 낮다
+    - 모델이 잘못했거나(a), 라벨이 잘못했거나(b)
+    - 0<=IoU<0.1 이 구간에서 실제 라벨이 제대로 된 애들 알아보기
+    - 샘플로 20개 뽑아서 어떤 케이스가 더 많은지 체크
+    - if b>>>>a
+    -> 0<=IoU<0.05
+	어느순간부터 a>b -> 이때의 IoU max 상한을 k로 두고,
+     IoU k 미만은 noisy label로 하고, pseudo labeling로 학습하자
+     (=라벨을 바꿔버리자)
+ - 알약분류가 잘못되었거나
+  - 정답이 따로 있는데, 라벨이 잘못 됨
+  -> pseudo labeling
+
+2. Out-of-domain data (OOD)
+-Unkown, ~
+
+
+정답별로 데이터들 모아서
+잠재벡터 z(x)들을 모아놓고, 여기서 anomaly 찾아야함
+
+Z = 클래스 수 * 데이터 수 * 벡터차원(512, 256) 행렬
+
+forward(self, x, return_z=False):
+     x = self.encoder(x)
+     flatten 후 linear layer 가기 직전 또는 linear로 차원을 적당히 줄인 후
+     if return_z:
+         return x -> 잠재벡터
+     x = self.classifier(x)
+     return x
+
+Z = []
+Y = []
+for x, y in dataloader:
+	with torch.no_grad():
+		pred = model(x)
+		emb = model(x, True)
+		Z.append(emb)
+		Y.append(y)
+
+Z[Y==2] -> 전체 데이터 중 클래스 2번인 데이터의 잠재벡터들만 나오고 (예: 데이터 100개)
+-> 이게 하나의 벡터공간 (100명의 친구들이 모여있는 공간, 각 벡터는 각 친구들의 성격, 특징을 나타냄)
+-> 여기서 유달리 성격이 다른 애들과 다른 친구들, 소외된 친구들을 먼저 보기
+
+알약 클래스 73개
+Z_0 = np.array(모든 해당 클래스로 라벨된 데이터들의 z 벡터, hidden_dim차원만큼)
+z = 첫 모델의 임베딩 벡터
+...
+Z_72
+
+chatGPT코딩은 VScode + Codex 형태로 추천 (복붙 할 필요가 없고 알아서 고쳐줌)

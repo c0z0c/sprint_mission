@@ -1,0 +1,20 @@
+{
+    "git.enabled": false,
+    "github.copilot.advanced": {
+        "enabled": {
+            "*": false, // 기본적으로 모든 언어에서 활성화
+            "plaintext": false, // 텍스트 파일에서는 비활성화
+            "markdown": false // 마크다운 파일에서는 비활성화
+        }
+    },
+    "C_Cpp.copilotHover": "disabled",
+    "editor.suggestOnTriggerCharacters": false,
+    "terminal.integrated.suggest.suggestOnTriggerCharacters": false,
+    "editor.quickSuggestions": {
+        "other": "off"
+    },
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "editor.acceptSuggestionOnEnter": "off",
+    "editor.wordBasedSuggestions": "off"
+    
+}
