@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Streamlit (streamlit_01.py)",
+            "type": "shell",
+            "command": "C:/Users/sw1/anaconda3/envs/py310_recommand_env/python.exe",
+            "args": [
+                "-m",
+                "streamlit",
+                "run",
+                "${file}",
+                "--server.port",
+                "8501",
+                "--server.headless",
+                "false"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "isBackground": true,
+            "problemMatcher": []
+        }
+    ]
+}
