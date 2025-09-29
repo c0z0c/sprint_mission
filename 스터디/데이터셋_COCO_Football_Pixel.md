@@ -2,6 +2,7 @@
 layout: default
 title: "COCO Football Semantic Segmentation Dataset"
 description: "COCO Football Semantic Segmentation Dataset"
+date: 2025-09-20
 cache-control: no-cache
 expires: 0
 pragma: no-cache

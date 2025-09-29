@@ -177,11 +177,12 @@ curFiles.sort((a, b) => {
       <table class="file-table">
         <thead>
           <tr>
-            <th>날짜</th>
-            <th>제목</th>
-            <th>타입</th>
-            <th>렌더링페이지</th>
-            <th>Git 직접</th>
+            <th onclick="sortTable(0)" style="cursor: pointer;">날짜 ⬍</th>
+            <th onclick="sortTable(1)" style="cursor: pointer;">제목 ⬍</th>
+            <th onclick="sortTable(2)" style="cursor: pointer;">파일명 ⬍</th>
+            <th onclick="sortTable(3)" style="cursor: pointer;">타입 ⬍</th>
+            <th onclick="sortTable(4)" style="cursor: pointer;">렌더링페이지 ⬍</th>
+            <th onclick="sortTable(5)" style="cursor: pointer;">Git직접 ⬍</th>
           </tr>
         </thead>
         <tbody>
@@ -219,6 +220,7 @@ curFiles.sort((a, b) => {
         <tr>
           <td>${fileDate}</td>
           <td><span class="file-icon">${fileInfo.icon}</span> ${file.title}</td>
+          <td>${fileName}</td>
           <td>${fileInfo.type}</td>
           <td>${renderLink}</td>
           <td>${gitLink}</td>
@@ -233,6 +235,63 @@ curFiles.sort((a, b) => {
     
     fileGrid.innerHTML = html;
   });
+
+  // 테이블 정렬 기능
+  let sortDirection = {}; // 각 컬럼의 정렬 방향을 저장
+
+  function sortTable(columnIndex) {
+    const table = document.querySelector('.file-table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // 현재 정렬 방향 확인 (기본값: 오름차순)
+    const isAscending = sortDirection[columnIndex] !== 'asc';
+    sortDirection[columnIndex] = isAscending ? 'asc' : 'desc';
+    
+    // 헤더 화살표 업데이트
+    const headers = table.querySelectorAll('th');
+    headers.forEach((header, index) => {
+      if (index === columnIndex) {
+        const arrow = isAscending ? ' ⬆' : ' ⬇';
+        header.innerHTML = header.innerHTML.replace(/ [⬆⬇⬍]/g, '') + arrow;
+      } else {
+        header.innerHTML = header.innerHTML.replace(/ [⬆⬇⬍]/g, '') + ' ⬍';
+      }
+    });
+    
+    // 행 정렬
+    rows.sort((a, b) => {
+      let aValue = a.cells[columnIndex].textContent || a.cells[columnIndex].innerText;
+      let bValue = b.cells[columnIndex].textContent || b.cells[columnIndex].innerText;
+      
+      // 날짜 컬럼인 경우 날짜로 파싱
+      if (columnIndex === 0) {
+        aValue = aValue ? new Date(aValue).getTime() : 0;
+        bValue = bValue ? new Date(bValue).getTime() : 0;
+      }
+      // 숫자가 포함된 문자열의 경우 자연 정렬
+      else {
+        // 아이콘 제거 (제목 컬럼의 경우)
+        aValue = aValue.replace(/[📓🐍📝⚙️📦🖼️📊📄]/g, '').trim();
+        bValue = bValue.replace(/[📓🐍📝⚙️📦🖼️📊📄]/g, '').trim();
+      }
+      
+      let comparison = 0;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else {
+        comparison = aValue.toString().localeCompare(bValue.toString(), 'ko-KR', { 
+          numeric: true, 
+          caseFirst: 'lower' 
+        });
+      }
+      
+      return isAscending ? comparison : -comparison;
+    });
+    
+    // 정렬된 행들을 다시 tbody에 추가
+    rows.forEach(row => tbody.appendChild(row));
+  }
 </script>
 
 <div class="file-grid">

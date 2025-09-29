@@ -2,6 +2,7 @@
 layout: default
 title: "COCO Football Pixel.json 구조"
 description: "COCO Football Pixel.json 구조"
+date: 2025-09-20
 cache-control: no-cache
 expires: 0
 pragma: no-cache
