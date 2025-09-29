@@ -173,28 +173,63 @@ curFiles.sort((a, b) => {
       return;
     }
 
-    let html = '';
+    let html = `
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th>날짜</th>
+            <th>제목</th>
+            <th>타입</th>
+            <th>렌더링페이지</th>
+            <th>Git 직접</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
     curFiles.forEach(file => {
       if (file.name === 'index.md' || file.name === 'info.md') return;
 
       const fileInfo = getFileInfo(file.extname);
       const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
-      const actions = getFileActions(file);
+      const fileName = file.name;
+      const fileExt = file.extname.toLowerCase();
+      
+      // 렌더링페이지 링크 생성
+      let renderLink = '';
+      if (fileExt === '.md' && fileName !== 'index.md') {
+        const mdName = fileName.replace('.md', '');
+        renderLink = `<a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank">🌐 보기</a>`;
+      } else if (fileExt === '.ipynb') {
+        renderLink = `<a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank">🚀 Colab</a>`;
+      } else if (fileExt === '.pdf') {
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank">📄 뷰어</a>`;
+      } else if (fileExt === '.docx') {
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank">📊 Google</a>`;
+      } else if (fileExt === '.html') {
+        renderLink = `<a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank">🌐 보기</a>`;
+      } else {
+        renderLink = '-';
+      }
+      
+      // Git 직접 링크
+      const gitLink = `<a href="${git_url}${fileName}" title="GitHub에서 원본 보기" target="_blank">📖 GitHub</a>`;
       
       html += `
-        <div class="file-item">
-          <div class="file-icon">${fileInfo.icon}</div>
-          <div class="file-info">
-            <h4 class="file-name">${file.title}</h4>
-            <p class="file-type">${fileInfo.type}</p>
-            <p class="file-size">${fileDate}</p>
-          </div>
-          <div class="file-actions">
-            ${actions}
-          </div>
-        </div>
+        <tr>
+          <td>${fileDate}</td>
+          <td><span class="file-icon">${fileInfo.icon}</span> ${file.title}</td>
+          <td>${fileInfo.type}</td>
+          <td>${renderLink}</td>
+          <td>${gitLink}</td>
+        </tr>
       `;
     });
+    
+    html += `
+        </tbody>
+      </table>
+    `;
     
     fileGrid.innerHTML = html;
   });
