@@ -104,25 +104,25 @@ curFiles.sort((a, b) => {
   function getFileInfo(extname) {
     switch(extname.toLowerCase()) {
       case '.ipynb':
-        return { icon: '📓', type: 'Jupyter Notebook' };
+        return { icon: '📓', type: 'Colab' };
       case '.py':
-        return { icon: '🐍', type: 'Python 파일' };
+        return { icon: '🐍', type: 'Python' };
       case '.md':
-        return { icon: '📝', type: 'Markdown 문서' };
+        return { icon: '📝', type: 'Markdown' };
       case '.json':
-        return { icon: '⚙️', type: 'JSON 설정' };
+        return { icon: '⚙️', type: 'JSON' };
       case '.zip':
-        return { icon: '📦', type: '압축 파일' };
+        return { icon: '📦', type: '압축' };
       case '.png':
       case '.jpg':
       case '.jpeg':
-        return { icon: '🖼️', type: '이미지 파일' };
+        return { icon: '🖼️', type: '이미지' };
       case '.csv':
-        return { icon: '📊', type: '데이터 파일' };
+        return { icon: '📊', type: '데이터' };
       case '.pdf':
-        return { icon: '📄', type: 'PDF 문서' };
+        return { icon: '📄', type: 'PDF' };
       case '.docx':
-        return { icon: '📊', type: 'Word 문서' };
+        return { icon: '📊', type: 'Word' };
       default:
         return { icon: '📄', type: '파일' };
     }
@@ -177,12 +177,12 @@ curFiles.sort((a, b) => {
       <table class="file-table">
         <thead>
           <tr>
-            <th onclick="sortTable(0)" style="cursor: pointer;">날짜 ⬍</th>
+            <th onclick="sortTable(0)" style="cursor: pointer; width:110px;">날짜 ⬍</th>
             <th onclick="sortTable(1)" style="cursor: pointer;">제목 ⬍</th>
             <th onclick="sortTable(2)" style="cursor: pointer;">파일명 ⬍</th>
             <th onclick="sortTable(3)" style="cursor: pointer;">타입 ⬍</th>
-            <th onclick="sortTable(4)" style="cursor: pointer;">렌더링페이지 ⬍</th>
-            <th onclick="sortTable(5)" style="cursor: pointer;">Git직접 ⬍</th>
+            <th onclick="sortTable(4)" style="cursor: pointer;">View ⬍</th>
+            <th onclick="sortTable(5)" style="cursor: pointer;">Git⬍</th>
           </tr>
         </thead>
         <tbody>
@@ -200,27 +200,45 @@ curFiles.sort((a, b) => {
       let renderLink = '';
       if (fileExt === '.md' && fileName !== 'index.md') {
         const mdName = fileName.replace('.md', '');
-        renderLink = `<a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank">🌐 보기</a>`;
+        renderLink = `<a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
       } else if (fileExt === '.ipynb') {
-        renderLink = `<a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank">🚀 Colab</a>`;
+        renderLink = `<a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank">🚀</a>`;
       } else if (fileExt === '.pdf') {
-        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank">📄 뷰어</a>`;
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
       } else if (fileExt === '.docx') {
-        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank">📊 Google</a>`;
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank">📊</a>`;
       } else if (fileExt === '.html') {
-        renderLink = `<a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank">🌐 보기</a>`;
+        renderLink = `<a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank">🌐</a>`;
       } else {
         renderLink = '-';
       }
       
       // Git 직접 링크
-      const gitLink = `<a href="${git_url}${fileName}" title="GitHub에서 원본 보기" target="_blank">📖 GitHub</a>`;
+      const gitLink = `<a href="${git_url}${fileName}" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+      
+      // 제목 클릭 시 렌더링 페이지 링크 생성
+      let titleClickable = `<span class="file-icon">${fileInfo.icon}</span> ${file.title}`;
+      if (fileExt === '.md' && fileName !== 'index.md') {
+        const mdName = fileName.replace('.md', '');
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.ipynb') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.pdf') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.docx') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.html') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      }
+      
+      // 파일명 클릭 시 Git 직접 연결
+      const fileNameClickable = `<a href="${git_url}${fileName}" title="GitHub에서 원본 보기" target="_blank" style="text-decoration: none; color: inherit;">${fileName}</a>`;
       
       html += `
         <tr>
           <td>${fileDate}</td>
-          <td><span class="file-icon">${fileInfo.icon}</span> ${file.title}</td>
-          <td>${fileName}</td>
+          <td>${titleClickable}</td>
+          <td>${fileNameClickable}</td>
           <td>${fileInfo.type}</td>
           <td>${renderLink}</td>
           <td>${gitLink}</td>

@@ -159,7 +159,22 @@
         table { width: 100%; border-collapse: collapse; font-size: .92rem; }
         th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
         th { background: #0f1418; color: #fff; font-weight: 600; }
-        tbody tr:hover { background: #0d1117; }
+        tbody tr:hover { 
+            background: rgba(58, 166, 255, 0.15) !important; /* 반투명한 진한 파란색 */
+            transition: background 0.2s ease;
+        }
+        
+        /* 파일 테이블 전용 스타일 */
+        .file-table tbody tr {
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .file-table tbody tr:hover {
+            background: rgba(58, 166, 255, 0.2) !important; /* 파일 테이블용 조금 더 진한 파란색 */
+            border-color: var(--accent) !important;
+        }
+        .file-table tbody tr:hover td {
+            border-color: rgba(88, 166, 255, 0.3);
+        }
 
         /* 강조 박스 */
         .highlight, .summary, .reports-section, .feature, .section-card, .report-item, .prep-card, .progress-card, .file-item, .related-link {
@@ -227,7 +242,12 @@
         .report-table { width:100%; border-collapse: collapse; margin: 18px 0; font-size: .88rem; background: var(--panel); overflow: hidden; border:1px solid var(--border); border-radius: var(--radius-md); }
         .report-table th { background: #10161b; color: var(--accent); padding: 14px 15px; text-align: left; }
         .report-table td { padding: 11px 15px; border-top: 1px solid var(--border-soft); }
-        .report-table tr:hover td { background: #111b22; }
+        .report-table tbody tr {
+            transition: background 0.2s ease;
+        }
+        .report-table tr:hover td { 
+            background: rgba(58, 166, 255, 0.15) !important; /* 반투명한 진한 파란색 */
+        }
         .report-link { color: var(--accent); text-decoration: none; font-weight: 500; }
         .report-link:hover { text-decoration: underline; }
         .report-date { color: var(--text-faint); font-size: .7rem; }
