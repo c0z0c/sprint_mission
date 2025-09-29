@@ -84,6 +84,9 @@ pragma: no-cache
       <a href="{{ site.baseurl }}/스프린트미션_완료/info">
         <span class="link-icon">📖</span> Info
       </a>
+      <a href="https://c0z0c.github.io/codeit_ai_health_eat" target="_blank">
+        <span class="link-icon">📱</span> 초급 프로젝트
+      </a>      
     </div>
   </div>
 </div>
