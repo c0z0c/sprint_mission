@@ -69,9 +69,9 @@ pragma: no-cache
 
 curFiles.sort((a, b) => {
   // 파일명으로 한글/영문 구분하여 정렬
-  if (!a.name) return 1;
-  if (!b.name) return -1;
-  return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+  if (!a.title) return 1;
+  if (!b.title) return -1;
+  return a.title.localeCompare(b.title, 'ko-KR', { numeric: true, caseFirst: 'lower' });
 });
 
 // // 정렬 후 출력
