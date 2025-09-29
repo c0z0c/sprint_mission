@@ -263,6 +263,82 @@
             h3 { font-size: 1.15rem; }
             .nav-bar a { margin: 0 4px; padding: 6px 10px; font-size: .82rem; }
         }
+
+        /* ==========================================
+           폴더 리스트 트리 스타일 (가독성 개선)
+           ========================================== */
+        .folder-links {
+            --tree-line: #2f353b;
+            --tree-hover-bg: #12181d;
+            --tree-active-bg: #18232c;
+            margin: 4px 0 18px;
+            padding: 6px 0 6px 18px;
+            position: relative;
+            display: block;
+            font-size: .92rem;
+        }
+        .folder-links::before {
+            content:"";
+            position:absolute;
+            left:8px; top:0; bottom:0;
+            width:1px;
+            background: linear-gradient(var(--tree-line), var(--tree-line) 75%, transparent);
+            opacity:.9;
+        }
+        .folder-link {
+            position: relative;
+            display: block;
+            margin: 0;
+            padding: 6px 10px 6px 28px;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 6px;
+            line-height: 1.28;
+            color: var(--text-dim) !important;
+            font-weight: 500;
+            letter-spacing: .2px;
+            transform: none !important;
+            box-shadow: none !important;
+            transition: background .18s, color .2s;
+        }
+        .folder-link::before {
+            content:"";
+            position:absolute;
+            left:8px; top:50%;
+            width:14px; height:1px;
+            background: var(--tree-line);
+            transform: translateY(-50%);
+            opacity:.9;
+        }
+        .folder-links .folder-link:last-child::after {
+            content:"";
+            position:absolute;
+            left:8px; bottom:50%;
+            width:1px; height:50%;
+            background: linear-gradient(var(--tree-line), transparent);
+        }
+        .folder-link:hover,
+        .folder-link:focus-visible {
+            background: var(--tree-hover-bg) !important;
+            color: var(--text) !important;
+            text-decoration: none;
+            outline: none;
+        }
+        .folder-link:active { background: var(--tree-active-bg) !important; }
+        .folder-icon { margin-right:6px; font-size: .95rem; filter: saturate(.9); }
+        .folder-name { color:#fff !important; font-weight: 600; margin-right:6px; }
+        .folder-desc {
+            font-size:.7rem; color: var(--text-faint);
+            background: rgba(255,255,255,.04);
+            padding:2px 6px 3px; border-radius: 10px; position: relative; top:-1px;
+        }
+        .folder-link:hover .folder-desc { color: var(--text-dim); background: rgba(255,255,255,.08); }
+        .folder-link:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
+        @media (max-width:640px) {
+            .folder-links { padding-left:14px; }
+            .folder-link { padding:6px 8px 6px 24px; font-size:.88rem; }
+            .folder-desc { display:inline-block; margin-top:2px; }
+        }
     </style>
 
     <style>
