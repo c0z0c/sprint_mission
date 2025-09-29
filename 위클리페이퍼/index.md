@@ -22,6 +22,13 @@ pragma: no-cache
   console.log('curFiles:', curFiles);
   console.log('curPages:', curPages);
 
+  // 기본 타이틀 추가
+  curFiles.forEach(file => {
+    if (!file.title) {
+      file.title = file.name;
+    }
+  });
+
   curPages.forEach(page => {
   // curFiles에 같은 name과 path가 있는지 확인
   const exists = curFiles.some(file => file.name === page.name && file.path === page.path);
@@ -46,7 +53,8 @@ pragma: no-cache
       extname: extname,
       modified_time: modified_time,
       basename: basename,
-      url: page.url || ''
+      url: page.url || '',
+      title: page.title ? page.title : page.name || ''
     });
   }
 });
@@ -60,17 +68,18 @@ pragma: no-cache
 // });
 
 // curFiles.sort((a, b) => {
-//   // 파일명으로 한글/영문 구분하여 정렬
-//   if (!a.name) return 1;
-//   if (!b.name) return -1;
-//   return a.name.localeCompare(b.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+//   // 날짜가 ISO 형식이 아니면 Date 파싱이 안 될 수 있으니, 우선 문자열 비교
+//   // 최신 날짜가 앞으로 오도록 내림차순
+//   if (!a.modified_time) return 1;
+//   if (!b.modified_time) return -1;
+//   return b.modified_time.localeCompare(a.modified_time);
 // });
 
 curFiles.sort((a, b) => {
-  // 파일명으로 한글/영문 구분하여 내림차순 정렬
-  if (!a.name) return 1;
-  if (!b.name) return -1;
-  return b.name.localeCompare(a.name, 'ko-KR', { numeric: true, caseFirst: 'lower' });
+  // 파일명으로 한글/영문 구분하여 정렬
+  if (!a.title) return 1;
+  if (!b.title) return -1;
+  return a.title.localeCompare(b.title, 'ko-KR', { numeric: true, caseFirst: 'lower' });
 });
 
 // // 정렬 후 출력
@@ -103,25 +112,25 @@ curFiles.sort((a, b) => {
   function getFileInfo(extname) {
     switch(extname.toLowerCase()) {
       case '.ipynb':
-        return { icon: '📓', type: 'Jupyter Notebook' };
+        return { icon: '📓', type: 'Colab' };
       case '.py':
-        return { icon: '🐍', type: 'Python 파일' };
+        return { icon: '🐍', type: 'Python' };
       case '.md':
-        return { icon: '📝', type: 'Markdown 문서' };
+        return { icon: '📝', type: 'Markdown' };
       case '.json':
-        return { icon: '⚙️', type: 'JSON 설정' };
+        return { icon: '⚙️', type: 'JSON' };
       case '.zip':
-        return { icon: '📦', type: '압축 파일' };
+        return { icon: '📦', type: '압축' };
       case '.png':
       case '.jpg':
       case '.jpeg':
-        return { icon: '🖼️', type: '이미지 파일' };
+        return { icon: '🖼️', type: '이미지' };
       case '.csv':
-        return { icon: '📊', type: '데이터 파일' };
+        return { icon: '📊', type: '데이터' };
       case '.pdf':
-        return { icon: '📄', type: 'PDF 문서' };
+        return { icon: '📄', type: 'PDF' };
       case '.docx':
-        return { icon: '📊', type: 'Word 문서' };
+        return { icon: '📊', type: 'Word' };
       default:
         return { icon: '📄', type: '파일' };
     }
@@ -151,7 +160,7 @@ curFiles.sort((a, b) => {
       actions += `<a href="${site_url}${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
       actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
     } else {
-      actions += `<a href="${file.path}" class="file-action" title="파일 열기">📖</a>`;
+      actions += `<a href="${git_url}${fileName}" class="file-action" title="파일 열기" target="_blank">📖</a>`;
     }
     
     return actions;
@@ -172,31 +181,143 @@ curFiles.sort((a, b) => {
       return;
     }
 
-    let html = '';
+    let html = `
+      <table class="file-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" style="cursor: pointer; width:110px;">날짜 ⬍</th>
+            <th onclick="sortTable(1)" style="cursor: pointer;">제목 ⬍</th>
+            <th onclick="sortTable(2)" style="cursor: pointer;">파일명 ⬍</th>
+            <th onclick="sortTable(3)" style="cursor: pointer;">타입 ⬍</th>
+            <th onclick="sortTable(4)" style="cursor: pointer;">View ⬍</th>
+            <th onclick="sortTable(5)" style="cursor: pointer;">Git⬍</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    
     curFiles.forEach(file => {
       if (file.name === 'index.md' || file.name === 'info.md') return;
 
       const fileInfo = getFileInfo(file.extname);
       const fileDate = file.modified_time ? new Date(file.modified_time).toLocaleDateString('ko-KR') : '';
-      const actions = getFileActions(file);
+      const fileName = file.name;
+      const fileExt = file.extname.toLowerCase();
+      
+      // 렌더링페이지 링크 생성
+      let renderLink = '';
+      if (fileExt === '.md' && fileName !== 'index.md') {
+        const mdName = fileName.replace('.md', '');
+        renderLink = `<a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
+      } else if (fileExt === '.ipynb') {
+        renderLink = `<a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank">🚀</a>`;
+      } else if (fileExt === '.pdf') {
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
+      } else if (fileExt === '.docx') {
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank">📊</a>`;
+      } else if (fileExt === '.html') {
+        renderLink = `<a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank">🌐</a>`;
+      } else {
+        renderLink = '-';
+      }
+      
+      // Git 직접 링크
+      const gitLink = `<a href="${git_url}${fileName}" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
+      
+      // 제목 클릭 시 렌더링 페이지 링크 생성
+      let titleClickable = `<span class="file-icon">${fileInfo.icon}</span> ${file.title}`;
+      if (fileExt === '.md' && fileName !== 'index.md') {
+        const mdName = fileName.replace('.md', '');
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.ipynb') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.pdf') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.docx') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      } else if (fileExt === '.html') {
+        titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank" style="text-decoration: none; color: inherit;">${file.title}</a>`;
+      }
+      
+      // 파일명 클릭 시 Git 직접 연결
+      const fileNameClickable = `<a href="${git_url}${fileName}" title="GitHub에서 원본 보기" target="_blank" style="text-decoration: none; color: inherit;">${fileName}</a>`;
       
       html += `
-        <div class="file-item">
-          <div class="file-icon">${fileInfo.icon}</div>
-          <div class="file-info">
-            <h4 class="file-name">${file.name}</h4>
-            <p class="file-type">${fileInfo.type}</p>
-            <p class="file-size">${fileDate}</p>
-          </div>
-          <div class="file-actions">
-            ${actions}
-          </div>
-        </div>
+        <tr>
+          <td>${fileDate}</td>
+          <td>${titleClickable}</td>
+          <td>${fileNameClickable}</td>
+          <td>${fileInfo.type}</td>
+          <td>${renderLink}</td>
+          <td>${gitLink}</td>
+        </tr>
       `;
     });
     
+    html += `
+        </tbody>
+      </table>
+    `;
+    
     fileGrid.innerHTML = html;
   });
+
+  // 테이블 정렬 기능
+  let sortDirection = {}; // 각 컬럼의 정렬 방향을 저장
+
+  function sortTable(columnIndex) {
+    const table = document.querySelector('.file-table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    // 현재 정렬 방향 확인 (기본값: 오름차순)
+    const isAscending = sortDirection[columnIndex] !== 'asc';
+    sortDirection[columnIndex] = isAscending ? 'asc' : 'desc';
+    
+    // 헤더 화살표 업데이트
+    const headers = table.querySelectorAll('th');
+    headers.forEach((header, index) => {
+      if (index === columnIndex) {
+        const arrow = isAscending ? ' ⬆' : ' ⬇';
+        header.innerHTML = header.innerHTML.replace(/ [⬆⬇⬍]/g, '') + arrow;
+      } else {
+        header.innerHTML = header.innerHTML.replace(/ [⬆⬇⬍]/g, '') + ' ⬍';
+      }
+    });
+    
+    // 행 정렬
+    rows.sort((a, b) => {
+      let aValue = a.cells[columnIndex].textContent || a.cells[columnIndex].innerText;
+      let bValue = b.cells[columnIndex].textContent || b.cells[columnIndex].innerText;
+      
+      // 날짜 컬럼인 경우 날짜로 파싱
+      if (columnIndex === 0) {
+        aValue = aValue ? new Date(aValue).getTime() : 0;
+        bValue = bValue ? new Date(bValue).getTime() : 0;
+      }
+      // 숫자가 포함된 문자열의 경우 자연 정렬
+      else {
+        // 아이콘 제거 (제목 컬럼의 경우)
+        aValue = aValue.replace(/[📓🐍📝⚙️📦🖼️📊📄]/g, '').trim();
+        bValue = bValue.replace(/[📓🐍📝⚙️📦🖼️📊📄]/g, '').trim();
+      }
+      
+      let comparison = 0;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else {
+        comparison = aValue.toString().localeCompare(bValue.toString(), 'ko-KR', { 
+          numeric: true, 
+          caseFirst: 'lower' 
+        });
+      }
+      
+      return isAscending ? comparison : -comparison;
+    });
+    
+    // 정렬된 행들을 다시 tbody에 추가
+    rows.forEach(row => tbody.appendChild(row));
+  }
 </script>
 
 <div class="file-grid">
