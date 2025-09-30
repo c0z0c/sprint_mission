@@ -335,7 +335,7 @@ SQuAD 2.0의 핵심 도전 과제입니다.
    - Threshold 값 조정으로 정밀도(precision)와 재현율(recall) 조절
 
 $$
-P(\text{is\_answerable}) = \sigma(W_c \cdot h_{\text{CLS}})
+P(\text{is\_answerable}) = \sigma(W_{\text{c}} \cdot h_{\text{CLS}})
 $$
 
 2. **시작 위치를 [CLS] 토큰으로 설정**
@@ -347,7 +347,7 @@ $$
 답변 가능한 경우:
 
 $$
-\mathcal{L}_{\text{span}} = -\log P_{\text{start}}(i^*) - \log P_{\text{end}}(j^*)
+\mathcal{L}_{\text{span}} = -\log P_{\text{start}}(i^{\text{*}}) - \log P_{\text{end}}(j^{\text{*}})
 $$
 
 답변 불가능한 경우:
