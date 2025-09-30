@@ -419,7 +419,10 @@
     });
     </script>
     
-    {%- include site_info.html -%}
+    <script>
+        var branch = "master";
+        {% include site_info.html %}
+    </script>
 
 </head>
 <body>
