@@ -14,7 +14,7 @@ pragma: no-cache
 {% assign cur_dir = "/스터디/" %}
 {% include cur_files.liquid %}
 {% include page_values.html %}
-{% include page_files.html %}
+{% include page_files_table.html %}
 
 </script>
 
