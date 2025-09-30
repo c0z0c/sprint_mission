@@ -67,7 +67,7 @@ function getFolderInfo(folderName) {
     </a>
     <a href="https://c0z0c.github.io/codeit_ai_health_eat" target="_blank">
       <span class="link-icon">📱</span> 초급 프로젝트
-    </a>      
+    </a>
   </div>
 </div>
 
