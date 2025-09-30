@@ -337,8 +337,7 @@
             color: var(--text-dim);
         }
 
-        /* 카드류 hover */
-        .folder-link,
+        /* 카드류 기본 스타일 (folder-link는 별도 처리) */
         .quick-links a,
         .file-item,
         .related-link,
@@ -350,7 +349,6 @@
             text-decoration: none;
         }
 
-        .folder-link:hover,
         .quick-links a:hover,
         .file-item:hover,
         .related-link:hover,
@@ -361,7 +359,6 @@
             text-decoration: none;
         }
 
-        .folder-name,
         .file-name a,
         .link-text {
             color: var(--accent);
@@ -849,7 +846,7 @@
             }
         }
 
-        /* Tree 스타일 추가 */
+        /* Tree 스타일 추가 (라이트 테마용) */
         .folder-tree {
             padding: 1rem 0;
         }
@@ -870,37 +867,6 @@
 
         .folder-tree-item:last-child:before {
             content: "└── ";
-        }
-
-        .folder-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            color: #333;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
-        }
-
-        .folder-link:hover {
-            background-color: #f0f0f0;
-            text-decoration: none;
-        }
-
-        .folder-icon {
-            font-size: 1.2rem;
-        }
-
-        .folder-name {
-            font-weight: 500;
-            color: #2c5282;
-        }
-
-        .folder-desc {
-            font-size: 0.9rem;
-            color: #666;
-            font-style: italic;
         }
     </style>
 
