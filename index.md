@@ -46,7 +46,7 @@ function getFolderInfo(folderName) {
 
 </script>
 
-# 📁 폴더별 탐색
+## 📁 폴더별 탐색
 
 <div class="folder-grid">
   <!-- 폴더 목록이 JavaScript로 동적 생성됩니다 -->
