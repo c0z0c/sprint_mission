@@ -130,25 +130,21 @@ const mdName = fileName.replace('.md', '');
 actions += `<a href="${site_url}${mdName}" class="file-action" title="렌더링된 페이지 보기">🌐</a>`;
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
 }
+
 // Jupyter Notebook 처리
 else if (fileExt === '.ipynb') {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
 actions += `<a href="${colab_url}${fileName}" class="file-action" title="Colab에서 열기" target="_blank">🚀</a>`;
 // NBViewer 추가
-actions += `<a href="https://nbviewer.org/github/${git_url.split('github.com/')[1].replace('/blob/', '/')}${fileName}"
-  class="file-action" title="NBViewer로 보기" target="_blank">📊</a>`;
+actions += `<a href="https://nbviewer.org/github/${git_url.split('github.com/')[1].replace('/blob/', '/')}${fileName}" class="file-action" title="NBViewer로 보기" target="_blank">📊</a>`;
 }
+
 // PDF 파일 처리
 else if (fileExt === '.pdf') {
 actions += `<a href="${site_url}${fileName}" class="file-action" title="렌더링된 페이지 보기" target="_blank">📖</a>`;
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📄</a>`;
-// PDF.js 뷰어
-// actions += `<a href="https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(githubRawUrl)}"
-  class="file-action" title="PDF 뷰어로 보기" target="_blank">👁️</a>`;
-// Google Docs Viewer (백업)
-// actions += `<a href="https://docs.google.com/viewer?url=${encodeURIComponent(githubRawUrl)}&embedded=true"
-  class="file-action" title="Google 뷰어로 보기" target="_blank">🔍</a>`;
 }
+
 // Microsoft Office 문서 (Word, PowerPoint)
 else if (fileExt === '.docx' || fileExt === '.pptx') {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
@@ -165,36 +161,43 @@ actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에
 // CSV 뷰어 (별도 구현)
 actions += `<a href="javascript:openCSVViewer('${fileName}')" class="file-action" title="CSV 데이터 보기">📊</a>`;
 }
+
 // 이미지 파일 처리
 else if (['.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(fileExt)) {
 actions += `<a href="${githubRawUrl}" class="file-action" title="이미지 보기" target="_blank">🖼️</a>`;
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
 }
+
 // HWP 파일 처리
 else if (fileExt === '.hwp') {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 다운로드" target="_blank">📥</a>`;
 actions += `<a href="javascript:alert('HWP 파일은 온라인 뷰어를 지원하지 않습니다. 다운로드하여 확인해주세요.')" class="file-action"
   title="뷰어 지원 안함">❌</a>`;
 }
+
 // HTML 파일 처리
 else if (fileExt === '.html') {
 actions += `<a href="${site_url}${fileName}" class="file-action" title="웹페이지로 보기" target="_blank">🌐</a>`;
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
 }
+
 // JSON 파일 처리
 else if (fileExt === '.json') {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
 actions += `<a href="javascript:openJSONViewer('${fileName}')" class="file-action" title="JSON 뷰어로 보기">⚙️</a>`;
 }
+
 // 기타 텍스트 파일 (.py, .txt, .js, .css 등)
 else if (['.py', '.js', '.css', '.txt', '.xml', '.yaml', '.yml'].includes(fileExt)) {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 보기" target="_blank">📖</a>`;
 actions += `<a href="${githubRawUrl}" class="file-action" title="원본 텍스트 보기" target="_blank">📄</a>`;
 }
+
 // 압축 파일
 else if (['.zip', '.rar', '.7z', '.tar', '.gz'].includes(fileExt)) {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 다운로드" target="_blank">📥</a>`;
 }
+
 // 기타 파일
 else {
 actions += `<a href="${git_url}${fileName}" class="file-action" title="GitHub에서 원본 보기" target="_blank">📖</a>`;
