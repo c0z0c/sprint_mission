@@ -53,6 +53,7 @@ function getFolderInfo(folderName) {
   <!-- 폴더 목록이 JavaScript로 동적 생성됩니다 -->
 </div>
 
+{::nomarkdown}
 <div class="section-card">
   <h2>🔗 빠른 링크</h2>
   <div class="quick-links">
@@ -70,6 +71,7 @@ function getFolderInfo(folderName) {
     </a>
   </div>
 </div>
+{:/nomarkdown}
 
 <div class="footer-info">
 <small>
