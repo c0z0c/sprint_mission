@@ -222,8 +222,17 @@ SQuAD는 **추출적 QA** 방식을 사용합니다:
 - `answer_start` 인덱스로 정확한 위치 지정
 
 $$
+\text{Answer} = \text{context}[\text{start\_idx} : \text{end\_idx}]
+$$
+
+$$
+\text{Answer} = \text{context}[ \text{start}_{\text{idx}} : \text{end}_{\text{idx}} ]
+$$
+
+$$
 \text{Answer} = \text{context}[\text{\texttt{start\_idx}} : \text{\texttt{end\_idx}}]
 $$
+
 
 **중요한 수식적 표현:**
 
