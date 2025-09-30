@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "PASCAL VOC 2012 데이터셋"
-description: "PASCAL VOC 2012 데이터셋"
+title: "데이타셋 PASCAL VOC 2012 데이터셋"
+description: "데이타셋 PASCAL VOC 2012 데이터셋"
 date: 2025-08-25
 cache-control: no-cache
 expires: 0

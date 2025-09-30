@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "COCO Football Pixel.json 구조"
-description: "COCO Football Pixel.json 구조"
+title: "데이타셋 COCO Football Pixel.json 구조"
+description: "데이타셋 COCO Football Pixel.json 구조"
 date: 2025-09-20
 cache-control: no-cache
 expires: 0

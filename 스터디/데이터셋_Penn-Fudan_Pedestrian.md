@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "Penn-Fudan Pedestrian 데이터셋"
-description: "Penn-Fudan Pedestrian 데이터셋"
+title: "데이타셋 Penn-Fudan Pedestrian 데이터셋"
+description: "데이타셋 Penn-Fudan Pedestrian 데이터셋"
 date: 2025-08-25
 cache-control: no-cache
 expires: 0
