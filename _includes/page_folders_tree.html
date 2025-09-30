@@ -1,236 +1,180 @@
-// 모든 폴더 및 파일 구조를 트리 형태로 생성하는 함수
-function buildFolderTree(files, pages, currentDir) {
-const tree = {};
 
-// currentDir 정규화
-const normalizedCurrentDir = currentDir === '/' ? '/' : currentDir.endsWith('/') ? currentDir : currentDir + '/';
+  // 하위 폴더 목록 파싱 함수
+  function getSubDirectories(files, pages, currentDir) {
+    const subDirs = new Set();
+    
+    // currentDir 정규화 (항상 /로 끝나도록)
+    const normalizedCurrentDir = currentDir === '/' ? '/' : currentDir.endsWith('/') ? currentDir : currentDir + '/';
+    
+    // files에서 하위 폴더 추출
+    files.forEach(file => {
+      const filePath = file.path;
+      
+      // 현재 디렉토리의 직접적인 하위 폴더만 찾기
+      if (normalizedCurrentDir === '/') {
+        // 루트 디렉토리인 경우
+        if (filePath.startsWith('/') && filePath.indexOf('/', 1) > 0) {
+          const firstSlashIndex = filePath.indexOf('/', 1);
+          const subFolderName = filePath.substring(1, firstSlashIndex);
+          const subDirPath = '/' + subFolderName + '/';
+          subDirs.add(subDirPath);
+        }
+      } else {
+        // 하위 디렉토리인 경우
+        if (filePath.startsWith(normalizedCurrentDir)) {
+          const remainingPath = filePath.substring(normalizedCurrentDir.length);
+          const slashIndex = remainingPath.indexOf('/');
+          if (slashIndex > 0) {
+            const subFolderName = remainingPath.substring(0, slashIndex);
+            const subDirPath = normalizedCurrentDir + subFolderName + '/';
+            subDirs.add(subDirPath);
+          }
+        }
+      }
+    });
 
-// files에서 폴더 구조 추출
-files.forEach(file => {
-const filePath = file.path;
-if (filePath.startsWith(normalizedCurrentDir)) {
-const relativePath = filePath.substring(normalizedCurrentDir.length);
-addToTree(tree, relativePath, 'file', file);
-}
-});
+    // pages에서 하위 폴더 추출 (md 파일 제외하고 모든 페이지 처리)
+    pages.forEach(page => {
+      const pagePath = page.path;
 
-// pages에서 폴더 구조 추출 (md 파일 제외)
-pages.forEach(page => {
-const pagePath = page.path;
-if (pagePath.startsWith('/md/') || pagePath.startsWith('/assets/')) return;
+      if (pagePath.startsWith('/md/')) return;
+      if (pagePath.startsWith('/assets/')) return;
+      
+      // 현재 디렉토리의 직접적인 하위 폴더만 찾기
+      if (normalizedCurrentDir === '/') {
+        // 루트 디렉토리인 경우
+        if (pagePath.startsWith('/') && pagePath.indexOf('/', 1) > 0) {
+          const firstSlashIndex = pagePath.indexOf('/', 1);
+          const subFolderName = pagePath.substring(1, firstSlashIndex);
+          const subDirPath = '/' + subFolderName + '/';
+          subDirs.add(subDirPath);
+        }
+      } else {
+        // 하위 디렉토리인 경우
+        if (pagePath.startsWith(normalizedCurrentDir)) {
+          const remainingPath = pagePath.substring(normalizedCurrentDir.length);
+          const slashIndex = remainingPath.indexOf('/');
+          if (slashIndex > 0) {
+            const subFolderName = remainingPath.substring(0, slashIndex);
+            const subDirPath = normalizedCurrentDir + subFolderName + '/';
+            subDirs.add(subDirPath);
+          }
+        }
+      }
+    });
+    
+    const result = Array.from(subDirs).sort();
+    
+    return result;
+  }
 
-if (pagePath.startsWith(normalizedCurrentDir)) {
-const relativePath = pagePath.substring(normalizedCurrentDir.length);
-addToTree(tree, relativePath, 'page', page);
-}
-});
-
-return tree;
-}
-
-// 트리에 경로 추가하는 함수
-function addToTree(tree, path, type, item) {
-const parts = path.split('/').filter(part => part !== '');
-let currentLevel = tree;
-
-for (let i = 0; i < parts.length; i++) { const part=parts[i]; if (!currentLevel[part]) { currentLevel[part]={ name:
-  part, type: i===parts.length - 1 ? type : 'folder' , item: i===parts.length - 1 ? item : null, children: {} }; }
-  currentLevel=currentLevel[part].children; } } // 폴더 정보 가져오기 함수 function getFolderInfo(folderName) { const
-  folderMappings={ '멘토' : { icon: '👨‍🏫' , desc: '멘토 관련 자료' }, '스프린트미션_완료' : { icon: '✅' , desc: '완료된 스프린트 미션들'
-  }, '스프린트미션_작업중' : { icon: '🚧' , desc: '진행 중인 미션들' }, '위클리페이퍼' : { icon: '📰' , desc: '주간 학습 리포트' }, '스터디' : {
-  icon: '📒' , desc: '학습 자료' }, '실습' : { icon: '🔬' , desc: '실습 자료' }, '백업' : { icon: '💾' , desc: '백업 파일들' }, '셈플' : {
-  icon: '📂' , desc: '샘플 파일들' }, '테스트' : { icon: '🧪' , desc: '테스트 파일들' }, 'image' : { icon: '🖼️' , desc: '이미지 파일들'
-  }, 'Learning' : { icon: '📚' , desc: '학습 자료' }, 'Learning Daily' : { icon: '📅' , desc: '일일 학습 기록' }, 'md' : {
-  icon: '📝' , desc: 'Markdown 문서' }, '회의록' : { icon: '📋' , desc: '팀 회의록' }, 'assets' : { icon: '🎨' , desc: '정적 자원'
-  }, '경구약제이미지데이터' : { icon: '💊' , desc: '약물 데이터' }, 'AI 모델 환경 설치가이드' : { icon: '⚙️' , desc: '설치 가이드'
-  }, '경구약제 이미지 데이터(데이터 설명서, 경구약제 리스트)' : { icon: '📊' , desc: '데이터 설명서' }, '발표자료' : { icon: '📊' , desc: '발표 자료'
-  }, '협업일지' : { icon: '📓' , desc: '협업 일지' } }; return folderMappings[folderName] || { icon: '📁' , desc: '폴더' }; } //
-  파일 아이콘 가져오기 함수 function getFileIcon(filename) { const ext=filename.split('.').pop().toLowerCase(); const
-  iconMap={ 'md' : '📝' , 'ipynb' : '📊' , 'py' : '🐍' , 'js' : '💛' , 'html' : '🌐' , 'css' : '🎨' , 'json' : '📋'
-  , 'txt' : '📄' , 'pdf' : '📑' , 'jpg' : '🖼️' , 'jpeg' : '🖼️' , 'png' : '🖼️' , 'gif' : '🖼️' , 'svg' : '🎯' };
-  return iconMap[ext] || '📄' ; } // 트리 HTML 생성 함수 function renderTreeNode(node, path, level=0) { const indent='  '
-  .repeat(level); const isFolder=node.type==='folder' ; const info=isFolder ? getFolderInfo(node.name) : { icon:
-  getFileIcon(node.name), desc: node.name }; const fullPath=path ? `${path}/${node.name}` : node.name; let
-  html=`${indent}<div class="tree-node" data-level="${level}">`;
-
-  if (isFolder) {
-  const cleanPath = curDir.replace(/\/$/, '') + '/' + fullPath;
-  html += `
-  ${indent} <div class="tree-folder" onclick="toggleFolder(this)" data-path="${fullPath}">
-    ${indent} <span class="tree-toggle">▶</span>
-    ${indent} <span class="tree-icon">${info.icon}</span>
-    ${indent} <span class="tree-name">${node.name}</span>
-    ${indent} <span class="tree-count">(${Object.keys(node.children).length})</span>
-    ${indent} <a href="${project_url}${cleanPath}/" class="tree-link" title="폴더 열기">📖</a>
-    ${indent} </div>
-  ${indent} <div class="tree-children" style="display: none;">
+  // 폴더 액션 버튼 생성 함수
+  function getFolderActions(folderPath) {
+    const cleanPath = folderPath.replace(/\/$/, ''); // 끝의 / 제거
+    return `
+      <a href="${project_url}${cleanPath}/" class="file-action" title="폴더 열기">📖</a>
+      <a href="${project_git_url}${cleanPath}/" class="file-action" title="GitHub에서 보기" target="_blank">📂</a>
     `;
-
-    // 자식 노드들을 정렬하여 렌더링 (폴더 먼저, 그 다음 파일)
-    const children = Object.values(node.children).sort((a, b) => {
-    if (a.type === 'folder' && b.type !== 'folder') return -1;
-    if (a.type !== 'folder' && b.type === 'folder') return 1;
-    return a.name.localeCompare(b.name);
-    });
-
-    children.forEach(child => {
-    html += renderTreeNode(child, fullPath, level + 1);
-    });
-
-    html += `${indent} </div>`;
-  } else {
-  // 파일인 경우
-  const fileUrl = node.item && node.item.url ? node.item.url : '#';
-  html += `
-  ${indent} <div class="tree-file">
-    ${indent} <span class="tree-icon">${info.icon}</span>
-    ${indent} <span class="tree-name">${node.name}</span>
-    ${indent} <a href="${fileUrl}" class="tree-link" title="파일 열기">📖</a>
-    ${indent} </div>
-  `;
   }
 
-  html += `${indent}</div>`;
-  return html;
-  }
-
-  // 폴더 토글 함수
-  function toggleFolder(element) {
-  const children = element.nextElementSibling;
-  const toggle = element.querySelector('.tree-toggle');
-
-  if (children.style.display === 'none') {
-  children.style.display = 'block';
-  toggle.textContent = '▼';
-  } else {
-  children.style.display = 'none';
-  toggle.textContent = '▶';
-  }
-  }
-
-  // DOM이 로드된 후 폴더 트리 렌더링
+  // DOM이 로드된 후 파일 목록 렌더링
   document.addEventListener('DOMContentLoaded', function() {
-  // 폴더 트리 생성
-  const allFilesData = allFiles;
-  const allPagesData = allPages;
-  const folderTree = buildFolderTree(allFilesData, allPagesData, curDir);
-
-  // 폴더 목록 렌더링
-  const folderGrid = document.querySelector('.folder-grid');
-  if (folderGrid) {
-  if (Object.keys(folderTree).length === 0) {
-  folderGrid.innerHTML = `
-  <div class="empty-message">
-    <span class="empty-icon">📁</span>
-    <h3>하위 폴더가 없습니다</h3>
-    <p>현재 위치에는 하위 폴더나 파일이 없습니다.</p>
-  </div>
-  `;
-  } else {
-  let treeHtml = '<div class="folder-tree">';
-
-    // 루트 레벨 노드들을 정렬하여 렌더링
-    const rootNodes = Object.values(folderTree).sort((a, b) => {
-    if (a.type === 'folder' && b.type !== 'folder') return -1;
-    if (a.type !== 'folder' && b.type === 'folder') return 1;
-    return a.name.localeCompare(b.name);
-    });
-
-    rootNodes.forEach(node => {
-    treeHtml += renderTreeNode(node, '', 0);
-    });
-
-    treeHtml += '</div>';
-
-  // CSS 스타일 추가
-  treeHtml += `
-  <style>
-    .folder-tree {
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 14px;
-      line-height: 1.4;
-      border: 1px solid #e1e4e8;
-      border-radius: 6px;
-      background: #f8f9fa;
-      padding: 16px;
-      margin: 16px 0;
+    // 하위 폴더 목록 생성
+    const allFilesData = allFiles;
+    const allPagesData = allPages;
+    const subDirectories = getSubDirectories(allFilesData, allPagesData, curDir);
+    
+    // 폴더 목록 렌더링
+    const folderGrid = document.querySelector('.folder-grid');
+    if (folderGrid) {
+      if (subDirectories.length === 0) {
+        folderGrid.innerHTML = `
+          <div class="empty-message">
+            <span class="empty-icon">📁</span>
+            <h3>하위 폴더가 없습니다</h3>
+            <p>현재 위치에는 하위 폴더가 없습니다.</p>
+          </div>
+        `;
+      } else {
+        let folderHtml = '<div class="folder-tree">';
+        subDirectories.forEach(folderPath => {
+          const folderInfo = getFolderInfo(folderPath);
+          const folderName = folderPath.split("/").filter(s => s).pop() || "root";
+          const cleanPath = folderPath.replace(/\/$/, ''); // 끝의 / 제거
+          
+          folderHtml += `
+            <div class="folder-tree-item">
+              <a href="${project_url}${cleanPath}/" class="folder-link">
+                <span class="folder-icon">${folderInfo.icon}</span>
+                <span class="folder-name">${folderName}</span>
+                ${folderInfo.desc ? `<span class="folder-desc">${folderInfo.desc}</span>` : ''}
+              </a>
+            </div>
+          `;
+        });
+        folderHtml += '</div>';
+        
+        folderGrid.innerHTML = folderHtml;
+      }
     }
 
-    .tree-node {
-      margin: 2px 0;
-    }
-
-    .tree-folder,
-    .tree-file {
-      display: flex;
-      align-items: center;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: background-color 0.2s;
-      cursor: pointer;
-    }
-
-    .tree-folder:hover,
-    .tree-file:hover {
-      background-color: #e8f4f8;
-    }
-
-    .tree-toggle {
-      margin-right: 8px;
-      color: #666;
-      font-size: 12px;
-      width: 16px;
-      text-align: center;
-    }
-
-    .tree-icon {
-      margin-right: 8px;
-      font-size: 16px;
-    }
-
-    .tree-name {
-      flex: 1;
-      color: #333;
-      font-weight: 500;
-    }
-
-    .tree-count {
-      margin-left: 8px;
-      color: #666;
-      font-size: 12px;
-    }
-
-    .tree-link {
-      margin-left: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
-
-    .tree-link:hover {
-      opacity: 1;
-    }
-
-    .tree-children {
-      margin-left: 24px;
-      border-left: 1px solid #e1e4e8;
-      padding-left: 8px;
-    }
-
-    .tree-file .tree-name {
-      font-weight: normal;
-    }
-  </style>
-  `;
-
-  folderGrid.innerHTML = treeHtml;
-  }
-  }
   });
+/*
+<div class="folder-grid">
+</div>
+*/
 
-  /*
-  <div class="folder-grid">
-    <!-- 폴더 트리가 JavaScript로 동적 생성됩니다 -->
-  </div>
-  */
+/* Tree 스타일 추가 */
+.folder-tree {
+  padding: 1rem 0;
+}
+
+.folder-tree-item {
+  margin: 0.5rem 0;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.folder-tree-item:before {
+  content: "├── ";
+  position: absolute;
+  left: 0;
+  color: #666;
+  font-family: monospace;
+}
+
+.folder-tree-item:last-child:before {
+  content: "└── ";
+}
+
+.folder-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #333;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.folder-link:hover {
+  background-color: #f0f0f0;
+  text-decoration: none;
+}
+
+.folder-icon {
+  font-size: 1.2rem;
+}
+
+.folder-name {
+  font-weight: 500;
+  color: #2c5282;
+}
+
+.folder-desc {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
