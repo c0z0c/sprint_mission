@@ -7,17 +7,64 @@ baseurl: "/sprint_mission"
 # Build 설정
 markdown: kramdown
 highlighter: rouge
+incremental: true               # 증분 빌드로 속도 향상
+
+kramdown:
+  input: GFM                    # GitHub Flavored Markdown 사용
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    line_numbers: true          # 코드 블록에 라인 번호 추가
+    block:
+      line_numbers: true
+    css_class: 'highlight'      # CSS 클래스 추가
+    span:
+      line_numbers: false
+  math_engine: mathjax          # 수학 공식 렌더링
+  auto_ids: true                # 자동 ID 생성
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+  parse_block_html: true        # HTML 블록 파싱 허용
+  parse_span_html: true         # HTML 스팬 파싱 허용
+
+# MathJax 설정 (수학 공식 지원)
+mathjax: 
+  source: https://polyfill.io/v3/polyfill.min.js?features=es6
+  config: 'MathJax.Hub.Config({tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}})'
+
+# Mermaid 다이어그램 지원
+mermaid: 
+  version: "10.6.1"             # 최신 안정 버전 지정
+  theme: default
+  
 plugins:
-  - jekyll-feed         # RSS 피드 생성
-  - jekyll-sitemap      # 사이트맵 생성
-  - jekyll-seo-tag      # SEO 메타 태그 자동 생성
-  - jekyll-paginate     # 블로그 포스트 페이지네이션
-  - jekyll-include-cache # include 태그 캐싱
+  - jekyll-feed                 # RSS 피드 생성
+  - jekyll-sitemap              # 사이트맵 생성
+  - jekyll-seo-tag              # SEO 메타 태그 자동 생성
+  - jekyll-paginate             # 블로그 포스트 페이지네이션
+  - jekyll-include-cache        # include 태그 캐싱
+  - jekyll-gist                 # GitHub Gist 임베드
+  - jekyll-github-metadata      # GitHub 메타데이터
+  - jekyll-relative-links       # 상대 링크 처리
+  - jekyll-optional-front-matter # 프론트매터 선택적 처리
+  - jekyll-readme-index         # README를 index로 사용
+  - jekyll-default-layout       # 기본 레이아웃 자동 적용
+  - jekyll-titles-from-headings # 제목에서 타이틀 추출
+  - jekyll-redirect-from        # 리다이렉트 처리
+  - jekyll-mentions             # @사용자명 언급 지원
+
+# 페이지네이션 설정
+paginate: 10
+paginate_path: "/page:num/"
 
 # 파일 처리
 include:
   - "_*_.html"
   - "_*_.md"
+  - ".htaccess"
+  - ".nojekyll"                # GitHub Pages 최적화
 
 # 제외할 파일들
 exclude:
@@ -28,6 +75,18 @@ exclude:
   - ".git"
   - ".gitignore"
   - "helper_c0z0c_dev.py"
+  - node_modules/
+  - "*.gemspec"
+  - "*.gem"
+  - LICENSE
+  - CHANGELOG.md
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Rakefile
+  - gulpfile.js
+  - package.json
+  - package-lock.json
 
 # 기본 레이아웃 설정
 defaults:
@@ -39,10 +98,111 @@ defaults:
       cache-control: "no-cache"
       expires: 0
       pragma: "no-cache"
-      
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      show_date: true
+      author: true
+      comments: false           # 댓글 비활성화 (필요시 변경)
+  - scope:
+      path: "assets/images"
+    values:
+      image: true
+
 # 한국어 설정
-lang: ko
+lang: ko-KR                     # 더 구체적인 로케일
+locale: ko_KR
 timezone: Asia/Seoul
 
 # 인코딩 설정
 encoding: utf-8
+
+# SEO 최적화
+author:
+  name: "c0z0c"
+  email: "c0z0c@hotmail.com"
+  twitter: "c0z0c"             # 트위터 핸들 (있다면)
+
+social:
+  name: "c0z0c"
+  links:
+    - "https://github.com/c0z0c"
+
+# 사이트 메타데이터
+logo: "/assets/images/logo.png"  # 로고 경로 (있다면)
+twitter:
+  username: "c0z0c"             # 트위터 카드 최적화
+  card: summary
+
+# GitHub Pages 설정
+github: [metadata]
+repository: c0z0c/sprint_mission  # 저장소 정보
+branch: main                    # 기본 브랜치
+
+safe: true
+lsi: false                      # 관련 포스트 비활성화 (빌드 속도 향상)
+whitelist:
+  - jekyll-gist
+  - jekyll-github-metadata
+  - jekyll-paginate
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-default-layout
+  - jekyll-titles-from-headings
+  - jekyll-redirect-from
+  - jekyll-mentions
+
+# 성능 최적화
+liquid:
+  error_mode: strict
+  strict_filters: true
+  strict_variables: true
+
+# 컬렉션 설정
+collections:
+  missions:
+    output: true
+    permalink: /missions/:name/
+    sort_by: date
+  documentation:
+    output: true
+    permalink: /docs/:name/
+
+# 압축 설정
+compress_html:
+  clippings: [html, div, p, ul, td, h1, h2]
+  comments: ["<!-- ", " -->"]
+  endings: [html, head, body, li, dt, dd, rt, rp, optgroup, option, colgroup, caption, thead, tbody, tfoot, tr, td, th]
+  ignore:
+    envs: [development]
+  blanklines: false
+  profile: false
+  startings: [html, head, body]
+
+# SASS 설정 (CSS 최적화)
+sass:
+  style: compressed             # CSS 압축
+  sass_dir: _sass
+  
+# 캐싱 설정
+future: false                   # 미래 날짜 포스트 비공개
+show_drafts: false             # 초안 비공개
+limit_posts: 0                 # 포스트 개수 제한 없음
+
+# RSS Feed 설정
+feed:
+  posts_limit: 20
+  excerpt_only: true
+
+# 검색 엔진 최적화
+google_analytics: G-XXXXXXXXXX  # GA 추적 ID (있다면)
+google_site_verification: "your-verification-string"  # 구글 사이트 확인 (있다면)
+
+# 보안 헤더
+webrick:
+  headers:
+    X-Frame-Options: SAMEORIGIN
+    X-Content-Type-Options: nosniff
