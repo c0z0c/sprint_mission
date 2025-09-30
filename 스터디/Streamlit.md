@@ -1,3 +1,14 @@
+---
+layout: default
+title: " Streamlit"
+description: " Streamlit"
+date: 2025-09-28
+cache-control: no-cache
+expires: 0
+pragma: no-cache
+author: "김명환"
+---
+
 # Streamlit 완벽 가이드: AI 엔지니어를 위한 종합 문서
 
 ## 목차
