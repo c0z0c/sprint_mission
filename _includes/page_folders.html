@@ -68,25 +68,6 @@
     return result;
   }
 
-  // 폴더 정보 가져오기 함수
-  function getFolderInfo(folderPath) {
-    const folderName = folderPath.split("/").filter(s => s).pop() || "root";
-    
-    // 폴더명에 따른 아이콘과 설명
-    const folderMappings = {
-      'md': { icon: '📝', desc: 'Markdown 문서' },
-      '회의록': { icon: '📋', desc: '팀 회의록' },
-      'assets': { icon: '🎨', desc: '정적 자원' },
-      '경구약제이미지데이터': { icon: '💊', desc: '약물 데이터' },
-      'AI 모델 환경 설치가이드': { icon: '⚙️', desc: '설치 가이드' },
-      '경구약제 이미지 데이터(데이터 설명서, 경구약제 리스트)': { icon: '📊', desc: '데이터 설명서' },
-      '발표자료': { icon: '📊', desc: '발표 자료' },
-      '협업일지': { icon: '📓', desc: '협업 일지' }
-    };
-    
-    return folderMappings[folderName] || { icon: '📁', desc: '폴더' };
-  }
-
   // 폴더 액션 버튼 생성 함수
   function getFolderActions(folderPath) {
     const cleanPath = folderPath.replace(/\/$/, ''); // 끝의 / 제거

@@ -65,7 +65,7 @@ pragma: no-cache
 {% include cur_files.liquid %}
 {% include page_values.html %}
 {% include page_files_table.html %}
-{% include page_folders.html %}
+{% include page_folders_tree.html %}
 
 </script>
 
