@@ -1,0 +1,138 @@
+
+// 하위 폴더 목록 파싱 함수
+function getSubDirectories(files, pages, currentDir) {
+  const subDirs = new Set();
+  
+  // currentDir 정규화 (항상 /로 끝나도록)
+  const normalizedCurrentDir = currentDir === '/' ? '/' : currentDir.endsWith('/') ? currentDir : currentDir + '/';
+  
+  // files에서 하위 폴더 추출
+  files.forEach(file => {
+    const filePath = file.path;
+    
+    // 현재 디렉토리의 직접적인 하위 폴더만 찾기
+    if (normalizedCurrentDir === '/') {
+      // 루트 디렉토리인 경우
+      if (filePath.startsWith('/') && filePath.indexOf('/', 1) > 0) {
+        const firstSlashIndex = filePath.indexOf('/', 1);
+        const subFolderName = filePath.substring(1, firstSlashIndex);
+        const subDirPath = '/' + subFolderName + '/';
+        subDirs.add(subDirPath);
+      }
+    } else {
+      // 하위 디렉토리인 경우
+      if (filePath.startsWith(normalizedCurrentDir)) {
+        const remainingPath = filePath.substring(normalizedCurrentDir.length);
+        const slashIndex = remainingPath.indexOf('/');
+        if (slashIndex > 0) {
+          const subFolderName = remainingPath.substring(0, slashIndex);
+          const subDirPath = normalizedCurrentDir + subFolderName + '/';
+          subDirs.add(subDirPath);
+        }
+      }
+    }
+  });
+
+  // pages에서 하위 폴더 추출 (md 파일 제외하고 모든 페이지 처리)
+  pages.forEach(page => {
+    const pagePath = page.path;
+
+    if (pagePath.startsWith('/md/')) return;
+    if (pagePath.startsWith('/assets/')) return;
+    
+    // 현재 디렉토리의 직접적인 하위 폴더만 찾기
+    if (normalizedCurrentDir === '/') {
+      // 루트 디렉토리인 경우
+      if (pagePath.startsWith('/') && pagePath.indexOf('/', 1) > 0) {
+        const firstSlashIndex = pagePath.indexOf('/', 1);
+        const subFolderName = pagePath.substring(1, firstSlashIndex);
+        const subDirPath = '/' + subFolderName + '/';
+        subDirs.add(subDirPath);
+      }
+    } else {
+      // 하위 디렉토리인 경우
+      if (pagePath.startsWith(normalizedCurrentDir)) {
+        const remainingPath = pagePath.substring(normalizedCurrentDir.length);
+        const slashIndex = remainingPath.indexOf('/');
+        if (slashIndex > 0) {
+          const subFolderName = remainingPath.substring(0, slashIndex);
+          const subDirPath = normalizedCurrentDir + subFolderName + '/';
+          subDirs.add(subDirPath);
+        }
+      }
+    }
+  });
+  
+  const result = Array.from(subDirs).sort();
+  
+  return result;
+}
+
+// 폴더 정보 가져오기 함수
+function getFolderInfo(folderName) {
+  // 폴더명에 따른 아이콘과 설명 (index.md와 유사하게)
+  const folderMappings = {
+    '멘토': { icon: '👨‍🏫', desc: '멘토 관련 자료' },
+    '스프린트미션_완료': { icon: '✅', desc: '완료된 스프린트 미션들' },
+    '스프린트미션_작업중': { icon: '🚧', desc: '진행 중인 미션들' },
+    '위클리페이퍼': { icon: '📰', desc: '주간 학습 리포트' },
+    '스터디': { icon: '📒', desc: '학습 자료' },
+    '실습': { icon: '🔬', desc: '실습 자료' },
+    '백업': { icon: '💾', desc: '백업 파일들' },
+    '셈플': { icon: '📂', desc: '샘플 파일들' },
+    '테스트': { icon: '🧪', desc: '테스트 파일들' },
+    'image': { icon: '🖼️', desc: '이미지 파일들' },
+    'Learning': { icon: '📚', desc: '학습 자료' },
+    'Learning Daily': { icon: '📅', desc: '일일 학습 기록' },
+    'md': { icon: '📝', desc: 'Markdown 문서' },
+    '회의록': { icon: '📋', desc: '팀 회의록' },
+    'assets': { icon: '🎨', desc: '정적 자원' },
+    '경구약제이미지데이터': { icon: '💊', desc: '약물 데이터' },
+    'AI 모델 환경 설치가이드': { icon: '⚙️', desc: '설치 가이드' },
+    '경구약제 이미지 데이터(데이터 설명서, 경구약제 리스트)': { icon: '📊', desc: '데이터 설명서' },
+    '발표자료': { icon: '📊', desc: '발표 자료' },
+    '협업일지': { icon: '📓', desc: '협업 일지' }
+  };
+  
+  return folderMappings[folderName] || { icon: '📁', desc: '폴더' };
+}
+
+// DOM이 로드된 후 폴더 트리 렌더링
+document.addEventListener('DOMContentLoaded', function() {
+  // 하위 폴더 목록 생성
+  const allFilesData = allFiles;
+  const allPagesData = allPages;
+  const subDirectories = getSubDirectories(allFilesData, allPagesData, curDir);
+  
+  // 폴더 트리 컨테이너 찾기
+  const folderLinksContainer = document.querySelector('.folder-links');
+  if (folderLinksContainer) {
+    if (subDirectories.length === 0) {
+      folderLinksContainer.innerHTML = `
+        <div class="empty-message" style="text-align: center; padding: 20px; color: #666;">
+          <span style="font-size: 48px; display: block; margin-bottom: 10px;">📁</span>
+          <h3>하위 폴더가 없습니다</h3>
+          <p>현재 위치에는 하위 폴더가 없습니다.</p>
+        </div>
+      `;
+    } else {
+      let folderLinksHtml = '';
+      subDirectories.forEach(folderPath => {
+        const folderName = folderPath.split("/").filter(s => s).pop() || "root";
+        const folderInfo = getFolderInfo(folderName);
+        const cleanPath = folderPath.replace(/\/$/, ''); // 끝의 / 제거
+        
+        folderLinksHtml += `
+          <a href="${project_url}${cleanPath}/" class="folder-link">
+            <span class="folder-icon">${folderInfo.icon}</span>
+            <span class="folder-name">${folderName}</span>
+            <span class="folder-desc">${folderInfo.desc}</span>
+          </a>
+        `;
+      });
+      
+      folderLinksContainer.innerHTML = folderLinksHtml;
+    }
+  }
+});
+
