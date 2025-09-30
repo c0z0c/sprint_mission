@@ -38,7 +38,7 @@ function getFolderInfo(folderName) {
   return folderMappings[folderName] || { icon: '📁', desc: '폴더' };
 }
 
-{% assign cur_dir = "/스터디/" %}
+{% assign cur_dir = "/" %}
 {% include cur_files.liquid %}
 {% include page_values.html %}
 {% include page_folders_tree.html %}
