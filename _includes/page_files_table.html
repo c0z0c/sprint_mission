@@ -98,12 +98,13 @@ background: rgba(0,0,0,0.8); z-index: 1000; display: flex;
 align-items: center; justify-content: center;
 `;
 
+modal.classList.add('viewer-modal');
 modal.innerHTML = `
 <div style="background: white; width: 90%; height: 90%; border-radius: 10px; overflow: hidden;">
   <div
     style="background: #f0f0f0; padding: 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
     <h3 style="margin: 0;">${title}</h3>
-    <button onclick="this.closest('div[style*=\" position: fixed\"]').remove()"
+    <button onclick="this.closest('.viewer-modal').remove()"
       style="background: #ff5f56; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
   </div>
   <div class="viewer-content" style="padding: 20px; height: calc(100% - 70px); overflow: auto;">
@@ -264,6 +265,8 @@ let html = `
     renderLink = `<a href="javascript:openJSONViewer('${fileName}')" title="JSON 뷰어로 보기">⚙️</a>`;
     } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(fileExt)) {
     renderLink = `<a href="${raw_url}${fileName}" title="이미지 보기" target="_blank">🖼️</a>`;
+    } else if (['.py', '.js', '.css', '.txt', '.xml', '.yaml', '.yml'].includes(fileExt)) {
+    renderLink = `<a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
     } else {
     renderLink = '-';
     }
