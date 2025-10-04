@@ -1,1 +1,6 @@
 /백업
+/wandb
+/fonts
+/__pycache__
+/evaluation_results
+helper_*
