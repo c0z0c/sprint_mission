@@ -266,7 +266,7 @@ let html = `
     } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(fileExt)) {
     renderLink = `<a href="${raw_url}${fileName}" title="이미지 보기" target="_blank">🖼️</a>`;
     } else if (['.py', '.js', '.css', '.txt', '.xml', '.yaml', '.yml'].includes(fileExt)) {
-    renderLink = `<a href="${site_url}${mdName}" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
+    renderLink = `<a href="${site_url}${fileName}" title="렌더링된 페이지 보기" target="_blank">🌐</a>`;
     } else {
     renderLink = '-';
     }
