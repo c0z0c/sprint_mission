@@ -1,8 +1,14 @@
 ---
-title: "나만의 MCP 서버 만들기: 사칙연산 도구 개발"
+layout: default
+title: "MCP 서버 만들기: 사칙연산 도구 개발"
+description: "MCP 서버 만들기: 사칙연산 도구 개발"
+categories: [AI, MCP, Tutorial]
+tags: [mcp, nodejs, python]
 date: 2025-10-05
-categories: [AI, MCP, Tutorial, Python]
-tags: [claude, mcp, python, custom-server, development]
+cache-control: no-cache
+expires: 0
+pragma: no-cache
+author: "김명환"
 ---
 
 # 나만의 MCP 서버 만들기: 사칙연산 도구 개발

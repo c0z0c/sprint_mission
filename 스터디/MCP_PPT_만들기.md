@@ -1,8 +1,14 @@
 ---
-title: "Claude Desktop과 PowerPoint MCP 서버 연동하기"
-date: 2025-10-05
+layout: default
+title: "MCP 서버 연동하기 : Claude Desktop과 PowerPoint"
+description: "MCP 서버 연동하기 : Claude Desktop과 PowerPoint"
 categories: [AI, MCP, Tutorial]
 tags: [claude, mcp, powerpoint, nodejs, python]
+date: 2025-10-05
+cache-control: no-cache
+expires: 0
+pragma: no-cache
+author: "김명환"
 ---
 
 # Claude Desktop과 PowerPoint MCP 서버 연동하기
@@ -39,7 +45,8 @@ tags: [claude, mcp, powerpoint, nodejs, python]
 
 ### 1.1. MCP란 무엇인가
 
-MCP(Model Context Protocol)는 AI 모델과 외부 도구를 연결하는 표준 프로토콜(protocol)입니다. Claude와 같은 대형 언어 모델(LLM, Large Language Model)이 파일 시스템, 데이터베이스, API 등 다양한 리소스에 접근할 수 있도록 해주는 인터페이스(interface)입니다.
+MCP(Model Context Protocol)는 AI 모델과 외부 도구를 연결하는 표준 프로토콜(protocol)입니다.<br/>
+Claude와 같은 대형 언어 모델(LLM, Large Language Model)이 파일 시스템, 데이터베이스, API 등 다양한 리소스에 접근할 수 있도록 해주는 인터페이스(interface)입니다.
 
 ```mermaid
 graph LR
@@ -610,16 +617,6 @@ python D:\dev\Office-PowerPoint-MCP-Server\ppt_mcp_server.py
 - 모든 의존성 패키지 설치
 - Claude Desktop 완전 재시작
 
-**다음 단계**:
-
-이제 MCP의 기본 개념과 설정 방법을 이해했으므로, 다음 포스팅에서는:
-
-- 커스텀(custom) MCP 서버 개발
-- 사칙연산 도구 구현
-- 더 복잡한 기능 추가
-
-계속해서 MCP 생태계(ecosystem)를 탐구하고 자신만의 도구를 만들어보세요!
-
 ---
 
 ## 용어 목록
@@ -644,11 +641,3 @@ python D:\dev\Office-PowerPoint-MCP-Server\ppt_mcp_server.py
 | 커스텀 | Custom | 사용자 정의, 맞춤형 |
 | 마법사 | Wizard | 단계별 설치/설정 안내 도구 |
 | 스크립트 | Script | 자동화된 명령어 모음 |
-
----
-
-**작성자**: AI 엔지니어링 학습자  
-**작성일**: 2025-10-05  
-**시리즈**: Claude MCP 활용 가이드 (1/2)
-
-다음 포스팅: **"나만의 MCP 서버 만들기: 사칙연산 도구 개발"**
