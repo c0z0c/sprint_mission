@@ -85,7 +85,20 @@ function getFileInfo(extname) {
 {% include page_files_table.html %}
 {% include page_folders_tree.html %}
 
+// DOM이 로드되고 테이블이 렌더링된 후 자동으로 title 컬럼(1번 인덱스) 정렬
+window.addEventListener('load', function() {
+  // 테이블이 완전히 렌더링되기를 잠시 기다림
+  setTimeout(function() {
+    const table = document.querySelector('.file-table');
+    if (table) {
+      // title 컬럼(인덱스 1)을 오름차순으로 정렬
+      sortTable(1); // 0 날짜 1 제목
+    }
+  }, 100); // 100ms 딜레이로 테이블 렌더링 완료 대기
+});
+
 </script>
+
 
 <div class="file-grid">
   <!-- 파일 목록이 JavaScript로 동적 생성됩니다 -->
