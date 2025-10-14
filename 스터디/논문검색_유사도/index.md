@@ -11,7 +11,7 @@ pragma: no-cache
 
 <script>
 
-{%- assign cur_dir = "/스터디/감성데이타/" -%}
+{%- assign cur_dir = "/스터디/논문검색_유사도/" -%}
 {%- include cur_files.liquid -%}
 
   var curDir = '{{- cur_file_dir -}}';
