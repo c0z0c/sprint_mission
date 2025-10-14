@@ -41,6 +41,43 @@ function getFolderInfo(folderName) {
     return folderMappings[folderName] || { icon: '📁', desc: '폴더' };
 }
 
+function getFileInfo(extname) {
+  switch(extname.toLowerCase()) {
+    case '.ipynb':
+      return { icon: '📓', type: 'Colab' };
+    case '.py':
+      return { icon: '🐍', type: 'Python' };
+    case '.md':
+      return { icon: '📝', type: 'Markdown' };
+    case '.json':
+      return { icon: '⚙️', type: 'JSON' };
+    case '.zip':
+      return { icon: '📦', type: '압축' };
+    case '.png':
+    case '.jpg':
+    case '.jpeg':
+      return { icon: '🖼️', type: '이미지' };
+    case '.csv':
+      return { icon: '📊', type: '데이터' };
+    case '.pdf':
+      return { icon: '📄', type: 'PDF' };
+    case '.docx':
+      return { icon: '�', type: 'Word' };
+    case '.pptx':
+      return { icon: '📊', type: 'PowerPoint' };
+    case '.xlsx':
+      return { icon: '📈', type: 'Excel' };
+    case '.hwp':
+      return { icon: '📄', type: 'HWP' };
+    case '.txt':
+      return { icon: '📄', type: 'Text' };
+    case '.html':
+      return { icon: '🌐', type: 'HTML' };
+    default:
+      return { icon: '📄', type: '파일' };
+  }
+}
+
 {% assign cur_dir = "/스터디/" %}
 {% include cur_files.liquid %}
 {% include page_values.html %}
