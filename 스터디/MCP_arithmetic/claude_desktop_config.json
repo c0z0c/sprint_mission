@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "arithmetic": {
+      "command": "python",
+      "args": [
+        "d:\\GoogleDrive\\homepage\\스프린트미션\\스터디\\MCP_arithmetic\\mcp_server.py"
+      ]
+    }
+  }
+}
