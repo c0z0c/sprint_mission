@@ -80,7 +80,7 @@ function getFileInfo(extname) {
   }
 }
 
-{% assign cur_dir = "/스터디/논문검색_유사도/doc" %}
+{% assign cur_dir = "/스터디/논문검색_유사도/doc/" %}
 {% include cur_files.liquid %}
 {% include page_values.html %}
 {% include page_files_table.html %}
@@ -106,5 +106,8 @@ function getFileInfo(extname) {
 <div class="navigation-footer">
   <a href="{{- site.baseurl -}}/" class="nav-button home">
     <span class="nav-icon">🏠</span> 홈으로
+  </a>
+  <a href="https://github.com/c0z0c/sprint_mission" target="_blank">
+    <span class="link-icon">📱</span> GitHub 저장소
   </a>
 </div>
