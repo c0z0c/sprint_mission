@@ -1,3 +1,15 @@
+---
+layout: default
+title: "MCP Arithmetic Server"
+description: "MCP Arithmetic Server"
+author: "김명환"
+cache-control: no-cache
+date: 2025-10-14
+expires: 0
+pragma: no-cache
+version: 1.0
+---
+
 # MCP Arithmetic Server
 
 사칙연산을 제공하는 최소 기능(MVP, Minimum Viable Product) MCP 서버.

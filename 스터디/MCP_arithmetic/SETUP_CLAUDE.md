@@ -1,3 +1,15 @@
+---
+layout: default
+title: "Claude Desktop MCP 연결 설정"
+description: "Claude Desktop MCP 연결 설정"
+author: "김명환"
+cache-control: no-cache
+date: 2025-10-14
+expires: 0
+pragma: no-cache
+version: 1.0
+---
+
 # Claude Desktop MCP 연결 설정
 
 ## 1. 의존성 설치
