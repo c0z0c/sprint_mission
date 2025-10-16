@@ -91,7 +91,7 @@ window.addEventListener('load', function() {
     const table = document.querySelector('.file-table');
     if (table) {
       // title 컬럼(인덱스 1)을 오름차순으로 정렬
-      sortTable(1, 'Asc'); // 0 날짜 1 제목
+      sortTable(2, 'Asc'); // 0 날짜 1 제목
     }
   }, 100); // 100ms 딜레이로 테이블 렌더링 완료 대기
 });
