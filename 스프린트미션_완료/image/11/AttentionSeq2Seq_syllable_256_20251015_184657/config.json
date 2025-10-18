@@ -1,0 +1,13 @@
+{
+  "src_vocab_size": 1984,
+  "tgt_vocab_size": 165,
+  "embed_dim": 256,
+  "hidden_dim": 512,
+  "num_layers": 2,
+  "dropout": 0.3,
+  "lr": 0.001,
+  "weight_decay": 1e-05,
+  "tokenizer_type": "syllable",
+  "enable_rouge": true,
+  "enable_chrf": true
+}
