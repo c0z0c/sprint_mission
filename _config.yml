@@ -60,7 +60,6 @@ include:
 
 # 제외할 파일들
 exclude:
-  - README.md
   - Gemfile
   - Gemfile.lock
   - vendor/
@@ -68,7 +67,6 @@ exclude:
   - "*.gemspec"
   - "*.gem"
   - LICENSE
-  - CHANGELOG.md
   - .sass-cache/
   - .jekyll-cache/
   - "helper_c0z0c_dev.py"
