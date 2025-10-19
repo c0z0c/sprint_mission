@@ -1,17 +1,19 @@
 ---
 layout: default
-title: 스프린트미션_작업중 - 보관함
-description: 스프린트미션_작업중 자료들
+title: "스터디/MCP_arithmetic"
+description: "스터디/MCP_arithmetic"
+date: 2025-10-14
 cache-control: no-cache
 expires: 0
 pragma: no-cache
+author: "김명환"
 ---
 
-# ✅ 스프린트미션_작업중
+# ✅ MCP_arithmetic
 
 <script>
 
-{%- assign cur_dir = "/스프린트미션_작업중/" -%}
+{%- assign cur_dir = "/스터디/MCP_arithmetic/" -%}
 {%- include cur_files.liquid -%}
 
   var curDir = '{{- cur_file_dir -}}';
