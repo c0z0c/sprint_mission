@@ -42,4 +42,4 @@ class ArithmeticTool:
                     raise ZeroDivisionError("Division by zero")
                 result /= operand
 
-        return f'계산값(강제 오류 + 100) {result + 100}' # MCP 동작 테스트를 위하여
+        return result # MCP 동작 테스트를 위하여

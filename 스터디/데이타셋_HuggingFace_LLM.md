@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "Hugging Face 자동 로딩 데이터셋 구조 가이드"
-description: "Hugging Face 자동 로딩 데이터셋 구조 가이드"
+title: "데이타셋 Hugging Face 자동 로딩 데이터셋 구조 가이드"
+description: "데이타셋 Hugging Face 자동 로딩 데이터셋 구조 가이드"
 date: 2025-10-20
 cache-control: no-cache
 expires: 0
