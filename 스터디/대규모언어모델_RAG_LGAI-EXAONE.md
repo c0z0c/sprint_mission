@@ -1,8 +1,8 @@
 ---
 layout: default
-title: "대규모언어모델 허깅페이스 기반 PDF RAG 시스템 구현 가이드"
-description: "대규모언어모델 허깅페이스 기반 PDF RAG 시스템 구현 가이드"
-date: 2025-10-24
+title: "대규모언어모델 허깅페이스 기반 PDF RAG 시스템 구현 가이드 ExaOne"
+description: "대규모언어모델 허깅페이스 기반 PDF RAG 시스템 구현 가이드 ExaOne"
+date: 2025-11-03
 cache-control: no-cache
 expires: 0
 pragma: no-cache
@@ -10,12 +10,6 @@ author: "김명환"
 ---
 
 # 허깅페이스 기반 PDF RAG 시스템 구현 가이드
-
-> 작성자: 김명환 (코드잇 AI 4기)  
-> 최종 수정일: 2025-11-03  
-> 사용 모델: ExaOne 1.2B (LG AI연구원)
-
----
 
 ## 목차
 
