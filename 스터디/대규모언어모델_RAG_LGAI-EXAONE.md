@@ -73,7 +73,7 @@ author: "김명환"
 ### 1.3. 시스템 아키텍처
 
 ```mermaid
-graph TB
+graph LR
     A["한국어 PDF 파일"] --> B["PDF 텍스트 추출<br/>(PyPDF2)"]
     B --> C["텍스트 분할<br/>(RecursiveCharacterTextSplitter)"]
     C --> D["임베딩 생성<br/>(sentence-transformers)"]
@@ -82,13 +82,17 @@ graph TB
     F["사용자 질문"] --> G["질문 임베딩"]
     G --> H["유사 문서 검색<br/>(FAISS)"]
     E --> H
-    
-    H --> I["컨텍스트 구성"]
+
+    style A stroke-width:2px,stroke:#e1f5ff
+    style F stroke-width:2px,stroke:#ffe1e1
+```
+
+```mermaid
+graph LR
+    H["유사 문서 검색<br/>(FAISS)"] --> I["컨텍스트 구성"]
     I --> J["로컬 LLM 생성<br/>(ExaOne 2.4B)"]
     J --> K["최종 답변"]
     
-    style A stroke-width:2px,stroke:#e1f5ff
-    style F stroke-width:2px,stroke:#ffe1e1
     style K stroke-width:2px,stroke:#e1ffe1
 ```
 
