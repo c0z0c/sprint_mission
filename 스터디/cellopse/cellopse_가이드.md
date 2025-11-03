@@ -32,6 +32,8 @@ author: "김명환"
 
 ---
 
+[![Cellpose 유튜브 가이드](https://img.youtube.com/vi/UtfDm3TsqpY/0.jpg)](https://youtu.be/UtfDm3TsqpY)
+
 ## 1. 개요
 
 ### 1.1. Cellpose란?
