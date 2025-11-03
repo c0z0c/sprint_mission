@@ -99,10 +99,10 @@ graph TB
     H --> I["Decoding Path"]
     I --> J["Output (D×H×W×C)"]
     
-    style A fill:#e3f2fd
-    style F fill:#f3e5f5
-    style H fill:#fff3e0
-    style J fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style F stroke-width:2px,stroke:#f3e5f5
+    style H stroke-width:2px,stroke:#fff3e0
+    style J stroke-width:2px,stroke:#e8f5e8
 ```
 
 #### 1.2.2. 메모리 효율적 처리

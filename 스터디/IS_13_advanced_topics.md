@@ -119,9 +119,9 @@ graph TB
     J --> L
     K --> L
     
-    style A fill:#e3f2fd
-    style E fill:#f3e5f5
-    style L fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style E stroke-width:2px,stroke:#f3e5f5
+    style L stroke-width:2px,stroke:#e8f5e8
 ```
 
 ### 1.3. Cross-attention과 Feature Alignment

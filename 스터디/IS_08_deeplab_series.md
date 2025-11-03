@@ -151,9 +151,9 @@ graph TB
     D --> E
     E --> F["Fuse Predictions"]
     
-    style A fill:#e3f2fd
-    style E fill:#f3e5f5
-    style F fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style E stroke-width:2px,stroke:#f3e5f5
+    style F stroke-width:2px,stroke:#e8f5e8
 ```
 
 **ASPP (Atrous Spatial Pyramid Pooling)**:
@@ -170,9 +170,9 @@ graph TB
     F --> G["1x1 Conv"]
     G --> H["Output"]
     
-    style A fill:#e3f2fd
-    style F fill:#f3e5f5
-    style H fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style F stroke-width:2px,stroke:#f3e5f5
+    style H stroke-width:2px,stroke:#e8f5e8
 ```
 
 #### 1.3.3. 성능 비교
@@ -294,10 +294,10 @@ graph TB
     G --> H
     H --> I["1×1 Conv + Dropout"]
     
-    style A fill:#e3f2fd
-    style F fill:#fff3e0
-    style H fill:#f3e5f5
-    style I fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style F stroke-width:2px,stroke:#fff3e0
+    style H stroke-width:2px,stroke:#f3e5f5
+    style I stroke-width:2px,stroke:#e8f5e8
 ```
 
 #### 3.1.3. GAP의 효과
@@ -389,11 +389,11 @@ graph TB
     J --> K["4× Upsample"]
     K --> L["Output"]
     
-    style A fill:#e3f2fd
-    style C fill:#f3e5f5
-    style D fill:#fff3e0
-    style H fill:#e8f5e8
-    style L fill:#fce4ec
+    style A stroke-width:2px,stroke:#e3f2fd
+    style C stroke-width:2px,stroke:#f3e5f5
+    style D stroke-width:2px,stroke:#fff3e0
+    style H stroke-width:2px,stroke:#e8f5e8
+    style L stroke-width:2px,stroke:#fce4ec
 ```
 
 #### 4.1.3. Skip Connection 설계

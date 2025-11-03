@@ -97,9 +97,9 @@ graph TB
     M --> N
     N --> O["Final Conv"]
     
-    style A fill:#e3f2fd
-    style N fill:#f3e5f5
-    style O fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style N stroke-width:2px,stroke:#f3e5f5
+    style O stroke-width:2px,stroke:#e8f5e8
 ```
 
 #### 1.2.2. 수학적 정의
@@ -277,8 +277,8 @@ graph LR
     C --> D["SW-MSA"]
     D --> E["Layer l+2"]
     
-    style B fill:#e3f2fd
-    style D fill:#f3e5f5
+    style B stroke-width:2px,stroke:#e3f2fd
+    style D stroke-width:2px,stroke:#f3e5f5
 ```
 
 #### 3.1.3. 계산 복잡도 개선
@@ -306,10 +306,10 @@ graph TB
     F --> G["FPN-style Decoder"]
     G --> H["Segmentation Head"]
     
-    style A fill:#e3f2fd
-    style F fill:#f3e5f5
-    style G fill:#fff3e0
-    style H fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style F stroke-width:2px,stroke:#f3e5f5
+    style G stroke-width:2px,stroke:#fff3e0
+    style H stroke-width:2px,stroke:#e8f5e8
 ```
 
 #### 3.2.2. Pyramid Pooling + FPN

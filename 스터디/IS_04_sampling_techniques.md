@@ -139,9 +139,9 @@ graph TB
     D --> E
     E --> F["Multi-Scale Features"]
     
-    style A fill:#e3f2fd
-    style E fill:#f3e5f5
-    style F fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style E stroke-width:2px,stroke:#f3e5f5
+    style F stroke-width:2px,stroke:#e8f5e8
 ```
 
 ### 1.3. Sampling Theory와 Aliasing
@@ -387,9 +387,9 @@ graph TB
     E --> F
     F --> G["Multi-scale Output"]
     
-    style A fill:#e3f2fd
-    style F fill:#f3e5f5
-    style G fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style F stroke-width:2px,stroke:#f3e5f5
+    style G stroke-width:2px,stroke:#e8f5e8
 ```
 
 ### 3.3. Multi-Scale Context Aggregation
@@ -560,9 +560,9 @@ graph TB
     E --> F
     F --> G["Fixed-size Vector"]
     
-    style A fill:#e3f2fd
-    style F fill:#f3e5f5
-    style G fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style F stroke-width:2px,stroke:#f3e5f5
+    style G stroke-width:2px,stroke:#e8f5e8
 ```
 
 **출력 크기**:

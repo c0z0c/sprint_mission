@@ -171,8 +171,8 @@ graph TD
     D --> E["MaxPool 2×2<br/>다운샘플링"]
     E --> F["다음 블록으로"]
     
-    style A fill:#e1f5fe
-    style E fill:#ffecb3
+    style A stroke-width:2px,stroke:#e1f5fe
+    style E stroke-width:2px,stroke:#ffecb3
 ```
 
 #### 2.2.4. 장점
@@ -293,11 +293,11 @@ graph TD
     D --> H["모든 활성화에 적용"]
     E --> I["공간 크기 유지"]
     
-    style A fill:#e8f5e8
-    style F fill:#fff3e0
-    style G fill:#fff3e0
-    style H fill:#fff3e0
-    style I fill:#fff3e0
+    style A stroke-width:2px,stroke:#e8f5e8
+    style F stroke-width:2px,stroke:#fff3e0
+    style G stroke-width:2px,stroke:#fff3e0
+    style H stroke-width:2px,stroke:#fff3e0
+    style I stroke-width:2px,stroke:#fff3e0
 ```
 
 #### 3.1.1. 장점
@@ -330,11 +330,11 @@ graph LR
     
     F["구체적"] --> G["추상적"]
     
-    style A fill:#ffebee
-    style B fill:#f3e5f5
-    style C fill:#e8eaf6
-    style D fill:#e0f2f1
-    style E fill:#e8f5e8
+    style A stroke-width:2px,stroke:#ffebee
+    style B stroke-width:2px,stroke:#f3e5f5
+    style C stroke-width:2px,stroke:#e8eaf6
+    style D stroke-width:2px,stroke:#e0f2f1
+    style E stroke-width:2px,stroke:#e8f5e8
 ```
 
 ### 3.3. 전이 학습(Transfer Learning)의 우수한 베이스 모델
@@ -360,8 +360,8 @@ graph TD
     I["End-to-End Training"] --> F
     I --> G
     
-    style A fill:#e3f2fd
-    style B fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style B stroke-width:2px,stroke:#e8f5e8
 ```
 
 #### 3.3.2. 전이 학습 전략
@@ -402,9 +402,9 @@ graph TD
     J --> K["Conv5 출력<br/>14×14×512"] --> L["메모리: 100KB"]
     L --> M["FC 입력<br/>25,088"] --> N["메모리: 100KB"]
     
-    style B fill:#ffcdd2
-    style D fill:#ff8a80
-    style F fill:#ff5252
+    style B stroke-width:2px,stroke:#ffcdd2
+    style D stroke-width:2px,stroke:#ff8a80
+    style F stroke-width:2px,stroke:#ff5252
 ```
 
 #### 4.1.3. 연산 복잡도

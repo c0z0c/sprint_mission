@@ -209,10 +209,10 @@ graph TB
     A --> F
     F --> G["Output"]
     
-    style A fill:#e3f2fd
-    style C fill:#f3e5f5
-    style F fill:#e8f5e8
-    style G fill:#e3f2fd
+    style A stroke-width:2px,stroke:#e3f2fd
+    style C stroke-width:2px,stroke:#f3e5f5
+    style F stroke-width:2px,stroke:#e8f5e8
+    style G stroke-width:2px,stroke:#e3f2fd
 ```
 
 #### 2.2.3. 정보 흐름 분석
@@ -263,9 +263,9 @@ graph TB
     A --> N
     N --> O["Output"]
     
-    style A fill:#e3f2fd
-    style N fill:#f3e5f5
-    style O fill:#e3f2fd
+    style A stroke-width:2px,stroke:#e3f2fd
+    style N stroke-width:2px,stroke:#f3e5f5
+    style O stroke-width:2px,stroke:#e3f2fd
 ```
 
 #### 2.3.3. Group Convolution으로 구현
@@ -515,12 +515,12 @@ graph TB
     A --> E
     E --> F["Output (256 channels)"]
     
-    style A fill:#e3f2fd
-    style B fill:#fff3e0
-    style C fill:#f3e5f5
-    style D fill:#e8f5e8
-    style E fill:#fce4ec
-    style F fill:#e3f2fd
+    style A stroke-width:2px,stroke:#e3f2fd
+    style B stroke-width:2px,stroke:#fff3e0
+    style C stroke-width:2px,stroke:#f3e5f5
+    style D stroke-width:2px,stroke:#e8f5e8
+    style E stroke-width:2px,stroke:#fce4ec
+    style F stroke-width:2px,stroke:#e3f2fd
 ```
 
 **파라미터 비교**:
@@ -542,12 +542,12 @@ graph TB
     A --> E
     E --> F["Output (32 channels)"]
     
-    style A fill:#e3f2fd
-    style B fill:#fff3e0
-    style C fill:#f3e5f5
-    style D fill:#e8f5e8
-    style E fill:#fce4ec
-    style F fill:#e3f2fd
+    style A stroke-width:2px,stroke:#e3f2fd
+    style B stroke-width:2px,stroke:#fff3e0
+    style C stroke-width:2px,stroke:#f3e5f5
+    style D stroke-width:2px,stroke:#e8f5e8
+    style E stroke-width:2px,stroke:#fce4ec
+    style F stroke-width:2px,stroke:#e3f2fd
 ```
 
 **특징**:

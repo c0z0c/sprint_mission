@@ -152,13 +152,13 @@ graph TB
     L --> R["FCN-16s"] 
     P --> S["FCN-8s"]
     
-    style A fill:#e3f2fd
-    style G fill:#f3e5f5
-    style K fill:#fff3e0
-    style O fill:#e8f5e8
-    style Q fill:#fce4ec
-    style R fill:#f3e5f5
-    style S fill:#e1f5fe
+    style A stroke-width:2px,stroke:#e3f2fd
+    style G stroke-width:2px,stroke:#f3e5f5
+    style K stroke-width:2px,stroke:#fff3e0
+    style O stroke-width:2px,stroke:#e8f5e8
+    style Q stroke-width:2px,stroke:#fce4ec
+    style R stroke-width:2px,stroke:#f3e5f5
+    style S stroke-width:2px,stroke:#e1f5fe
 ```
 
 #### 1.3.3. Skip Connection의 효과

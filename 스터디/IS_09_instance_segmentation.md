@@ -75,13 +75,13 @@ graph TB
     H --> K["Refined Boxes"]
     I --> L["Instance Masks"]
     
-    style A fill:#e3f2fd
-    style C fill:#f3e5f5
-    style D fill:#fff3e0
-    style E fill:#e8f5e8
-    style J fill:#fce4ec
-    style K fill:#f3e5f5
-    style L fill:#e1f5fe
+    style A stroke-width:2px,stroke:#e3f2fd
+    style C stroke-width:2px,stroke:#f3e5f5
+    style D stroke-width:2px,stroke:#fff3e0
+    style E stroke-width:2px,stroke:#e8f5e8
+    style J stroke-width:2px,stroke:#fce4ec
+    style K stroke-width:2px,stroke:#f3e5f5
+    style L stroke-width:2px,stroke:#e1f5fe
 ```
 
 #### 1.1.3. 수학적 표현
@@ -326,11 +326,11 @@ graph TB
     C --> D
     D --> E["Instance Masks"]
     
-    style A fill:#e3f2fd
-    style B fill:#f3e5f5
-    style C fill:#fff3e0
-    style D fill:#e8f5e8
-    style E fill:#fce4ec
+    style A stroke-width:2px,stroke:#e3f2fd
+    style B stroke-width:2px,stroke:#f3e5f5
+    style C stroke-width:2px,stroke:#fff3e0
+    style D stroke-width:2px,stroke:#e8f5e8
+    style E stroke-width:2px,stroke:#fce4ec
 ```
 
 **수학적 표현**:
@@ -496,11 +496,11 @@ graph TB
     E --> F
     F --> G["Panoptic Output"]
     
-    style A fill:#e3f2fd
-    style B fill:#f3e5f5
-    style C fill:#fff3e0
-    style F fill:#e8f5e8
-    style G fill:#fce4ec
+    style A stroke-width:2px,stroke:#e3f2fd
+    style B stroke-width:2px,stroke:#f3e5f5
+    style C stroke-width:2px,stroke:#fff3e0
+    style F stroke-width:2px,stroke:#e8f5e8
+    style G stroke-width:2px,stroke:#fce4ec
 ```
 
 #### 5.1.3. 융합 알고리즘

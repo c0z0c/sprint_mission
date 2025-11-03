@@ -117,10 +117,10 @@ graph TB
     D --> E["Progressive Upsampling"]
     E --> F["Segmentation Output"]
     
-    style A fill:#e3f2fd
-    style C fill:#f3e5f5
-    style E fill:#fff3e0
-    style F fill:#e8f5e8
+    style A stroke-width:2px,stroke:#e3f2fd
+    style C stroke-width:2px,stroke:#f3e5f5
+    style E stroke-width:2px,stroke:#fff3e0
+    style F stroke-width:2px,stroke:#e8f5e8
 ```
 
 **한계**: 
@@ -483,11 +483,11 @@ graph TB
     B --> D["Context Vector"]
     D --> E["Decoder Output"]
     
-    style A fill:#e3f2fd
-    style C fill:#f3e5f5
-    style B fill:#fff3e0
-    style D fill:#e8f5e8
-    style E fill:#fce4ec
+    style A stroke-width:2px,stroke:#e3f2fd
+    style C stroke-width:2px,stroke:#f3e5f5
+    style B stroke-width:2px,stroke:#fff3e0
+    style D stroke-width:2px,stroke:#e8f5e8
+    style E stroke-width:2px,stroke:#fce4ec
 ```
 
 #### 2.2.3. 멀티모달 융합

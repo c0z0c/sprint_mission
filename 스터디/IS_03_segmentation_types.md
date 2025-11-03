@@ -345,11 +345,11 @@ graph TB
     F --> G
     G --> H["Panoptic Output"]
     
-    style A fill:#e3f2fd
-    style B fill:#f3e5f5
-    style C fill:#e8f5e8
-    style D fill:#fff3e0
-    style G fill:#fce4ec
+    style A stroke-width:2px,stroke:#e3f2fd
+    style B stroke-width:2px,stroke:#f3e5f5
+    style C stroke-width:2px,stroke:#e8f5e8
+    style D stroke-width:2px,stroke:#fff3e0
+    style G stroke-width:2px,stroke:#fce4ec
 ```
 
 #### 3.3.2. 융합 알고리즘
@@ -501,9 +501,9 @@ graph LR
     C --> G
     B --> H
     
-    style A fill:#e3f2fd
-    style I fill:#e3f2fd
-    style E fill:#f3e5f5
+    style A stroke-width:2px,stroke:#e3f2fd
+    style I stroke-width:2px,stroke:#e3f2fd
+    style E stroke-width:2px,stroke:#f3e5f5
 ```
 
 ### 5.2. 포인트 클라우드 세그멘테이션
