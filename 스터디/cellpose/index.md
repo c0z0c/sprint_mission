@@ -1,13 +1,13 @@
 ---
 layout: default
-title: 스터디/cellopse - 스터디/cellopse 보관함
-description: 스터디/cellopse 자료들
+title: 스터디/cellpose - 스터디/cellpose 보관함
+description: 스터디/cellpose 자료들
 cache-control: no-cache
 expires: 0
 pragma: no-cache
 ---
 
-# ✅ 스터디/cellopse
+# ✅ 스터디/cellpose
 
 <script>
 
@@ -16,10 +16,10 @@ function getFolderInfo(folderName) {
     folderName = (folderName || '').toString().replace(/^\/+|\/+$/g, '');
     // 폴더명에 따른 아이콘과 설명 (가나다순 정렬)
     const folderMappings = {
-        'cellopse': { icon: '📊', desc: 'AI HUB 감성 데이타셋' },
+        'cellpose': { icon: '📊', desc: 'AI HUB 감성 데이타셋' },
         '경구약제 이미지 데이터(데이터 설명서, 경구약제 리스트)': { icon: '📊', desc: '데이터 설명서' },
         '논문검색_유사도': { icon: '💊', desc: '논문검색 유사도' },
-        'cellopse': { icon: '📊', desc: 'AI HUB 감성 데이타셋' },
+        'cellpose': { icon: '📊', desc: 'AI HUB 감성 데이타셋' },
         '멘토': { icon: '👨‍🏫', desc: '멘토 관련 자료' },
         '백업': { icon: '💾', desc: '백업 파일들' },
         '발표자료': { icon: '📊', desc: '발표 자료' },
@@ -79,7 +79,7 @@ function getFileInfo(extname) {
   }
 }
 
-{% assign cur_dir = "/스터디/cellopse/" %}
+{% assign cur_dir = "/스터디/cellpose/" %}
 {% include cur_files.liquid %}
 {% include page_values.html %}
 {% include page_files_table.html %}
