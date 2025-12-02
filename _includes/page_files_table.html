@@ -215,11 +215,10 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (fileExt === '.ipynb') {
         renderLink = `<a href="${colab_url}${fileName}" title="Colab에서 열기" target="_blank">🚀</a>`;
       } else if (fileExt === '.pdf') {
-        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기"
-        target="_blank">📄</a>`;
+        // renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
+        renderLink = `<a href="${site_url}${fileName}" title="PDF 뷰어로 열기" target="_blank">📄</a>`;
       } else if (fileExt === '.docx') {
-        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기"
-        target="_blank">📊</a>`;
+        renderLink = `<a href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="Google에서 열기" target="_blank">📊</a>`;
       } else if (fileExt === '.html') {
         renderLink = `<a href="${site_url}${fileName}" title="웹페이지로 보기" target="_blank">🌐</a>`;
       } else if (fileExt === '.csv') {
@@ -248,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         title="Colab에서 열기" target="_blank" style="text-decoration: none; color: inherit;">${file.title || file.name}</a>`;
       } else if (fileExt === '.pdf') {
         titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a
-        href="https://docs.google.com/viewer?url=${raw_url}${fileName}" title="PDF 뷰어로 열기" target="_blank"
+        href="${site_url}${fileName}" title="PDF 뷰어로 열기" target="_blank"
         style="text-decoration: none; color: inherit;">${file.title || file.name}</a>`;
       } else if (fileExt === '.docx') {
         titleClickable = `<span class="file-icon">${fileInfo.icon}</span> <a
