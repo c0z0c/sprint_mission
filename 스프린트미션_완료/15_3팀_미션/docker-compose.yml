@@ -1,0 +1,47 @@
+version: '3.8'
+
+# 공유 볼륨 정의
+volumes:
+  model_data_volume: # Named Volume: model.pkl 및 test.csv 공유용
+  host_results:      # Bind Mount의 Host 경로명을 명시하지 않고, 서비스에서 직접 Bind Mount 사용
+
+services:
+  # ----------------------------------------------------
+  # 1. 연구자 1: 모델 학습 및 model.pkl 생성
+  # ----------------------------------------------------
+  mission15_train:
+    environment:
+          - RUNNING_IN_DOCKER=True # Docker 환경에서만 이 변수가 설정됨  
+    build:
+      context: ./mission15_train # Dockerfile 위치
+    image: mission15_train-image # 로컬 이미지 이름 지정
+    container_name: mission15_train
+    # Named Volume을 마운트하여 model.pkl과 test.csv를 저장/공유
+    user: "1000"
+    
+    volumes:
+      - ./data:/app/data
+    
+    # train_model.py 실행 명령 (이 컨테이너는 실행 후 종료됨)
+    command: python train_model.py
+    restart: "no"
+
+  # ----------------------------------------------------
+  # 2. 연구자 2: 추론 수행 및 result.csv 저장
+  # ----------------------------------------------------
+  mission15_inference:
+    build:
+      context: ./mission15_inference # Dockerfile 위치
+    image: mission15_inference-jupyter
+    container_name: mission15_inference
+    ports:
+      - "8888:8888" # Jupyter Notebook 웹 인터페이스 접근용
+    
+    # 1. model.pkl (입력) 공유 볼륨 마운트
+    volumes:
+      - ./data:/app/data
+    
+    # Jupyter Notebook을 실행 상태로 유지
+    command: "start-notebook.sh --NotebookApp.token=''" # 토큰 없이 실행 (개발 편의상)
+    depends_on:
+      - mission15_train
