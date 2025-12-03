@@ -32,7 +32,7 @@ mission15_inference/
 ## 환경 설정
 
 ### Python 버전 및 주요 패키지
-- Python: 3.10 (연구자 1과 동일)
+- Python: 3.11 (연구자 1과 동일)
 - pandas
 - numpy
 - scikit-learn

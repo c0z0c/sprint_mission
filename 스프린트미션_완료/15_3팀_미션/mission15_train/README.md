@@ -34,7 +34,7 @@ mission15_train/
 ## 환경 설정
 
 ### Python 버전 및 주요 패키지
-- Python: 3.10
+- Python: 3.11
 - pandas
 - numpy
 - scikit-learn

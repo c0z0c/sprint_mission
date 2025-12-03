@@ -6,7 +6,7 @@
 Docker를 활용한 머신러닝 모델 학습 및 추론 협업 워크플로우 구현. 두 명의 연구자가 컨테이너 기반 환경에서 모델 학습(연구자 1)과 추론(연구자 2)을 분리하여 수행하며, 공유 볼륨을 통해 모델 파일을 전달하는 시스템을 설계 및 구현했습니다.
 
 ### 1.2. 핵심 설계 원칙
-- **환경 일관성(Environment Consistency)**: Python 3.10 및 패키지 버전 통일
+- **환경 일관성(Environment Consistency)**: python 3.11 및 패키지 버전 통일
 - **방어적 설계(Defensive Design)**: 모델 파일 생성 전 추론 실행 방지
 - **재현성(Reproducibility)**: random_state=42, 패키지 버전 고정
 
@@ -28,7 +28,7 @@ graph TB
     end
     
     subgraph TRAIN["연구자 1 컨테이너 (학습)"]
-        TRAIN_ENV["Python 3.10<br/>train_model.py"]
+        TRAIN_ENV["python 3.11<br/>train_model.py"]
         TRAIN_MOUNT["/app/data"]
     end
     
@@ -251,7 +251,7 @@ Named Volume 대신 Bind Mount(`./data:/app/data`)를 사용한 이유:
 ### 4.2. 재현성 확보 전략
 1. **패키지 버전 고정**: requirements.txt
 2. **random_state 고정**: train_test_split(random_state=42)
-3. **Python 버전 통일**: 3.10-slim (연구자 1), jupyter/scipy-notebook (Python 3.10 포함)
+3. **Python 버전 통일**: 3.11-slim (연구자 1), jupyter/scipy-notebook (python 3.11 포함)
 
 ---
 

@@ -156,25 +156,25 @@ graph TB
 #### 연구자 1
 ```bash
 # 1. 이미지 태그 및 푸시
-docker tag mission15_train-image c0z0c/mission15-train:latest
-docker push c0z0c/mission15-train:latest
+docker tag mission15_train-image c0z0c/mission15-train:v2.0
+docker push c0z0c/mission15-train:v2.0
 
-docker tag mission15_inference-jupyter c0z0c/mission15-inference:latest
-docker push c0z0c/mission15-inference:latest
+docker tag mission15_inference-jupyter c0z0c/mission15-inference:v2.0
+docker push c0z0c/mission15-inference:v2.0
 ```
 
 #### 연구자 2
 ```bash
 # 1. 이미지 가져오기
-docker pull c0z0c/mission15-train:latest
-docker pull c0z0c/mission15-inference:latest
+docker pull c0z0c/mission15-train:v2.0
+docker pull c0z0c/mission15-inference:v2.0
 
 # 2. docker-compose.yml 수정 (선택사항)
 # services:
 #   mission15_train:
-#     image: c0z0c/mission15-train:latest
+#     image: c0z0c/mission15-train:v2.0
 #   mission15_inference:
-#     image: c0z0c/mission15-inference:latest
+#     image: c0z0c/mission15-inference:v2.0
 
 # 3. 실행
 docker-compose up
@@ -183,10 +183,10 @@ docker-compose up
 ## 핵심 설계 포인트
 
 ### 1. 환경 일관성 보장
-- **Python 버전**: 3.10 (두 연구자 동일)
+- **Python 버전**: 3.11 (두 연구자 동일)
 - **패키지 버전**: `requirements.txt`로 고정
 - **베이스 이미지**:
-  - 연구자 1: `python:3.10-slim`
+  - 연구자 1: `python:3.11-slim`
   - 연구자 2: `jupyter/scipy-notebook:latest`
 
 ### 2. 파일 공유 전략
@@ -337,7 +337,7 @@ graph TB
     end
     
     subgraph TRAIN["연구자 1 컨테이너 (학습)"]
-        TRAIN_ENV["Python 3.10<br/>train_model.py"]
+        TRAIN_ENV["python 3.11<br/>train_model.py"]
         TRAIN_MOUNT["/app/data"]
     end
     
@@ -376,7 +376,7 @@ graph TB
 - [x] 보고서 PDF 작성 (2페이지 이내)
 
 ## 참고 사항
-- 모든 컨테이너는 동일한 Python 버전(3.10) 사용
+- 모든 컨테이너는 동일한 Python 버전(3.11) 사용
 - `joblib`을 사용하여 모델 직렬화
 - RMSE 지표로 모델 성능 평가
 - 볼륨 마운트로 데이터 영속성 보장
