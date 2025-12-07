@@ -142,7 +142,7 @@ def create_yolo_dataset(
     Returns:
         생성된 data.yaml 파일 경로
     """
-    logger.info("YOLO 데이터셋 변환 시작")
+    logger.debug("YOLO 데이터셋 변환 시작")
     
     # 출력 디렉토리 생성
     output_dir = Path(output_dir)
@@ -177,9 +177,9 @@ def create_yolo_dataset(
             val_data = val_data[:max_samples_per_split[1]]
         if max_samples_per_split[2] > 0:
             test_data = test_data[:max_samples_per_split[2]]
-        logger.info(f"샘플 개수 제한 적용: 각 분할당 최대 {max_samples_per_split}개")
+        logger.debug(f"샘플 개수 제한 적용: 각 분할당 최대 {max_samples_per_split}개")
     
-    logger.info(f"Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}")
+    logger.debug(f"Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}")
     
     # 클래스명 자동 생성
     if class_names is None:
@@ -248,7 +248,7 @@ def create_yolo_dataset(
     with open(yaml_path, 'w') as f:
         yaml.dump(yaml_data, f, default_flow_style=False)
     
-    logger.info(f"YOLO 데이터셋 생성 완료: {yaml_path}")
+    logger.debug(f"YOLO 데이터셋 생성 완료: {yaml_path}")
     return yaml_path
 
 
@@ -261,7 +261,7 @@ def yolo_dataset_to_dataframe(yaml_path: Path) -> Tuple[pd.DataFrame, pd.DataFra
     Returns:
         (train_df, valid_df, test_df) 튜플
     """
-    logger.info("YOLO 데이터셋을 DataFrame으로 로드")
+    logger.debug("YOLO 데이터셋을 DataFrame으로 로드")
     
     with open(yaml_path, 'r') as f:
         config = yaml.safe_load(f)
@@ -306,7 +306,7 @@ def yolo_dataset_to_dataframe(yaml_path: Path) -> Tuple[pd.DataFrame, pd.DataFra
     valid_df = load_split("val")
     test_df = load_split("test")
     
-    logger.info(f"DataFrame 로드 완료 - Train: {len(train_df)}, Val: {len(valid_df)}, Test: {len(test_df)}")
+    logger.debug(f"DataFrame 로드 완료 - Train: {len(train_df)}, Val: {len(valid_df)}, Test: {len(test_df)}")
     
     return train_df, valid_df, test_df
 
@@ -324,7 +324,7 @@ def validate_conversion(
     Returns:
         검증 결과 딕셔너리
     """
-    logger.info("변환 결과 검증 시작")
+    logger.debug("변환 결과 검증 시작")
     
     results = {
         "train_samples": len(train_df),
@@ -354,7 +354,7 @@ def validate_conversion(
         "valid_ratio": bbox_valid.mean()
     }
     
-    logger.info(f"검증 완료: {results}")
+    logger.debug(f"검증 완료: {results}")
     return results
 
 
@@ -373,9 +373,9 @@ def oxfordiit_pet_to_yolo(
         (yaml_path, train_df, valid_df, test_df, validation_results) 튜플
     """
     # Kaggle 데이터셋 다운로드
-    logger.info("Kaggle 데이터셋 다운로드 시작")
+    logger.debug("Kaggle 데이터셋 다운로드 시작")
     kagglehub_path = kagglehub.dataset_download("devdgohil/the-oxfordiiit-pet-dataset")
-    logger.info(f"다운로드 완료: {kagglehub_path}")
+    logger.debug(f"다운로드 완료: {kagglehub_path}")
     
     # 경로 설정
     paths = PetDatasetPaths.from_kagglehub_path(kagglehub_path)

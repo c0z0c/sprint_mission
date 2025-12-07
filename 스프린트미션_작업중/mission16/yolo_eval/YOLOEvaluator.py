@@ -1,7 +1,9 @@
+import os
 import pandas as pd
 import numpy as np
 import time
 import yaml
+import torch
 
 try:
     from tqdm.notebook import tqdm
@@ -13,13 +15,11 @@ from typing import Dict, List, Optional, Tuple, Literal
 from pathlib import Path
 from helper_utils.helper_logger import *
 from ultralytics import YOLO
-import torch
-import os
-import sys
 
 from .EvaluationMetrics import EvaluationMetrics
 from .PredictionResult import PredictionResult
 from .EvaluationMetrics import EvaluationMetrics
+from .QuantizedModelWrapper import QuantizedModelWrapper
 
 class YOLOEvaluator:
     """YOLO 모델 평가 클래스"""
@@ -31,7 +31,7 @@ class YOLOEvaluator:
         model_name: Optional[str] = None,
         device: str = 'cuda',
         verbose: bool = False,
-        model_type: Literal['yolo_pt', 'torch_state_dict', 'quantized'] = 'yolo_pt',
+        model_type: Literal['yolo_pt', 'torch_state_dict', 'quantized', 'openvino', 'onnx'] = 'yolo_pt',
         model_config: Optional[str] = None
     ):
         """
@@ -42,11 +42,12 @@ class YOLOEvaluator:
             device: 사용할 디바이스 ('cuda' or 'cpu')
             verbose: 상세 출력 여부
             model_type: 모델 타입
-                - 'yolo_pt': ultralytics YOLO .pt 파일 (기본값)
+                - 'yolo_pt': Ultralytics YOLO .pt 파일 (기본값)
                 - 'torch_state_dict': PyTorch state_dict .pth 파일
                 - 'quantized': 양자화된 모델 (torch.load로 직접 로드)
-            model_config: 모델 구조 정의 파일 경로 (torch_state_dict 타입에 필요)
-                예: 'yolov8n.yaml', 'yolov8m.yaml'
+                - 'openvino': OpenVINO IR 형식 (.xml 파일 또는 디렉토리)
+                - 'onnx': ONNX 모델 (.onnx 파일, FP32/FP16/INT8 QDQ 지원)
+            model_config: 모델 구조 정의 파일 경로 (torch_state_dict 사용 시 필수, 예: 'yolov8m.yaml')
         """
         self.model_path = model_path
         self.yaml_path = yaml_path
@@ -67,46 +68,125 @@ class YOLOEvaluator:
         self.metrics: Optional[EvaluationMetrics] = None
         
     def _load_model(self):
-        """YOLO 모델 로드 (model_type에 따라 분기)"""
+        """YOLO 모델 로드 (타입별 처리)"""
         if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"모델 파일을 찾을 수 없음: {self.model_path}")
-        
-        logger.info(f"모델 로딩 중: {self.model_path} (타입: {self.model_type})")
-        
+
+        logger.info(f"모델 로딩 중 (타입: {self.model_type}): {self.model_path}")
+
         if self.model_type == 'yolo_pt':
-            # 1. 일반 YOLO .pt 파일 (ultralytics)
+            # 기본 Ultralytics YOLO .pt 파일
             self.model = YOLO(self.model_path)
             
+        elif self.model_type == 'onnx':
+            # ONNX 모델은 QuantizedModelWrapper로 처리
+            logger.info("ONNX 모델을 QuantizedModelWrapper로 로딩")
+            
+            model_size_mb = os.path.getsize(self.model_path) / (1024 * 1024)
+            logger.info(f"ONNX 모델 크기: {model_size_mb:.2f} MB")
+            
+            # QuantizedModelWrapper로 래핑 (ONNX Runtime 사용)
+            self.model = QuantizedModelWrapper(
+                quantized_model=self.model_path,
+                yaml_path=self.yaml_path,
+                device=self.device,
+                verbose=self.verbose,
+                model_type='onnx'
+            )
+            
         elif self.model_type == 'torch_state_dict':
-            # 2. PyTorch state_dict .pth 파일
+            # PyTorch state_dict .pth 파일
             if not self.model_config:
-                raise ValueError("torch_state_dict 타입은 model_config (YAML 경로)가 필요합니다.")
-            
-            # 모델 구조 인스턴스 생성
-            logger.info(f"모델 구조 로딩: {self.model_config}")
-            yolo_instance = YOLO(self.model_config)
-            
-            # state_dict 로드 및 적용
-            state_dict = torch.load(self.model_path, map_location=self.device)
-            yolo_instance.model.load_state_dict(state_dict)
-            yolo_instance.model.eval()
-            
-            self.model = yolo_instance
-            logger.info(f"state_dict 로드 완료")
+                raise ValueError("torch_state_dict 타입은 model_config 파라미터가 필수입니다.")
+
+            # state_dict 로드 (PyTorch 2.6+ 호환성을 위해 weights_only=False)
+            loaded_obj = torch.load(self.model_path, map_location=self.device, weights_only=False)
+
+            # 타입 확인: state_dict인지 전체 모델 객체인지 판별
+            if isinstance(loaded_obj, dict):
+                # state_dict인 경우 (정상 케이스)
+                logger.info(f"state_dict 형식 감지. 모델 구조 로드: {self.model_config}")
+                # 1. 빈 YOLO 모델 인스턴스 생성 (구조 정의)
+                yolo_instance = YOLO(self.model_config)
+
+                # 2. 모델에 가중치 적용
+                yolo_instance.model.load_state_dict(loaded_obj)  # type: ignore
+                yolo_instance.model.eval()  # type: ignore
+
+                # 3. YOLO 인스턴스의 ckpt_path를 None으로 설정하여 .val() 호출 시 경로 체크 우회
+                yolo_instance.ckpt_path = None
+                yolo_instance.model_name = self.model_name
+
+                self.model = yolo_instance
+                logger.info("state_dict 로드 및 적용 완료")
+            else:
+                # 전체 모델 객체인 경우
+                logger.warning(
+                    f"torch_state_dict 타입으로 지정했지만 전체 모델 객체가 감지되었습니다. "
+                    f"model_type='quantized' 사용을 권장합니다."
+                )
+                loaded_obj.eval()
+                # YOLO wrapper로 감싸기
+                self.model = QuantizedModelWrapper(
+                    quantized_model=loaded_obj,
+                    yaml_path=self.yaml_path,
+                    device=self.device,
+                    verbose=self.verbose
+                )
+                logger.info("전체 모델 객체로 로드 및 래핑 완료")
             
         elif self.model_type == 'quantized':
-            # 3. 양자화 모델 (torch.save로 저장된 전체 모델)
-            quantized_model = torch.load(self.model_path, map_location=self.device)
-            quantized_model.eval()
-            
+            # 양자화된 모델 로드 (PyTorch 2.6+ 호환성을 위해 weights_only=False)
+            loaded_obj = torch.load(self.model_path, map_location=self.device, weights_only=False)
+
+            # 타입 확인: state_dict인지 전체 모델 객체인지 판별
+            if isinstance(loaded_obj, dict):
+                # state_dict인 경우: model_config가 필요함
+                if not self.model_config:
+                    raise ValueError(
+                        "양자화 모델이 state_dict 형식으로 저장되어 있습니다. "
+                        "model_config 파라미터로 모델 구조 파일(예: 'yolov8m.yaml')을 지정해야 합니다."
+                    )
+
+                logger.info(f"state_dict 형식 감지. 모델 구조 로드: {self.model_config}")
+                # 모델 구조 생성
+                yolo_instance = YOLO(self.model_config)
+
+                # state_dict 적용
+                yolo_instance.model.load_state_dict(loaded_obj)  # type: ignore
+                quantized_model = yolo_instance.model
+                quantized_model.eval()  # type: ignore
+                logger.info("state_dict 로드 및 적용 완료")
+            else:
+                # 전체 모델 객체인 경우
+                quantized_model = loaded_obj
+                quantized_model.eval()
+                logger.info("전체 모델 객체 로드 완료")
+
             # YOLO 래퍼로 감싸기 (ultralytics API 호환성)
-            # 양자화 모델은 직접 추론만 가능하므로 YOLO 객체로 래핑하지 않음
-            self.model = quantized_model
-            logger.warning("양자화 모델은 ultralytics API(val/predict)를 지원하지 않을 수 있습니다.")
-            
+            self.model = QuantizedModelWrapper(
+                quantized_model=quantized_model,
+                yaml_path=self.yaml_path,
+                device=self.device,
+                verbose=self.verbose
+            )
+            logger.info("양자화 모델 래핑 완료")
+
+        elif self.model_type == 'openvino':
+            # OpenVINO IR 형식 모델
+            # .xml 파일이 직접 전달된 경우 부모 디렉토리로 변경
+            if self.model_path.endswith('.xml') and '_openvino_model' in self.model_path:
+                original_path = self.model_path
+                self.model_path = str(Path(self.model_path).parent)
+                logger.info(f"OpenVINO .xml 파일 감지. 디렉토리로 변경: {original_path} -> {self.model_path}")
+
+            # Ultralytics YOLO로 로드 (OpenVINO 자동 감지)
+            self.model = YOLO(self.model_path)
+            logger.info("OpenVINO 모델 로드 완료")
+
         else:
             raise ValueError(f"지원하지 않는 model_type: {self.model_type}")
-        
+
         logger.info(f"모델 로드 완료: {self.model_name}")
         
     def _load_dataset_paths(self):
@@ -169,22 +249,42 @@ class YOLOEvaluator:
             >>> evaluator.validate(project='results', name='exp1')
         """
         logger.info(f"모델 검증 시작: split={split}, imgsz={imgsz}, batch={batch}")
-        
+        logger.info(f"모델 검증 시작: self.model_type={self.model_type}")
+        logger.info(f"모델 검증 시작: self.model_config={self.model_config}")
+
         start_time = time.time()
-        
+
         # YOLO validation 실행
-        metrics = self.model.val(
-            data=self.yaml_path,
-            split=split,
-            imgsz=imgsz,
-            batch=batch,
-            conf=conf,
-            iou=iou,
-            project=project,
-            name=name,
-            save=save,
-            verbose=self.verbose
-        )
+        # torch_state_dict, quantized는 model 객체를 직접 전달
+        # yolo_pt, onnx, openvino는 YOLO 객체로 직접 실행
+        if self.model_type in ['torch_state_dict', 'quantized']:
+            metrics = self.model.val(
+                data=self.yaml_path,
+                split=split,
+                imgsz=imgsz,
+                batch=batch,
+                conf=conf,
+                iou=iou,
+                project=project,
+                name=name,
+                save=save,
+                verbose=self.verbose,
+                model=self.model.model  # 모델 객체 직접 전달
+            )
+        else:
+            # yolo_pt, onnx, openvino는 파일 경로 사용 (정상 동작)
+            metrics = self.model.val(
+                data=self.yaml_path,
+                split=split,
+                imgsz=imgsz,
+                batch=batch,
+                conf=conf,
+                iou=iou,
+                project=project,
+                name=name,
+                save=save,
+                verbose=self.verbose
+            )
         
         inference_time = (time.time() - start_time) / len(self._get_image_files())
         

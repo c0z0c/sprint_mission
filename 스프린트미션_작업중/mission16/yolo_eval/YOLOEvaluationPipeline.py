@@ -37,7 +37,7 @@ class YOLOEvaluationPipeline:
         model_path: str, 
         model_name: Optional[str] = None,
         verbose: bool = False,
-        model_type: Literal['yolo_pt', 'torch_state_dict', 'quantized'] = 'yolo_pt',
+        model_type: Literal['yolo_pt', 'torch_state_dict', 'quantized', 'openvino', 'onnx'] = 'yolo_pt',
         model_config: Optional[str] = None
     ) -> 'YOLOEvaluationPipeline':
         """
@@ -47,20 +47,53 @@ class YOLOEvaluationPipeline:
             model_path: 모델 파일 경로
             model_name: 모델 이름
             verbose: 상세 출력 여부
-            model_type: 모델 타입
-                - 'yolo_pt': ultralytics YOLO .pt 파일 (기본값)
-                - 'torch_state_dict': PyTorch state_dict .pth 파일
-                - 'quantized': 양자화된 모델
-            model_config: 모델 구조 정의 파일 경로 (torch_state_dict 타입에 필요)
-            
+            model_type: 모델 타입 ('yolo_pt', 'torch_state_dict', 'quantized', 'openvino', 'onnx')
+            model_config: 모델 구조 정의 파일 (torch_state_dict 사용 시 필수)
+
         Returns:
             self (체이닝 지원)
+
+        Example:
+            # 1. 기본 YOLO .pt 모델 (기존 방식)
+            pipeline.add_model(
+                model_path="yolov8m.pt",
+                model_name="baseline"
+            )
+
+            # 2. PyTorch state_dict .pth 모델
+            pipeline.add_model(
+                model_path="mission_16_yolo.pth",
+                model_name="torch_saved",
+                model_type='torch_state_dict',
+                model_config='yolov8m.yaml'  # 필수
+            )
+
+            # 3. 양자화 모델
+            pipeline.add_model(
+                model_path="quantized_model.pth",
+                model_name="int8_quantized",
+                model_type='quantized'
+            )
+
+            # 4. OpenVINO 모델
+            pipeline.add_model(
+                model_path="best_int8_openvino_model",  # 디렉토리 또는 .xml
+                model_name="int8_openvino",
+                model_type='openvino'
+            )
+
+            # 5. ONNX 모델 (FP32/FP16/INT8 QDQ)
+            pipeline.add_model(
+                model_path="yolov8m_int8_qdq.onnx",
+                model_name="int8_onnx",
+                model_type='onnx'
+            )
         """
         if model_name is None:
             model_name = Path(model_path).stem
-            
+
         logger.info(f"모델 추가: {model_name} (타입: {model_type})")
-        
+
         evaluator = YOLOEvaluator(
             model_path=model_path,
             yaml_path=self.yaml_path,
@@ -144,6 +177,7 @@ class YOLOEvaluationPipeline:
             evaluator.compute_prediction_stats()
         
         return predictions
+    
     
     def run_full_evaluation(
         self,
