@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>ONNX YOLO Inference</title>
+    <style>
+        /* CSS는 아래 섹션에 있습니다 */
+        body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+input[type="file"], button {
+    margin-bottom: 15px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#status {
+    margin-top: 10px;
+    padding: 10px;
+    font-weight: bold;
+    color: #333;
+    background-color: #f9f9f9;
+    border-left: 4px solid #2196F3;
+    border-radius: 4px;
+}
+
+#outputCanvas {
+    display: block;
+    margin-top: 20px;
+    /* 캔버스에 테두리를 주어 시각적으로 구분 */
+    border: 1px solid #ccc; 
+    max-width: 100%; 
+    height: auto;
+}
+
+/* 로딩 스피너 스타일 */
+.spinner-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-container.active {
+    display: flex;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #2196F3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-text {
+    position: absolute;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 100px;
+    text-align: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+    </style>
+
+    <script>
+// DOM이 로드된 후 실행
+document.addEventListener('DOMContentLoaded', function() {
+
+// Oxford-IIIT Pet Dataset 2-class (학습된 클래스)
+const CLASS_LABELS = ['cat', 'dog'];
+const INPUT_SIZE = 640; // YOLOv8m 입력 크기
+const CONFIDENCE_THRESHOLD = 0.25; // 최소 신뢰도
+const IOU_THRESHOLD = 0.45; // NMS IoU 임계값
+
+let onnxModelBuffer = null;
+let selectedImage = null;
+const statusElement = document.getElementById('status');
+const runButton = document.getElementById('runInference');
+const canvas = document.getElementById('outputCanvas');
+const ctx = canvas.getContext('2d');
+const loadingSpinner = document.getElementById('loadingSpinner');
+const spinnerText = document.getElementById('spinnerText');
+
+// 스피너 표시/숨김 함수
+function showSpinner(message) {
+    spinnerText.textContent = message;
+    loadingSpinner.classList.add('active');
+}
+
+function hideSpinner() {
+    loadingSpinner.classList.remove('active');
+}
+
+// --- 파일 로딩 핸들러 ---
+document.getElementById('onnxFile').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        statusElement.textContent = `상태: 모델 로딩 중...`;
+        onnxModelBuffer = await file.arrayBuffer();
+        statusElement.textContent = `상태: 모델 ${file.name} 로드 완료.`;
+        checkReady();
+    }
+});
+
+document.getElementById('imageFile').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        selectedImage = new Image();
+        selectedImage.onload = () => {
+            statusElement.textContent = `상태: 이미지 ${file.name} 로드 완료.`;
+            checkReady();
+        };
+        selectedImage.src = URL.createObjectURL(file);
+    }
+});
+
+function checkReady() {
+    if (onnxModelBuffer && selectedImage) {
+        runButton.disabled = false;
+        statusElement.textContent = '상태: 추론 준비 완료. 버튼을 눌러 실행하세요.';
+    }
+}
+
+// --- 추론 실행 및 결과 그리기 ---
+runButton.addEventListener('click', async () => {
+    if (!onnxModelBuffer || !selectedImage) return;
+
+    runButton.disabled = true;
+    showSpinner('이미지 전처리 중...');
+    statusElement.textContent = '상태: 추론 실행 중...';
+
+    // 1. 이미지 전처리 및 텐서 생성
+    const [inputTensor, preProcessedImage] = preprocess(selectedImage, INPUT_SIZE);
+    
+    // 2. ONNX Runtime 세션 생성 및 실행
+    try {
+        showSpinner('ONNX Runtime 세션 생성 중...');
+        statusElement.textContent = '상태: ONNX Runtime 세션 생성 중...';
+        
+        // WASM 백엔드 사용 (CPU 최적화)
+        const session = await ort.InferenceSession.create(onnxModelBuffer, {
+            executionProviders: ['wasm']
+        });
+        
+        showSpinner('모델 추론 실행 중...');
+        statusElement.textContent = '상태: 모델 추론 실행 중...';
+        const feeds = { 'images': inputTensor }; // YOLOv8 입력 이름
+        const results = await session.run(feeds);
+
+        // YOLOv8 출력: output0 (1, 6, 8400)
+        const outputTensor = results['output0'] || results[session.outputNames[0]];
+        console.log('Output shape:', outputTensor.dims); // 디버깅용
+        console.log('Output data length:', outputTensor.data.length); // 50400 = 6 * 8400
+
+        // 3. 결과 후처리 (BBox, Score, Class ID 추출)
+        showSpinner('결과 후처리 중...');
+        statusElement.textContent = '상태: 결과 후처리 중...';
+        const detections = postprocess(outputTensor.data, outputTensor.dims, selectedImage.width, selectedImage.height, INPUT_SIZE);
+        
+        console.log(`Detected ${detections.length} objects:`, detections);
+        
+        // 4. 캔버스에 이미지 및 결과 그리기
+        showSpinner('결과 시각화 중...');
+        statusElement.textContent = '상태: 결과 시각화 중...';
+        drawResults(preProcessedImage, detections);
+
+        hideSpinner();
+        statusElement.textContent = `상태: ✅ 추론 완료! ${detections.length}개 객체 감지됨.`;
+        statusElement.style.color = detections.length > 0 ? 'green' : 'orange';
+    } catch (e) {
+        hideSpinner();
+        console.error('ONNX Runtime Error:', e);
+        statusElement.textContent = `상태: ❌ 추론 오류 - ${e.message}`;
+        statusElement.style.color = 'red';
+    } finally {
+        runButton.disabled = false;
+    }
+});
+
+/**
+ * 1. 이미지 전처리: Letterbox resize 및 텐서 변환 (YOLO 전처리 방식)
+ * @param {HTMLImageElement} image 
+ * @param {number} size 
+ * @returns {[ort.Tensor, HTMLCanvasElement]} 텐서와 전처리된 이미지 캔버스
+ */
+function preprocess(image, size) {
+    // Letterbox resize (비율 유지하며 패딩)
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = size;
+    tempCanvas.height = size;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // 회색 배경 (패딩)
+    tempCtx.fillStyle = '#808080';
+    tempCtx.fillRect(0, 0, size, size);
+    
+    // 이미지 비율 유지하며 리사이즈
+    const scale = Math.min(size / image.width, size / image.height);
+    const newWidth = image.width * scale;
+    const newHeight = image.height * scale;
+    const x = (size - newWidth) / 2;
+    const y = (size - newHeight) / 2;
+    
+    tempCtx.drawImage(image, x, y, newWidth, newHeight);
+
+    const imageData = tempCtx.getImageData(0, 0, size, size).data;
+    const inputData = new Float32Array(1 * 3 * size * size); // NCHW: 1x3xHxW
+
+    // HWC -> CHW 변환 및 정규화 (0-255 -> 0-1.0)
+    for (let i = 0; i < size * size; i++) {
+        inputData[i] = imageData[i * 4] / 255.0;            // R
+        inputData[i + size * size] = imageData[i * 4 + 1] / 255.0; // G
+        inputData[i + size * size * 2] = imageData[i * 4 + 2] / 255.0; // B
+    }
+
+    const inputTensor = new ort.Tensor('float32', inputData, [1, 3, size, size]);
+    return [inputTensor, tempCanvas];
+}
+
+
+/**
+ * 3. YOLOv8 모델 출력 후처리: (1, 6, 8400) -> BBox + NMS
+ * YOLOv8 출력 형태: [batch, 4+num_classes, num_anchors]
+ * - 4: bbox (cx, cy, w, h)
+ * - num_classes: 클래스별 확률 (2개: cat, dog)
+ * - num_anchors: 8400개의 앵커 포인트
+ * 
+ * @param {Float32Array} data YOLOv8 모델의 출력 텐서 데이터 (1, 6, 8400)
+ * @param {Array<number>} dims 출력 텐서 shape [1, 6, 8400]
+ * @param {number} originalW 원본 이미지 너비
+ * @param {number} originalH 원본 이미지 높이
+ * @param {number} inputSize 모델 입력 크기 (640)
+ * @returns {Array<{box: [number, number, number, number], score: number, classId: number, label: string}>}
+ */
+function postprocess(data, dims, originalW, originalH, inputSize) {
+    const [batch, features, numAnchors] = dims; // [1, 6, 8400]
+    const numClasses = features - 4; // 6 - 4 = 2 (cat, dog)
+    
+    // 스케일 계산 (Letterbox resize 고려)
+    const scale = Math.min(inputSize / originalW, inputSize / originalH);
+    const newWidth = originalW * scale;
+    const newHeight = originalH * scale;
+    const padX = (inputSize - newWidth) / 2;
+    const padY = (inputSize - newHeight) / 2;
+    
+    const boxes = [];
+    
+    // 8400개의 앵커 포인트 순회
+    for (let i = 0; i < numAnchors; i++) {
+        // YOLOv8 출력은 [batch, features, anchors] 형태
+        // data는 1차원 배열이므로 인덱싱: data[feature * numAnchors + anchor]
+        
+        // BBox 좌표 (중심점 cx, cy, 너비 w, 높이 h)
+        const cx = data[0 * numAnchors + i]; // feature 0
+        const cy = data[1 * numAnchors + i]; // feature 1
+        const w = data[2 * numAnchors + i];  // feature 2
+        const h = data[3 * numAnchors + i];  // feature 3
+        
+        // 클래스 확률 (feature 4, 5)
+        const prob_cat = data[4 * numAnchors + i];
+        const prob_dog = data[5 * numAnchors + i];
+        
+        // 최대 확률 클래스 찾기
+        const scores = [prob_cat, prob_dog];
+        let maxScore = -Infinity;
+        let classId = -1;
+        for (let c = 0; c < numClasses; c++) {
+            if (scores[c] > maxScore) {
+                maxScore = scores[c];
+                classId = c;
+            }
+        }
+        
+        // 신뢰도 필터링
+        if (maxScore < CONFIDENCE_THRESHOLD) continue;
+        
+        // 좌표 변환: 모델 출력 -> 원본 이미지 좌표
+        // 1. 패딩 제거
+        const x1 = (cx - w / 2 - padX) / scale;
+        const y1 = (cy - h / 2 - padY) / scale;
+        const x2 = (cx + w / 2 - padX) / scale;
+        const y2 = (cy + h / 2 - padY) / scale;
+        
+        // 2. 클리핑 (이미지 범위 내로)
+        const xmin = Math.max(0, x1);
+        const ymin = Math.max(0, y1);
+        const xmax = Math.min(originalW, x2);
+        const ymax = Math.min(originalH, y2);
+        
+        boxes.push({
+            x1: xmin,
+            y1: ymin,
+            x2: xmax,
+            y2: ymax,
+            score: maxScore,
+            classId: classId,
+            label: CLASS_LABELS[classId]
+        });
+    }
+    
+    // NMS (Non-Maximum Suppression) 적용
+    const nmsBoxes = applyNMS(boxes, IOU_THRESHOLD);
+    
+    // 결과 형식 변환
+    return nmsBoxes.map(box => ({
+        box: [box.x1, box.y1, box.x2 - box.x1, box.y2 - box.y1], // [x, y, width, height]
+        score: box.score,
+        classId: box.classId,
+        label: box.label
+    }));
+}
+
+/**
+ * Non-Maximum Suppression (NMS) 구현
+ * @param {Array} boxes 박스 목록
+ * @param {number} iouThreshold IoU 임계값
+ * @returns {Array} NMS 적용 후 박스 목록
+ */
+function applyNMS(boxes, iouThreshold) {
+    // 신뢰도 기준 내림차순 정렬
+    boxes.sort((a, b) => b.score - a.score);
+    
+    const selected = [];
+    const suppressed = new Set();
+    
+    for (let i = 0; i < boxes.length; i++) {
+        if (suppressed.has(i)) continue;
+        
+        selected.push(boxes[i]);
+        
+        // 현재 박스와 IoU가 높은 박스들 제거
+        for (let j = i + 1; j < boxes.length; j++) {
+            if (suppressed.has(j)) continue;
+            
+            if (boxes[i].classId === boxes[j].classId) {
+                const iou = calculateIoU(boxes[i], boxes[j]);
+                if (iou > iouThreshold) {
+                    suppressed.add(j);
+                }
+            }
+        }
+    }
+    
+    return selected;
+}
+
+/**
+ * IoU (Intersection over Union) 계산
+ * @param {Object} box1 박스 1 {x1, y1, x2, y2}
+ * @param {Object} box2 박스 2 {x1, y1, x2, y2}
+ * @returns {number} IoU 값 (0~1)
+ */
+function calculateIoU(box1, box2) {
+    const xmin = Math.max(box1.x1, box2.x1);
+    const ymin = Math.max(box1.y1, box2.y1);
+    const xmax = Math.min(box1.x2, box2.x2);
+    const ymax = Math.min(box1.y2, box2.y2);
+    
+    const intersectionWidth = Math.max(0, xmax - xmin);
+    const intersectionHeight = Math.max(0, ymax - ymin);
+    const intersectionArea = intersectionWidth * intersectionHeight;
+    
+    const box1Area = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
+    const box2Area = (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
+    const unionArea = box1Area + box2Area - intersectionArea;
+    
+    return intersectionArea / unionArea;
+}
+
+/**
+ * 4. 캔버스에 원본 이미지 및 결과 그리기
+ */
+function drawResults(imageCanvas, detections) {
+    // 원본 이미지 크기로 캔버스 설정
+    canvas.width = selectedImage.width;
+    canvas.height = selectedImage.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 원본 이미지 그리기 (전처리된 이미지가 아닌 원본)
+    ctx.drawImage(selectedImage, 0, 0, canvas.width, canvas.height);
+
+    // Bounding Box 그리기
+    ctx.font = '16px Arial';
+    ctx.lineWidth = 3;
+    
+    detections.forEach(det => {
+        const [x, y, w, h] = det.box;
+        const label = `${det.label} ${(det.score * 100).toFixed(1)}%`;
+        
+        // 박스 색상 설정 (고양이: 빨강, 개: 파랑)
+        ctx.strokeStyle = (det.label === 'cat') ? '#FF0000' : '#0000FF';
+        ctx.fillStyle = ctx.strokeStyle;
+        
+        // BBox 그리기
+        ctx.strokeRect(x, y, w, h);
+        
+        // 레이블 배경
+        const textWidth = ctx.measureText(label).width;
+        ctx.fillRect(x, Math.max(0, y - 22), textWidth + 10, 22);
+        
+        // 레이블 텍스트
+        ctx.fillStyle = 'white';
+        ctx.fillText(label, x + 5, Math.max(14, y - 5));
+    });
+}
+
+}); // DOMContentLoaded 종료
+    </script>
+
+</head>
+<body>
+    <h1>YOLOv8m ONNX 웹 추론 테스트</h1>
+    <p><strong>Oxford-IIIT Pet Dataset 2-class 분류</strong> (cat, dog)</p>
+    <div style="background-color: #f0f0f0; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+        <h2>📋 사용 방법</h3>
+        <ol>
+            <li><strong>ONNX 모델 선택</strong>: <code>mission_16_yolo8m_fp32.onnx</code> 또는 <code>mission_16_yolo8m_int8_qdq.onnx</code></li>
+            <li><strong>이미지 선택</strong>: 고양이 또는 개 이미지 (JPG/PNG)</li>
+            <li><strong>추론 실행</strong> 버튼 클릭</li>
+        </ol>
+        <p><strong>⚙️ 설정:</strong> Confidence: 0.25 | IoU: 0.45 | Input: 640x640 | Classes: 2 (cat, dog)</p>
+    </div>
+
+    <div>
+        <label for="onnxFile">ONNX 모델 선택 (.onnx):</label>
+        <input type="file" id="onnxFile" accept=".onnx">
+        <label for="imageFile">이미지 파일 선택 (JPG/PNG):</label>
+        <input type="file" id="imageFile" accept="image/*">
+    </div>
+
+    <button id="runInference" disabled>추론 실행</button>
+    <p id="status">상태: 모델 및 이미지 파일을 선택해주세요.</p>
+
+    <canvas id="outputCanvas"></canvas>
+
+    <!-- 로딩 스피너 -->
+    <div class="spinner-container" id="loadingSpinner">
+        <div>
+            <div class="spinner"></div>
+            <div class="spinner-text" id="spinnerText">추론 실행 중...</div>
+        </div>
+    </div>
+
+    <!-- ONNX Runtime Web 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+</body>
+</html>

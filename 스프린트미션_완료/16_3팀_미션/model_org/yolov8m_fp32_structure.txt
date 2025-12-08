@@ -1,0 +1,130 @@
+================================================================================ONNX 모델 구조: yolov8m_fp32.onnx
+================================================================================1. 기본 정보
+--------------------------------------------------------------------------------IR 버전: 9
+Producer: pytorch 2.5.1
+ONNX 버전: 19
+그래프 이름: main_graph
+2. 입력 정보
+--------------------------------------------------------------------------------입력 0: images
+  Shape: ['dynamic', 3, 'dynamic', 'dynamic']
+  Type: FLOAT
+3. 출력 정보
+--------------------------------------------------------------------------------출력 0: output0
+  Shape: ['dynamic', 'dynamic', 'dynamic']
+  Type: FLOAT
+4. 노드 통계
+--------------------------------------------------------------------------------전체 노드 수: 400
+노드 타입 종류: 21개
+노드 타입별 개수:
+  Conv: 84개
+  Mul: 82개
+  Sigmoid: 78개
+  Concat: 39개
+  Add: 24개
+  Reshape: 14개
+  Unsqueeze: 13개
+  Shape: 11개
+  Gather: 10개
+  Split: 9개
+  Cast: 6개
+  Range: 6개
+  Expand: 6개
+  MaxPool: 3개
+  ConstantOfShape: 3개
+  Transpose: 3개
+  Resize: 2개
+  Div: 2개
+  Slice: 2개
+  Sub: 2개
+  Softmax: 1개
+6. 상세 노드 리스트 (처음 20개)
+--------------------------------------------------------------------------------노드 0: /model.0/conv/Conv
+  타입: Conv
+  입력: ['images', 'model.0.conv.weight', 'model.0.conv.bias']
+  출력: ['/model.0/conv/Conv_output_0']
+  속성: 5개
+노드 1: /model.0/act/Sigmoid
+  타입: Sigmoid
+  입력: ['/model.0/conv/Conv_output_0']
+  출력: ['/model.0/act/Sigmoid_output_0']
+노드 2: /model.0/act/Mul
+  타입: Mul
+  입력: ['/model.0/conv/Conv_output_0', '/model.0/act/Sigmoid_output_0']
+  출력: ['/model.0/act/Mul_output_0']
+노드 3: /model.1/conv/Conv
+  타입: Conv
+  입력: ['/model.0/act/Mul_output_0', 'model.1.conv.weight', 'model.1.conv.bias']
+  출력: ['/model.1/conv/Conv_output_0']
+  속성: 5개
+노드 4: /model.1/act/Sigmoid
+  타입: Sigmoid
+  입력: ['/model.1/conv/Conv_output_0']
+  출력: ['/model.1/act/Sigmoid_output_0']
+노드 5: /model.1/act/Mul
+  타입: Mul
+  입력: ['/model.1/conv/Conv_output_0', '/model.1/act/Sigmoid_output_0']
+  출력: ['/model.1/act/Mul_output_0']
+노드 6: /model.2/cv1/conv/Conv
+  타입: Conv
+  입력: ['/model.1/act/Mul_output_0', 'model.2.cv1.conv.weight', 'model.2.cv1.conv.bias']
+  출력: ['/model.2/cv1/conv/Conv_output_0']
+  속성: 5개
+노드 7: /model.2/cv1/act/Sigmoid
+  타입: Sigmoid
+  입력: ['/model.2/cv1/conv/Conv_output_0']
+  출력: ['/model.2/cv1/act/Sigmoid_output_0']
+노드 8: /model.2/cv1/act/Mul
+  타입: Mul
+  입력: ['/model.2/cv1/conv/Conv_output_0', '/model.2/cv1/act/Sigmoid_output_0']
+  출력: ['/model.2/cv1/act/Mul_output_0']
+노드 9: /model.2/Split
+  타입: Split
+  입력: ['/model.2/cv1/act/Mul_output_0', 'onnx::Split_178']
+  출력: ['/model.2/Split_output_0', '/model.2/Split_output_1']
+  속성: 1개
+노드 10: /model.2/m.0/cv1/conv/Conv
+  타입: Conv
+  입력: ['/model.2/Split_output_1', 'model.2.m.0.cv1.conv.weight', 'model.2.m.0.cv1.conv.bias']
+  출력: ['/model.2/m.0/cv1/conv/Conv_output_0']
+  속성: 5개
+노드 11: /model.2/m.0/cv1/act/Sigmoid
+  타입: Sigmoid
+  입력: ['/model.2/m.0/cv1/conv/Conv_output_0']
+  출력: ['/model.2/m.0/cv1/act/Sigmoid_output_0']
+노드 12: /model.2/m.0/cv1/act/Mul
+  타입: Mul
+  입력: ['/model.2/m.0/cv1/conv/Conv_output_0', '/model.2/m.0/cv1/act/Sigmoid_output_0']
+  출력: ['/model.2/m.0/cv1/act/Mul_output_0']
+노드 13: /model.2/m.0/cv2/conv/Conv
+  타입: Conv
+  입력: ['/model.2/m.0/cv1/act/Mul_output_0', 'model.2.m.0.cv2.conv.weight', 'model.2.m.0.cv2.conv.bias']
+  출력: ['/model.2/m.0/cv2/conv/Conv_output_0']
+  속성: 5개
+노드 14: /model.2/m.0/cv2/act/Sigmoid
+  타입: Sigmoid
+  입력: ['/model.2/m.0/cv2/conv/Conv_output_0']
+  출력: ['/model.2/m.0/cv2/act/Sigmoid_output_0']
+노드 15: /model.2/m.0/cv2/act/Mul
+  타입: Mul
+  입력: ['/model.2/m.0/cv2/conv/Conv_output_0', '/model.2/m.0/cv2/act/Sigmoid_output_0']
+  출력: ['/model.2/m.0/cv2/act/Mul_output_0']
+노드 16: /model.2/m.0/Add
+  타입: Add
+  입력: ['/model.2/Split_output_1', '/model.2/m.0/cv2/act/Mul_output_0']
+  출력: ['/model.2/m.0/Add_output_0']
+노드 17: /model.2/m.1/cv1/conv/Conv
+  타입: Conv
+  입력: ['/model.2/m.0/Add_output_0', 'model.2.m.1.cv1.conv.weight', 'model.2.m.1.cv1.conv.bias']
+  출력: ['/model.2/m.1/cv1/conv/Conv_output_0']
+  속성: 5개
+노드 18: /model.2/m.1/cv1/act/Sigmoid
+  타입: Sigmoid
+  입력: ['/model.2/m.1/cv1/conv/Conv_output_0']
+  출력: ['/model.2/m.1/cv1/act/Sigmoid_output_0']
+노드 19: /model.2/m.1/cv1/act/Mul
+  타입: Mul
+  입력: ['/model.2/m.1/cv1/conv/Conv_output_0', '/model.2/m.1/cv1/act/Sigmoid_output_0']
+  출력: ['/model.2/m.1/cv1/act/Mul_output_0']
+... (나머지 380개 노드 생략)
+================================================================================구조 분석 완료
+================================================================================
