@@ -1,4 +1,4 @@
-# 심화 : YOLOv8m ONNX 웹 추론 데모
+﻿# 심화 : YOLOv8m ONNX 웹 추론 데모
 
 ## 1. 개요
 
@@ -127,7 +127,7 @@ model/
 <img src="model/mission_16_yolo8m_test.png" width="800px"/>
 
 <video width="640" height="480" controls>
-  <source src="model/mission_16_yolo8m_test.mp4" type="video/mp4">
+  <source src="https://youtu.be/rCqQKacjkjw" type="video/mp4">
 </video>
 
 
