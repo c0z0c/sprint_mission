@@ -87,7 +87,7 @@ class MNISTPipeline:
         """
         return self.preprocessor.preprocess(canvas_image)
 
-    def predict(self, canvas_image: np.ndarray) -> PredictionResult:
+    def predict(self, canvas_image: np.ndarray, use_bbox_resize: bool = True) -> PredictionResult:
         """캔버스 이미지로부터 숫자를 예측합니다.
 
         Args:
@@ -97,7 +97,7 @@ class MNISTPipeline:
             예측 결과 객체 (전처리된 이미지 포함)
         """
         # 이미지 전처리
-        model_input, display_image = self.preprocessor.preprocess(canvas_image)
+        model_input, display_image = self.preprocessor.preprocess(canvas_image, use_bbox_resize=use_bbox_resize)
 
         # 추론 수행
         result = self.predictor.predict(model_input)

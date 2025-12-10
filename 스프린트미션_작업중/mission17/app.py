@@ -157,9 +157,17 @@ def main():
         st.markdown("### 입력 캔버스")
         #st.write("아래 캔버스에 0-9 사이의 숫자를 그려주세요")
 
-        left, center, _ = st.columns([1, 3, 1])
+        left, center, right = st.columns([1, 4, 2])
         with left:
             st.write("0 - 9<br/>사이의<br/>숫자를<br/>그리기" , unsafe_allow_html=True)
+            
+        with right:
+            use_bbox_resize = st.checkbox(
+                "전처리",
+                value=True,
+                help="체크 시, 그려진 숫자의 바운딩 박스를 추출하여 비율을 유지하며 리사이즈합니다. "
+                     "체크 해제 시, 전체 캔버스를 28x28로 직접 리사이즈합니다."
+            )
 
         with center:
             canvas_result = st_canvas(
@@ -203,7 +211,7 @@ def main():
             else:
                 with st.spinner("예측 중..."):
                     # 1단계: 원본 이미지로 해시 계산
-                    image_hash = HistoryRecord.compute_image_hash(canvas_image)
+                    image_hash = HistoryRecord.compute_image_hash(canvas_image, use_bbox_resize)
                     
                     # 2단계: 히스토리에서 동일 해시 검색
                     existing_record = history_manager.find_by_hash(image_hash)
@@ -220,7 +228,7 @@ def main():
                     else:
                         # 새로운 이미지, 모델 추론 수행 (전처리 포함)
                         logger.debug(f"새로운 이미지 (해시: {image_hash[:16]}...), 모델 추론 수행")
-                        prediction_result = pipeline.predict(canvas_image)
+                        prediction_result = pipeline.predict(canvas_image, use_bbox_resize)
 
                 # 전처리 이미지 표시
                 with preprocessed_placeholder.container():

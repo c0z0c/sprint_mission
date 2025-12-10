@@ -39,20 +39,20 @@ class ImagePreprocessor:
         self.target_content_size = target_content_size
         self.bbox_threshold = bbox_threshold
 
-    def preprocess(self, canvas_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def preprocess(self, canvas_image: np.ndarray, use_bbox_resize: bool = True) -> Tuple[np.ndarray, np.ndarray]:
         """캔버스 이미지를 ONNX 모델 입력 형식으로 전처리합니다.
 
         처리 단계:
         1. RGBA/RGB -> 그레이스케일 변환
         2. 색상 반전 (검은 선/흰 배경 -> 흰 숫자/검은 배경)
-        3. 바운딩 박스 추출 (흰색 숫자 영역 감지)
-        4. 비율 유지 리사이즈 (최대 변을 19픽셀로 축소)
-        5. 28x28 캔버스 중앙 배치
-        6. 정규화 (0~255 -> 0.0~1.0)
-        7. 형태 변경 (28, 28) -> (1, 1, 28, 28)
+        3-A. (use_bbox_resize=True) 바운딩 박스 추출 → 비율 유지 리사이즈 → 중앙 배치
+        3-B. (use_bbox_resize=False) 전체 이미지 직접 리사이즈 (28x28)
+        4. 정규화 (0~255 -> 0.0~1.0)
+        5. 형태 변경 (28, 28) -> (1, 1, 28, 28)
 
         Args:
             canvas_image: 캔버스 이미지 (RGBA 또는 RGB)
+            use_bbox_resize: True=바운딩 박스 기반 리사이즈, False=직접 리사이즈
 
         Returns:
             model_input: 모델 입력용 배열 (1, 1, 28, 28), float32
@@ -64,24 +64,29 @@ class ImagePreprocessor:
         # 2. 색상 반전 (MNIST는 흰색 숫자/검은색 배경을 기대)
         inverted = self._invert(grayscale)
 
-        # 3. 바운딩 박스 추출
-        bbox = self._get_bounding_box(inverted)
+        # 3. 전처리 방식 분기
+        logger.debug(f"use_bbox_resize: {use_bbox_resize}")
         
-        if bbox is None:
-            # 빈 캔버스: 28x28 검은 이미지 반환
-            logger.debug("빈 캔버스 감지: 검은 이미지 반환")
-            empty_canvas = np.zeros(self.target_size, dtype=np.uint8)
-            normalized = self._normalize(empty_canvas)
-            model_input = normalized.reshape(1, 1, 28, 28).astype(np.float32)
-            return model_input, empty_canvas
+        if use_bbox_resize:
+            # 3-A. 바운딩 박스 기반 리사이즈
+            bbox = self._get_bounding_box(inverted)
+            
+            if bbox is None:
+                # 빈 캔버스: 28x28 검은 이미지 반환
+                empty_canvas = np.zeros(self.target_size, dtype=np.uint8)
+                normalized = self._normalize(empty_canvas)
+                model_input = normalized.reshape(1, 1, 28, 28).astype(np.float32)
+                return model_input, empty_canvas
 
-        # 4. 비율 유지 리사이즈
-        resized = self._resize_with_aspect_ratio(inverted, bbox)
+            # 비율 유지 리사이즈
+            resized = self._resize_with_aspect_ratio(inverted, bbox)
+            # 28x28 캔버스 중앙 배치
+            final_image = self._place_on_canvas(resized)
+        else:
+            # 3-B. 직접 리사이즈 (200x200 -> 28x28)
+            final_image = self._resize_to_content_size(inverted)
 
-        # 5. 28x28 캔버스 중앙 배치
-        final_image = self._place_on_canvas(resized)
-
-        # 6. 정규화 (0~255 -> 0.0~1.0)
+        # 4. 정규화 (0~255 -> 0.0~1.0)
         normalized = self._normalize(final_image)
 
         # 7. 형태 변경 (1, 1, 28, 28)
@@ -149,6 +154,22 @@ class ImagePreprocessor:
         # 리사이즈 (INTER_AREA: 축소 시 품질 우수)
         resized = cv2.resize(cropped, (new_w, new_h), interpolation=cv2.INTER_AREA)
         
+        return resized
+
+    def _resize_to_content_size(self, image: np.ndarray) -> np.ndarray:
+        """이미지를 목표 크기로 직접 리사이즈합니다 (바운딩 박스 없이).
+
+        200x200 캔버스를 28x28로 직접 축소하여 배경을 포함한 전체 이미지를 변환합니다.
+        바운딩 박스 기반 방식과 성능 비교를 위한 대안 전처리 방식입니다.
+
+        Args:
+            image: 입력 이미지 (반전된 그레이스케일)
+
+        Returns:
+            리사이즈된 이미지 (target_size)
+        """
+        resized = cv2.resize(image, self.target_size, interpolation=cv2.INTER_AREA)
+        logger.debug(f"직접 리사이즈: {image.shape} -> {resized.shape}")
         return resized
 
     def _place_on_canvas(self, image: np.ndarray) -> np.ndarray:

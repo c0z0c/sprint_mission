@@ -82,7 +82,7 @@ class HistoryRecord:
         }
 
     @staticmethod
-    def compute_image_hash(preprocessed_image: np.ndarray) -> str:
+    def compute_image_hash(preprocessed_image: np.ndarray, use_bbox_resize: bool = True) -> str:
         """전처리된 이미지의 SHA256 해시를 계산합니다.
 
         Args:
@@ -92,4 +92,6 @@ class HistoryRecord:
             SHA256 해시 문자열 (16진수)
         """
         image_bytes = preprocessed_image.tobytes()
-        return hashlib.sha256(image_bytes).hexdigest()
+        # 전처리 방식을 해시에 포함
+        combined = image_bytes + bytes([use_bbox_resize])
+        return hashlib.sha256(combined).hexdigest()
