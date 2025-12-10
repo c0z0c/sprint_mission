@@ -1,0 +1,15 @@
+[server]
+headless = true        # 브라우저 자동 실행 방지
+port = 8501            # 실행 포트 변경
+enableCORS = false     # CORS 비활성화
+
+[browser]
+serverAddress = "localhost"
+serverPort = 8501
+
+[theme]
+primaryColor = "#F63366"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"

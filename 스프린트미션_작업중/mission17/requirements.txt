@@ -1,0 +1,7 @@
+streamlit
+streamlit-drawable-canvas
+onnxruntime
+numpy
+opencv-python
+matplotlib
+Pillow
