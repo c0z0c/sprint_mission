@@ -2,6 +2,7 @@
 """Streamlit ONNX MNIST 숫자 예측 서비스 - 실제 ONNX 모델 통합"""
 
 import datetime
+import hashlib
 import numpy as np
 import streamlit as st
 from PIL import Image
@@ -55,6 +56,8 @@ def initialize_session_state() -> None:
                 max_records=100,
                 auto_save=True
             )
+    if "canvas_key" not in st.session_state:
+        st.session_state.canvas_key = 0
 
 def display_history() -> None:
     """예측 히스토리를 테이블 형식으로 표시"""
@@ -151,9 +154,12 @@ def main():
     # 좌측: 캔버스 영역
     with col1:
         st.markdown("### 입력 캔버스")
-        st.write("아래 캔버스에 0-9 사이의 숫자를 그려주세요")
+        #st.write("아래 캔버스에 0-9 사이의 숫자를 그려주세요")
 
-        _, center, _ = st.columns([1, 3, 1])
+        left, center, _ = st.columns([1, 3, 1])
+        with left:
+            st.write("0 - 9<br/>사이의<br/>숫자를<br/>그리기" , unsafe_allow_html=True)
+
         with center:
             canvas_result = st_canvas(
                 stroke_width=5,
@@ -162,7 +168,8 @@ def main():
                 width=200,
                 height=200,
                 drawing_mode="freedraw",
-                key="canvas",
+                key=f"canvas_{st.session_state.canvas_key}",
+                display_toolbar=False,  # True: 툴바 표시 (기본값), False: 툴바 숨김
             )
 
         # 캔버스 바로 아래에 버튼을 가로로 배치 (두 버튼을 가운데에 유지)
@@ -171,7 +178,8 @@ def main():
             predict_button = st.button("예측하기", use_container_width=True)
         with btn_right:
             if st.button("캔버스 지우기", use_container_width=True):
-                st.rerun()        
+                st.session_state.canvas_key += 1
+                st.rerun()
 
     # 우측: 전처리 이미지 및 추론 결과 영역
     with col2:
@@ -193,16 +201,35 @@ def main():
                 st.warning("캔버스에 숫자를 그려주세요!")
             else:
                 with st.spinner("예측 중..."):
-                    # 실제 MNIST 파이프라인으로 예측
-                    prediction_result = pipeline.predict(canvas_image)
+                    # 1단계: 전처리만 수행하여 해시 계산
+                    _, display_image = pipeline.preprocess_only(canvas_image)
+                    image_hash = HistoryRecord.compute_image_hash(display_image)
+                    
+                    # 2단계: 히스토리에서 동일 해시 검색
+                    existing_record = history_manager.find_by_hash(image_hash)
+                    
+                    if existing_record is not None:
+                        # 기존 예측 결과 재사용
+                        logger.info(f"동일 이미지 발견 (해시: {image_hash[:16]}...), 기존 결과 재사용")
+                        prediction_result = PredictionResult(
+                            predicted_label=existing_record.predicted_label,
+                            confidence=existing_record.confidence,
+                            probabilities=existing_record.probabilities,
+                            preprocessed_image=existing_record.preprocessed_image
+                        )
+                    else:
+                        # 새로운 이미지, 모델 추론 수행
+                        logger.info(f"새로운 이미지 (해시: {image_hash[:16]}...), 모델 추론 수행")
+                        prediction_result = pipeline.predict(canvas_image)
 
                 # 전처리 이미지 표시
                 with preprocessed_placeholder.container():
-                    st.image(
-                        prediction_result.preprocessed_image,
-                        caption="전처리된 28x28 이미지 (반전 및 정규화)",
-                        width=200
-                    )
+                    if prediction_result.preprocessed_image is not None:
+                        st.image(
+                            prediction_result.preprocessed_image,
+                            caption="전처리 28x28 (반전 및 정규화)",
+                            width=200
+                        )
 
                 # 추론 결과 표시
                 with result_placeholder.container():
@@ -220,17 +247,20 @@ def main():
                     )
                     st.pyplot(fig)
 
-                # 히스토리에 추가
-                history_manager.add_record(
-                    canvas_image=canvas_image,
-                    preprocessed_image=prediction_result.preprocessed_image,
-                    predicted_label=prediction_result.predicted_label,
-                    confidence=prediction_result.confidence,
-                    probabilities=prediction_result.probabilities,
-                    notes=None
-                )
-
-                st.success("예측이 완료되었습니다!")
+                # 히스토리에 추가 (새로운 이미지인 경우만)
+                if existing_record is not None:
+                    st.success("기존 예측 결과를 재사용했습니다!")
+                else:
+                    history_manager.add_record(
+                        canvas_image=canvas_image,
+                        preprocessed_image=prediction_result.preprocessed_image,
+                        predicted_label=prediction_result.predicted_label,
+                        confidence=prediction_result.confidence,
+                        probabilities=prediction_result.probabilities,
+                        image_hash=image_hash,
+                        notes=None
+                    )
+                    st.success("예측이 완료되었습니다!")
 
         else:
             st.warning("캔버스에 숫자를 그려주세요!")

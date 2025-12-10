@@ -43,6 +43,7 @@ class HistoryManager:
         predicted_label: int,
         confidence: float,
         probabilities: np.ndarray,
+        image_hash: str,
         notes: Optional[str] = None
     ) -> HistoryRecord:
         """새로운 예측 기록을 추가합니다.
@@ -53,6 +54,7 @@ class HistoryManager:
             predicted_label: 예측된 레이블
             confidence: 신뢰도
             probabilities: 확률 배열
+            image_hash: 이미지 해시
             notes: 추가 메모
 
         Returns:
@@ -69,6 +71,7 @@ class HistoryManager:
             confidence=confidence,
             probabilities=probabilities,
             timestamp=timestamp,
+            image_hash=image_hash,
             notes=notes
         )
 

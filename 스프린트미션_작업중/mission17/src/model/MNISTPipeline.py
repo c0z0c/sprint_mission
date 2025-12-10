@@ -75,6 +75,18 @@ class MNISTPipeline:
             )
         return self._predictor
 
+    def preprocess_only(self, canvas_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """캔버스 이미지를 전처리만 수행합니다 (추론 없이).
+
+        Args:
+            canvas_image: 캔버스 이미지 (RGBA 또는 RGB)
+
+        Returns:
+            model_input: 모델 입력용 배열 (1, 1, 28, 28)
+            display_image: 표시용 28x28 이미지
+        """
+        return self.preprocessor.preprocess(canvas_image)
+
     def predict(self, canvas_image: np.ndarray) -> PredictionResult:
         """캔버스 이미지로부터 숫자를 예측합니다.
 

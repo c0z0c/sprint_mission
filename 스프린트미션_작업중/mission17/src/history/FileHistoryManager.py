@@ -5,6 +5,7 @@
 """
 
 import datetime
+import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -60,12 +61,19 @@ class FileHistoryManager(HistoryManager):
         predicted_label: int,
         confidence: float,
         probabilities: np.ndarray,
+        image_hash: str,
         notes: Optional[str] = None
     ) -> HistoryRecord:
         """새로운 예측 기록을 추가하고 저장합니다.
 
         Args:
-            (부모 클래스와 동일)
+            canvas_image: 원본 캔버스 이미지
+            preprocessed_image: 전처리된 이미지
+            predicted_label: 예측된 라벨
+            confidence: 신뢰도
+            probabilities: 확률 배열
+            image_hash: 이미지 해시
+            notes: 추가 메모
 
         Returns:
             생성된 히스토리 레코드
@@ -76,6 +84,7 @@ class FileHistoryManager(HistoryManager):
             predicted_label,
             confidence,
             probabilities,
+            image_hash,
             notes
         )
 
@@ -84,6 +93,20 @@ class FileHistoryManager(HistoryManager):
             self._save_metadata()
 
         return record
+
+    def find_by_hash(self, image_hash: str) -> Optional[HistoryRecord]:
+        """이미지 해시로 레코드를 검색합니다.
+
+        Args:
+            image_hash: 검색할 이미지 해시
+
+        Returns:
+            발견된 레코드 또는 None
+        """
+        for record in self._records:
+            if record.image_hash == image_hash:
+                return record
+        return None
 
     def _save_record_to_disk(self, record: HistoryRecord) -> None:
         """레코드의 이미지를 디스크에 저장합니다.
@@ -148,6 +171,7 @@ class FileHistoryManager(HistoryManager):
                 confidence=record_data["confidence"],
                 probabilities=np.array(record_data["probabilities"]),
                 timestamp=record_data["timestamp"],
+                image_hash=record_data.get("image_hash", ""),
                 notes=record_data.get("notes")
             )
 
