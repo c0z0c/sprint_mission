@@ -100,6 +100,59 @@ class PredictionVisualizer:
         plt.tight_layout()
         return fig
 
+    def plot_compact_bar_chart(
+        self,
+        probabilities: np.ndarray,
+        predicted_label: int
+    ) -> Figure:
+        """예측 확률을 작은 막대 차트로 시각화합니다 (히스토리 표시용).
+
+        Args:
+            probabilities: 각 클래스별 확률 (10개)
+            predicted_label: 예측된 레이블
+
+        Returns:
+            matplotlib Figure 객체
+        """
+        # 인라인 표시를 위한 작은 figsize 사용
+        fig, ax = plt.subplots(figsize=(1.5, 0.22))
+
+        # plot_bar_chart와 동일한 시각화 로직
+        labels = [str(i) for i in range(10)]
+        colors = [
+            self.highlight_color if i == predicted_label else self.normal_color
+            for i in range(10)
+        ]
+
+        bars = ax.bar(labels, probabilities, color=colors, alpha=0.8)
+
+        # 예측된 레이블 강조
+        #bars[predicted_label].set_edgecolor("black")
+        #bars[predicted_label].set_linewidth(2.5)
+
+        # 예측된 막대에만 퍼센트 표시 (화면 정리)
+        height = bars[predicted_label].get_height()
+        ax.text(
+            bars[predicted_label].get_x() + bars[predicted_label].get_width() / 2.0,
+            height,
+            f'{probabilities[predicted_label]:.1%}',
+            ha='center',
+            va='bottom',
+            fontsize=6,  # 9에서 축소
+#            fontweight='bold'
+        )
+
+        # 단순화된 축 (레이블, 제목 제거)
+        ax.set_ylim(0, 1.0)
+        ax.grid(axis="y", alpha=0.3, linestyle='--')
+        ax.tick_params(labelsize=7)  # 작은 눈금 레이블
+
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+
+        plt.tight_layout()
+        return fig
+
     def plot_horizontal_bar_chart(
         self,
         probabilities: np.ndarray,

@@ -6,6 +6,9 @@ import numpy as np
 import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
+import matplotlib.pyplot as plt
+from helper_utils import get_auto_logger
+logger = get_auto_logger()
 
 # Import src modules
 from src.model import MNISTPipeline, PredictionResult
@@ -64,10 +67,19 @@ def display_history() -> None:
 
     st.markdown("### 예측 기록")
 
+    show_charts = st.checkbox(
+        "확률 분포 시각화 표시",
+        value=False,
+        help="각 예측의 전체 확률 분포를 작은 차트로 표시합니다"
+    )
+    
     # 최신 항목부터 표시 (역순)
     for idx, record in enumerate(records):
         with st.container():
-            cols = st.columns([1, 2, 2, 2, 3])
+            if show_charts:
+                cols = st.columns([1, 2, 2, 2, 3, 3])  # 차트용 6번째 열
+            else:
+                cols = st.columns([1, 2, 2, 2, 3])  # 원래 5열
 
             with cols[0]:
                 st.write(f"**#{record.record_id}**")
@@ -85,6 +97,23 @@ def display_history() -> None:
 
             with cols[4]:
                 st.write(f"**시각:** {record.timestamp}")
+
+            if show_charts:
+                with cols[5]:
+                    # 시각화 매니저 로드
+                    viz_manager = load_visualization_manager()
+
+                    # 작은 차트 생성
+                    fig = viz_manager.prediction_viz.plot_compact_bar_chart(
+                        record.probabilities,
+                        record.predicted_label
+                    )
+                    
+                    # 차트 표시
+                    st.pyplot(fig, width='stretch')
+
+                    # 메모리 누수 방지를 위한 정리
+                    plt.close(fig)
 
         if idx < len(records) - 1:
             st.divider()
@@ -117,32 +146,32 @@ def main():
     st.markdown("---")
 
     # 메인 레이아웃 (2열)
-    col1, col2 = st.columns([1, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
 
     # 좌측: 캔버스 영역
     with col1:
         st.markdown("### 입력 캔버스")
         st.write("아래 캔버스에 0-9 사이의 숫자를 그려주세요")
 
-        # 캔버스
-        canvas_result = st_canvas(
-            stroke_width=5,
-            stroke_color="#000000",
-            background_color="#FFFFFF",
-            width=200,
-            height=200,
-            drawing_mode="freedraw",
-            key="canvas",
-        )
+        _, center, _ = st.columns([1, 3, 1])
+        with center:
+            canvas_result = st_canvas(
+                stroke_width=5,
+                stroke_color="#000000",
+                background_color="#FFFFFF",
+                width=200,
+                height=200,
+                drawing_mode="freedraw",
+                key="canvas",
+            )
 
-        # 버튼 영역
-        btn_col1, btn_col2 = st.columns(2)
-        with btn_col1:
+        # 캔버스 바로 아래에 버튼을 가로로 배치 (두 버튼을 가운데에 유지)
+        btn_left, btn_right = st.columns([1, 1])
+        with btn_left:
             predict_button = st.button("예측하기", use_container_width=True)
-
-        with btn_col2:
+        with btn_right:
             if st.button("캔버스 지우기", use_container_width=True):
-                st.rerun()
+                st.rerun()        
 
     # 우측: 전처리 이미지 및 추론 결과 영역
     with col2:
@@ -150,6 +179,7 @@ def main():
         st.markdown("### 전처리 이미지")
         preprocessed_placeholder = st.empty()
 
+    with col3:
         # 추론 결과 영역
         st.markdown("### 추론 결과")
         result_placeholder = st.empty()
@@ -176,14 +206,11 @@ def main():
 
                 # 추론 결과 표시
                 with result_placeholder.container():
-                    st.markdown(
-                        f"<h1 style='text-align: center; color: #ff6b6b;'>예측 숫자: {prediction_result.predicted_label}</h1>",
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown(
-                        f"<h3 style='text-align: center;'>신뢰도: {prediction_result.confidence:.2%}</h3>",
-                        unsafe_allow_html=True,
-                    )
+                    predicted_html = "<h4 style='text-align: center;'>"
+                    predicted_html += f"<span style='color: #ff6b6b;'>예측 숫자: [{prediction_result.predicted_label}]</span>"
+                    predicted_html += f"<span style='color: #000000;'>신뢰도: {prediction_result.confidence:.2%}</span></h4>"
+                    predicted_html += "</h4>"
+                    st.markdown(predicted_html, unsafe_allow_html=True)
 
                     # VisualizationManager를 사용한 막대 차트
                     fig = viz_manager.prediction_viz.plot_bar_chart(
