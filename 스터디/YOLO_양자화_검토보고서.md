@@ -293,21 +293,207 @@ graph LR
     D --> E["FP32 출력"]
 ```
 
+##### QDQ 쌍(Pair)이란?
+
+**정의**: QuantizeLinear 노드 + DequantizeLinear 노드가 항상 함께 사용되는 구조
+
+**각 노드의 역할**:
+
+1. **Q (QuantizeLinear) 노드**: FP32 → INT8 변환
+   ```python
+   # 양자화 공식
+   x_int8 = round(x_fp32 / scale) + zero_point
+
+   # 예시
+   input_fp32 = 0.523
+   scale = 0.003
+   zero_point = 128
+   output_int8 = round(0.523 / 0.003) + 128 = 302
+   # INT8 범위 [0, 255]로 클리핑 → 255
+   ```
+
+2. **DQ (DequantizeLinear) 노드**: INT8 → FP32 복원
+   ```python
+   # 역양자화 공식
+   x_fp32 = (x_int8 - zero_point) * scale
+
+   # 예시
+   input_int8 = 255
+   output_fp32 = (255 - 128) * 0.003 = 0.381
+   # 원본 0.523과 차이 발생 (양자화 오차)
+   ```
+
+**QDQ 쌍이 삽입되는 위치**:
+
+```
+원본 모델 (FP32):
+┌──────┐    ┌──────┐    ┌──────┐
+│ Conv │───▶│ ReLU │───▶│ Conv │
+└──────┘    └──────┘    └──────┘
+  FP32       FP32        FP32
+
+QDQ 쌍 삽입 후:
+┌──────┐  ┌─┐ ┌──┐  ┌──────┐  ┌─┐ ┌──┐  ┌──────┐
+│ Conv │─▶│Q│▶│DQ│─▶│ ReLU │─▶│Q│▶│DQ│─▶│ Conv │
+└──────┘  └─┘ └──┘  └──────┘  └─┘ └──┘  └──────┘
+  FP32    INT8 FP32    FP32   INT8 FP32   FP32
+          └─쌍─┘              └─쌍─┘
+```
+
+##### 노드 수 폭증의 원인
+
 **특징**:
 - ONNX Runtime의 기본 방식
-- 각 양자화 대상 텐서마다 QDQ 노드 쌍 삽입
+- **각 양자화 대상 텐서마다 QDQ 노드 쌍 삽입**
 - **노드 수 폭증**: 400개 → 1,228개 (3배 증가)
   - QuantizeLinear: 330개
   - DequantizeLinear: 498개
 
+**폭증 원인 분석**:
+
+1. **텐서별 QDQ 쌍 필요**:
+   ```
+   원본: [Conv] → [Relu] → [Conv]
+
+   양자화 후:
+   [Conv] → [Q] → [DQ] → [Relu] → [Q] → [DQ] → [Conv]
+            └─ 2개 ─┘           └─ 2개 ─┘
+
+   - Conv → Relu 사이의 activation: QDQ 쌍 (2개)
+   - Relu → Conv 사이의 activation: QDQ 쌍 (2개)
+   - 각 Conv의 weight: QDQ 쌍 (2개씩)
+   ```
+
+2. **증가분 계산** (400개 → 1,228개):
+   ```
+   증가분 = 828개 노드
+
+   원본 400개 노드 중:
+   - 양자화 가능 연산 (Conv, MatMul 등): 약 140개
+
+   각 연산마다 추가되는 QDQ 노드:
+   - Input activation QDQ: 2개
+   - Weight QDQ: 2개
+   - Output activation QDQ: 2개
+   = 연산당 평균 6개 노드
+
+   140개 × 6 = 840개 ≈ 828개 증가
+   ```
+
+3. **실제 ONNX 그래프 예시**:
+   ```python
+   # 원본 노드
+   node {
+     input: "input"
+     output: "conv_output"
+     op_type: "Conv"
+   }
+
+   # QDQ 삽입 후 (3개 노드로 확장)
+   node {
+     input: "input"
+     output: "quantized"
+     op_type: "QuantizeLinear"
+     attribute { name: "scale", f: 0.003 }
+     attribute { name: "zero_point", i: 128 }
+   }
+
+   node {
+     input: "quantized"
+     output: "dequantized"
+     op_type: "DequantizeLinear"
+     attribute { name: "scale", f: 0.003 }
+     attribute { name: "zero_point", i: 128 }
+   }
+
+   node {
+     input: "dequantized"  # 원래는 "input"
+     output: "conv_output"
+     op_type: "Conv"
+   }
+   ```
+
+##### 왜 QDQ 쌍을 사용하는가?
+
+**설계 철학**:
+1. **명시적 표현**: 양자화 지점을 그래프에서 명확히 표시
+2. **유연성**: Per-channel, Per-tensor 등 다양한 전략 지원
+3. **디버깅**: QDQ 노드 제거만으로 FP32로 복원 가능
+4. **하드웨어 독립성**: 특정 하드웨어에 종속되지 않음
+5. **최적화 여지**: 백엔드에서 QDQ 쌍을 fusion 가능
+
+**실행 시점의 동작**:
+```python
+# 방법 1: QDQ 쌍 유지 (시뮬레이션 모드)
+x_fp32 = input
+x_int8 = quantize(x_fp32)           # Q 노드 실행
+x_fp32_restored = dequantize(x_int8) # DQ 노드 실행
+output = conv(x_fp32_restored)       # 여전히 FP32 연산
+
+# 방법 2: QDQ 쌍 최적화 (실제 양자화 모드)
+# 런타임이 자동으로 변환:
+x_int8 = quantize(input)
+output_int8 = conv_int8(x_int8)      # INT8 연산으로 치환
+output = dequantize(output_int8)
+```
+
+##### 노드 수 폭증 없이 양자화하는 대안
+
+**QDQ 방식이 유일한 방법은 아닙니다:**
+
+| 방식 | 노드 수 | 정확도 | 디버깅 | 하드웨어 지원 |
+|------|---------|--------|--------|--------------|
+| **QDQ (ONNX RT)** | 많음 (3배) | 높음 | 쉬움 | 범용 |
+| **Operator Fusion** | 적음 (1.2배) | 높음 | 어려움 | 특화 필요 |
+| **Static Quantization** | 같음 (1배) | 중간 | 어려움 | 특화 필요 |
+| **Dynamic Quantization** | 같음 (1배) | 낮음 | 쉬움 | 범용 |
+
+**대안 1: Operator Fusion**:
+```python
+# QDQ 방식 (노드 많음)
+[Conv] → [Q] → [DQ] → [Relu] → [Q] → [DQ]
+
+# Fusion 방식 (노드 적음)
+[QuantizedConvRelu]  # 단일 융합 노드
+```
+
+**대안 2: Static Quantization (TensorFlow Lite 방식)**:
+```python
+# Q/DQ 노드를 명시하지 않고, 메타데이터로 저장
+{
+  "op": "Conv",
+  "quantization": {
+    "input_scale": 0.003,
+    "weight_scale": 0.002,
+    "output_scale": 0.005
+  }
+}
+# 노드 수 증가 없음
+```
+
+**대안 3: QOperator 형식 (ONNX Runtime)**:
+```python
+from onnxruntime.quantization import quantize_static, QuantFormat
+
+quantize_static(
+    model_input,
+    model_output,
+    calibration_data_reader,
+    quant_format=QuantFormat.QOperator  # QDQ 대신 사용
+)
+# 노드 수: 400 → ~500 (25% 증가만)
+```
+
 **장점**:
 - ONNX 표준 준수, 호환성 우수
 - 디버깅 용이 (중간 값 FP32 확인 가능)
+- 양자화 전략의 명시적 표현
+- 백엔드별 최적화 가능
 
 **단점**:
 - CPU에서 QDQ 오버헤드 심각 (본 실험: 추론 시간 1.5배 증가)
 - 메모리 대역폭 낭비 (FP32 ↔ INT8 변환 반복)
-- 그래프 최적화 제한
+- 그래프 복잡도 증가로 최적화 제한
 
 #### 3.2.2. Native INT8
 
@@ -824,21 +1010,176 @@ model.export(format='engine', int8=True, data=yaml_path)
 
 ### 7.3. 향후 연구 방향
 
-1. **QAT 실험**:
+#### 7.3.1. 우선순위: 높음
+
+**1. QOperator 형식 성능 검증** **필수 테스트**
+
+**현재 상황**:
+- QDQ 방식은 CPU에서 추론 시간 1.5배 증가 (FP32 대비 오히려 느림)
+- 노드 수 폭증 (400 → 1,228개)으로 그래프 복잡도 증가
+
+**QOperator 테스트 필요성**:
+- **노드 수 감소 기대**: 400 → ~500개 (25% 증가만)
+- **CPU 성능 개선 기대**: QDQ 오버헤드 제거로 실제 속도 향상 가능
+- **메모리 효율**: FP32 ↔ INT8 변환 반복 제거
+
+**테스트 계획**:
+
+```python
+# 1. QOperator 형식으로 변환
+from onnxruntime.quantization import quantize_static, QuantFormat
+
+quantize_static(
+    model_input='yolov8m_fp32.onnx',
+    model_output='yolov8m_qoperator.onnx',
+    calibration_data_reader=CalibrationDataReader(),
+    quant_format=QuantFormat.QOperator,  # ← QDQ 대신 QOperator
+    activation_type=QuantType.QInt8,
+    weight_type=QuantType.QInt8,
+    per_channel=True
+)
+
+# 2. 성능 비교 측정
+models = {
+    'FP32': 'yolov8m_fp32.onnx',
+    'QDQ': 'yolov8m_qdq.onnx',
+    'QOperator': 'yolov8m_qoperator.onnx',
+    'OpenVINO': 'yolov8m_openvino_int8.xml'
+}
+
+for name, path in models.items():
+    # 추론 시간, mAP, 노드 수, 메모리 사용량 측정
+    benchmark(name, path)
+```
+
+**예상 결과**:
+
+| 항목 | QDQ | QOperator (예상) | OpenVINO |
+|------|-----|-----------------|----------|
+| 노드 수 | 1,228 | **~500** | - |
+| 추론 시간 | 1,399 ms | **600~800 ms** | 266 ms |
+| mAP50-95 | 0.8667 | **0.88~0.90** | 0.9105 |
+| 모델 크기 | 25.30 MB | **25 MB** | 25.46 MB |
+
+**검증 항목**:
+- [ ] QOperator 변환 성공 여부
+- [ ] 노드 수 감소 확인
+- [ ] CPU 추론 속도 개선 확인
+- [ ] 정확도 손실 비교
+- [ ] OpenVINO 대비 성능 차이
+- [ ] 다른 백엔드(GPU) 호환성 확인
+
+**추가 테스트**:
+```python
+# QDQ vs QOperator 그래프 구조 비교
+import onnx
+from collections import Counter
+
+def analyze_graph(model_path):
+    model = onnx.load(model_path)
+    op_types = Counter([node.op_type for node in model.graph.node])
+    print(f"Total nodes: {len(model.graph.node)}")
+    print(f"QuantizeLinear: {op_types['QuantizeLinear']}")
+    print(f"DequantizeLinear: {op_types['DequantizeLinear']}")
+    print(f"QLinear* ops: {sum(v for k, v in op_types.items() if k.startswith('QLinear'))}")
+    return op_types
+
+print("=== QDQ 분석 ===")
+analyze_graph('yolov8m_qdq.onnx')
+
+print("\n=== QOperator 분석 ===")
+analyze_graph('yolov8m_qoperator.onnx')
+```
+
+**결론 도출**:
+- QOperator가 QDQ보다 우수하면: CPU 배포 시 QOperator 권장
+- OpenVINO가 여전히 최고면: Intel CPU에서는 OpenVINO 유지
+- GPU 호환성 확인: 크로스 플랫폼 요구사항 고려
+
+---
+
+#### 7.3.2. 우선순위: 중간
+
+**2. QAT (Quantization-Aware Training) 실험**:
    - PTQ 대비 정확도 개선 정도 측정
    - 학습 비용 대비 효과 분석
+   - ONNX QDQ 정확도 손실(-5.6%) 복구 가능성 확인
 
-2. **Mixed Precision**:
-   - 민감 레이어만 FP32 유지 전략
+**3. Mixed Precision 전략**:
+   - 민감 레이어만 FP32 유지 (Sigmoid, 출력 레이어)
    - 성능·정확도 트레이드오프 최적화
+   - Per-layer 양자화 효과 분석
 
-3. **TensorRT 비교**:
+**4. TensorRT 성능 비교**:
    - GPU 환경에서 OpenVINO 대비 성능
+   - QDQ 형식의 GPU 최적화 효과
    - Layer Fusion 효과 분석
 
-4. **실시간 배포**:
-   - 엣지 디바이스 (Jetson, RPI) 실험
+---
+
+#### 7.3.3. 우선순위: 낮음
+
+**5. 실시간 배포 테스트**:
+   - 엣지 디바이스 (Jetson Nano, Raspberry Pi) 실험
    - 동영상 스트림 처리 성능
+   - 실제 추론 환경에서의 안정성 검증
+
+**6. 다양한 Calibration 전략**:
+   - MinMax vs Entropy vs Percentile
+   - Calibration 데이터셋 크기별 효과
+   - 클래스별 가중치 적용
+
+---
+
+#### 7.3.4. 실험 로드맵
+
+```mermaid
+graph TD
+    A[현재: QDQ 성능 부족] --> B[1단계: QOperator 테스트]
+    B --> C{QOperator 성능?}
+
+    C -->|우수| D[QOperator 채택]
+    C -->|부족| E[OpenVINO 유지]
+
+    D --> F[2단계: QAT 시도]
+    E --> F
+
+    F --> G{정확도 개선?}
+    G -->|예| H[QAT 적용]
+    G -->|아니오| I[PTQ 유지]
+
+    H --> J[3단계: Mixed Precision]
+    I --> J
+
+    J --> K[4단계: 프로덕션 배포]
+
+    style B stroke-width:2px,stroke:#FFD700
+    style F stroke-width:2px,stroke:#87CEEB
+    style J stroke-width:2px,stroke:#90EE90
+```
+
+**예상 타임라인**:
+- QOperator 테스트: 1~2일
+- QAT 실험: 1~2주 (재학습 포함)
+- Mixed Precision 최적화: 3~5일
+- 프로덕션 배포 준비: 1주
+
+---
+
+### 7.4. 실험 체크리스트
+
+**QOperator 테스트 준비**:
+- [ ] ONNX Runtime 최신 버전 확인 (1.14+)
+- [ ] Calibration 데이터 준비 (현재 500장 사용)
+- [ ] 벤치마크 스크립트 작성 (추론 시간, mAP, 메모리)
+- [ ] 그래프 분석 도구 준비 (Netron, ONNX 라이브러리)
+- [ ] 다양한 백엔드 테스트 환경 준비 (CPU, GPU)
+
+**향후 실험 시 참고 사항**:
+- 각 실험마다 동일한 Calibration 데이터 사용
+- 전처리 파이프라인 일관성 유지
+- 결과 재현성을 위한 랜덤 시드 고정
+- 실험 결과를 본 보고서에 지속적으로 업데이트
 
 ---
 
