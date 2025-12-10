@@ -14,9 +14,8 @@ import numpy as np
 import onnxruntime as ort
 import requests
 from PIL import Image
-from scipy import ndimage
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger(log_level=logging.DEBUG)
+logger = get_auto_logger(log_level=logging.INFO)
 
 # ============================================================================
 # 이미지 전처리 클래스
@@ -29,23 +28,28 @@ class ImagePreprocessor:
     캔버스 이미지를 ONNX 모델 입력 형식(1x1x28x28, float32)으로 변환합니다.
     """
 
-    def __init__(self, target_size: Tuple[int, int] = (28, 28)):
+    def __init__(self, target_size: Tuple[int, int] = (28, 28), target_content_size: int = 19, bbox_threshold: int = 10):
         """
         Args:
-            target_size: 목표 이미지 크기 (height, width)
+            target_size: 목표 이미지 크기 (height, width) - 최종 캔버스 크기
+            target_content_size: 바운딩 박스 리사이즈 시 최대 크기 (24*0.8 = 19)
+            bbox_threshold: 바운딩 박스 계산 시 픽셀 임계값 (배경 노이즈 제거)
         """
         self.target_size = target_size
+        self.target_content_size = target_content_size
+        self.bbox_threshold = bbox_threshold
 
     def preprocess(self, canvas_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """캔버스 이미지를 ONNX 모델 입력 형식으로 전처리합니다.
 
         처리 단계:
         1. RGBA/RGB -> 그레이스케일 변환
-        2. 중심 정렬 (바운딩 박스 추출 후 정사각형으로 크롭 및 중앙 배치)
-        3. 28x28 크기로 리사이즈
-        4. 색상 반전 (검은 선/흰 배경 -> 흰 숫자/검은 배경)
-        5. 정규화 (0~255 -> 0.0~1.0)
-        6. 형태 변경 (28, 28) -> (1, 1, 28, 28)
+        2. 색상 반전 (검은 선/흰 배경 -> 흰 숫자/검은 배경)
+        3. 바운딩 박스 추출 (흰색 숫자 영역 감지)
+        4. 비율 유지 리사이즈 (최대 변을 19픽셀로 축소)
+        5. 28x28 캔버스 중앙 배치
+        6. 정규화 (0~255 -> 0.0~1.0)
+        7. 형태 변경 (28, 28) -> (1, 1, 28, 28)
 
         Args:
             canvas_image: 캔버스 이미지 (RGBA 또는 RGB)
@@ -57,80 +61,131 @@ class ImagePreprocessor:
         # 1. 그레이스케일 변환
         grayscale = self._to_grayscale(canvas_image)
 
-        # 2. 크기 조정 (28x28)
-        resized = self._resize(grayscale, self.target_size)
+        # 2. 색상 반전 (MNIST는 흰색 숫자/검은색 배경을 기대)
+        inverted = self._invert(grayscale)
 
-        # 3. 색상 반전 (MNIST는 흰색 숫자/검은색 배경을 기대)
-        inverted = self._invert(resized)
+        # 3. 바운딩 박스 추출
+        bbox = self._get_bounding_box(inverted)
+        
+        if bbox is None:
+            # 빈 캔버스: 28x28 검은 이미지 반환
+            logger.debug("빈 캔버스 감지: 검은 이미지 반환")
+            empty_canvas = np.zeros(self.target_size, dtype=np.uint8)
+            normalized = self._normalize(empty_canvas)
+            model_input = normalized.reshape(1, 1, 28, 28).astype(np.float32)
+            return model_input, empty_canvas
 
-        # 4. 중심 정렬 (원본 크기에서 수행)
-        inverted = self._center_align(inverted)
+        # 4. 비율 유지 리사이즈
+        resized = self._resize_with_aspect_ratio(inverted, bbox)
 
-        # 5. 정규화 (0~255 -> 0.0~1.0)
-        normalized = self._normalize(inverted)
+        # 5. 28x28 캔버스 중앙 배치
+        final_image = self._place_on_canvas(resized)
 
-        # 6. 형태 변경 (1, 1, 28, 28)
+        # 6. 정규화 (0~255 -> 0.0~1.0)
+        normalized = self._normalize(final_image)
+
+        # 7. 형태 변경 (1, 1, 28, 28)
         model_input = normalized.reshape(1, 1, 28, 28).astype(np.float32)
 
         # 표시용 이미지 (28x28)
-        display_image = inverted
+        display_image = final_image
 
         return model_input, display_image
-    
-    def _center_align(self, inverted: np.ndarray) -> np.ndarray:
-        """
-        반전 된 값이다
-        중심 정렬 하자
 
-        MNIST 학습 데이터와 동일하게 숫자를 이미지 중앙에 배치하여 인식률을 향상시킵니다.
-        질량 중심(center of mass)을 계산하여 이미지 중심으로 이동시킵니다.
+    def _get_bounding_box(self, image: np.ndarray) -> Optional[Tuple[int, int, int, int]]:
+        """이미지에서 0이 아닌 픽셀의 바운딩 박스를 계산합니다.
 
         Args:
-            inverted: 그레이스케일 이미지 (흰 숫자/검은 배경)
+            image: 반전된 그레이스케일 이미지 (흰 숫자/검은 배경)
 
         Returns:
-            중심 정렬된 이미지 (원본과 동일한 크기)
+            (y_min, y_max, x_min, x_max) 또는 빈 이미지 시 None
         """
-        # 빈 이미지 체크 (모든 픽셀이 0인 경우)
-        if np.sum(inverted) == 0:
-            logger.debug("빈 이미지 감지: 중심 정렬 스킵")
-            return inverted
+        # 임계값 이상인 픽셀 위치 추출 (배경 노이즈 제거)
+        mask = image > self.bbox_threshold
+        rows, cols = np.where(mask)
         
-        # 질량 중심 계산 (픽셀 값이 가중치로 작용)
-        cy, cx = ndimage.center_of_mass(inverted)
+        # 빈 이미지 체크
+        if len(rows) == 0:
+            logger.debug("바운딩 박스 없음: 빈 이미지")
+            return None
         
-        # NaN 체크 (예외적인 경우)
-        if np.isnan(cy) or np.isnan(cx):
-            logger.debug(f"질량 중심 계산 실패 (NaN): 원본 반환")
-            return inverted
+        # 바운딩 박스 좌표 계산
+        y_min, y_max = rows.min(), rows.max()
+        x_min, x_max = cols.min(), cols.max()
         
-        # 이미지 중심 좌표 (28x28의 경우 13.5, 13.5)
-        rows, cols = inverted.shape
-        center_y = rows / 2.0
-        center_x = cols / 2.0
+        logger.debug(f"바운딩 박스: y[{y_min}:{y_max}], x[{x_min}:{x_max}], 크기: ({y_max-y_min+1}, {x_max-x_min+1})")
         
-        # 시프트 벡터 계산 (이미지 중심 - 질량 중심)
-        shift_y = center_y - cy
-        shift_x = center_x - cx
-        
-        # # 시프트 벡터 크기 제한 (너무 큰 이동 방지)
-        # max_shift = 5.0
-        # shift_y = np.clip(shift_y, -max_shift, max_shift)
-        # shift_x = np.clip(shift_x, -max_shift, max_shift)
-        # logger.debug(f"질량 중심: ({cy:.2f}, {cx:.2f}), 시프트: ({shift_y:.2f}, {shift_x:.2f})")
-        # # 이미지 시프트 (mode='constant', cval=0: 검은 배경 유지)
-        # result = ndimage.shift(inverted, [shift_y, shift_x], mode='constant', cval=0)
+        return (y_min, y_max, x_min, x_max)
 
-        # 시프트 벡터 계산 (이미지 중심 - 질량 중심)
-        shift_y = center_y - cy
-        shift_x = center_x - cx
+    def _resize_with_aspect_ratio(self, image: np.ndarray, bbox: Tuple[int, int, int, int]) -> np.ndarray:
+        """바운딩 박스 영역을 크롭 후 비율을 유지하며 리사이즈합니다.
+
+        Args:
+            image: 입력 이미지
+            bbox: 바운딩 박스 (y_min, y_max, x_min, x_max)
+
+        Returns:
+            리사이즈된 이미지 (최대 변이 target_content_size)
+        """
+        y_min, y_max, x_min, x_max = bbox
         
-        logger.debug(f"질량 중심: ({cy:.2f}, {cx:.2f}), 시프트: ({shift_y:.2f}, {shift_x:.2f})")
+        # 바운딩 박스 영역 크롭 (+1은 inclusive 범위)
+        cropped = image[y_min:y_max+1, x_min:x_max+1]
+        h, w = cropped.shape[:2]
         
-        # 이미지 시프트 (mode='constant', cval=0: 검은 배경 유지)
-        result = ndimage.shift(inverted, [shift_y, shift_x], mode='constant', cval=0)
+        logger.debug(f"크롭 후 크기: ({h}, {w})")
         
-        return result
+        # 최대 변 기준 스케일 계산
+        max_dim = max(h, w)
+        scale = self.target_content_size / max_dim
+        
+        # 새 크기 계산 (최소 1픽셀 보장)
+        new_h = max(1, int(h * scale))
+        new_w = max(1, int(w * scale))
+        
+        logger.debug(f"리사이즈: ({h}, {w}) -> ({new_h}, {new_w}), 스케일: {scale:.3f}")
+        
+        # 리사이즈 (INTER_AREA: 축소 시 품질 우수)
+        resized = cv2.resize(cropped, (new_w, new_h), interpolation=cv2.INTER_AREA)
+        
+        return resized
+
+    def _place_on_canvas(self, image: np.ndarray) -> np.ndarray:
+        """리사이즈된 이미지를 목표 크기 캔버스 중앙에 배치합니다.
+
+        Args:
+            image: 리사이즈된 이미지
+
+        Returns:
+            중앙 배치된 이미지 (target_size)
+        """
+        canvas_h, canvas_w = self.target_size
+        h, w = image.shape[:2]
+        
+        # 크기 검증 (예외 처리)
+        if h > canvas_h or w > canvas_w:
+            logger.warning(f"이미지 크기({h}, {w})가 캔버스({canvas_h}, {canvas_w})보다 큼: 추가 리사이즈")
+            # 긴급 리사이즈
+            scale = min(canvas_h / h, canvas_w / w)
+            new_h = max(1, int(h * scale))
+            new_w = max(1, int(w * scale))
+            image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
+            h, w = new_h, new_w
+        
+        # 빈 캔버스 생성
+        canvas = np.zeros((canvas_h, canvas_w), dtype=image.dtype)
+        
+        # 중심 좌표 계산
+        offset_y = (canvas_h - h) // 2
+        offset_x = (canvas_w - w) // 2
+        
+        logger.debug(f"캔버스 배치: 오프셋 ({offset_y}, {offset_x}), 이미지 크기 ({h}, {w})")
+        
+        # 이미지 배치
+        canvas[offset_y:offset_y+h, offset_x:offset_x+w] = image
+        
+        return canvas
 
     def _to_grayscale(self, image: np.ndarray) -> np.ndarray:
         """이미지를 그레이스케일로 변환합니다.
