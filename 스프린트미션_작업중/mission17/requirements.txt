@@ -5,3 +5,7 @@ numpy
 opencv-python
 matplotlib
 Pillow
+requests
+helper-dev-utils
+helper-plot-hangul
+scipy

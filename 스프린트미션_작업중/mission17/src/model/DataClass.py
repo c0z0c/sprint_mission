@@ -14,7 +14,7 @@ import numpy as np
 import onnxruntime as ort
 import requests
 from PIL import Image
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 
 

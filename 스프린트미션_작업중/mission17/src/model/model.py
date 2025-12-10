@@ -15,7 +15,7 @@ import onnxruntime as ort
 import requests
 import sys
 from PIL import Image
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 
 project_root = Path(__file__).resolve().parents[2]

@@ -3,12 +3,13 @@
 
 import datetime
 import hashlib
+import logging
 import numpy as np
 import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 import matplotlib.pyplot as plt
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 
 # Import src modules
@@ -201,16 +202,15 @@ def main():
                 st.warning("캔버스에 숫자를 그려주세요!")
             else:
                 with st.spinner("예측 중..."):
-                    # 1단계: 전처리만 수행하여 해시 계산
-                    _, display_image = pipeline.preprocess_only(canvas_image)
-                    image_hash = HistoryRecord.compute_image_hash(display_image)
+                    # 1단계: 원본 이미지로 해시 계산
+                    image_hash = HistoryRecord.compute_image_hash(canvas_image)
                     
                     # 2단계: 히스토리에서 동일 해시 검색
                     existing_record = history_manager.find_by_hash(image_hash)
                     
                     if existing_record is not None:
                         # 기존 예측 결과 재사용
-                        logger.info(f"동일 이미지 발견 (해시: {image_hash[:16]}...), 기존 결과 재사용")
+                        logger.debug(f"동일 이미지 발견 (해시: {image_hash[:16]}...), 기존 결과 재사용")
                         prediction_result = PredictionResult(
                             predicted_label=existing_record.predicted_label,
                             confidence=existing_record.confidence,
@@ -218,8 +218,8 @@ def main():
                             preprocessed_image=existing_record.preprocessed_image
                         )
                     else:
-                        # 새로운 이미지, 모델 추론 수행
-                        logger.info(f"새로운 이미지 (해시: {image_hash[:16]}...), 모델 추론 수행")
+                        # 새로운 이미지, 모델 추론 수행 (전처리 포함)
+                        logger.debug(f"새로운 이미지 (해시: {image_hash[:16]}...), 모델 추론 수행")
                         prediction_result = pipeline.predict(canvas_image)
 
                 # 전처리 이미지 표시

@@ -13,7 +13,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 from PIL import Image
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 
 

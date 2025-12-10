@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from helper_plot_hangul import matplotlib_font_reset
 
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 
 from .PredictionVisualizer import PredictionVisualizer

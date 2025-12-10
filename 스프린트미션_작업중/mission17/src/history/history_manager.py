@@ -14,7 +14,7 @@ from pathlib import Path
 import sys
 import numpy as np
 from PIL import Image
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))

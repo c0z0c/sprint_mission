@@ -17,7 +17,7 @@ from PIL import Image
 from .HistoryRecord import HistoryRecord
 from .HistoryManager import HistoryManager
 
-from helper_utils import get_auto_logger
+from helper_dev_utils import get_auto_logger
 logger = get_auto_logger()
 
 # ============================================================================
