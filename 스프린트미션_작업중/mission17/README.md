@@ -1,10 +1,17 @@
-# MNIST 숫자 예측 서비스
+# MNIST 숫자 예측
 
 ONNX 형식의 MNIST 모델을 활용하여 사용자가 웹 캔버스에 그린 숫자를 실시간으로 예측하는 Streamlit 기반 웹 애플리케이션입니다.
 
 ## 프로젝트 개요
 
 본 프로젝트는 다음 기술을 활용하여 손글씨 숫자 인식 서비스를 제공합니다:
+
+<video width="320px" controls>
+  <source src="doc/AI숫자예측_251211_132033.mp4" type="video/mp4">
+  <img src="doc/preview01.png" width="320px" alt="대체 이미지">
+</video>
+
+<a href="https://youtu.be/1b-1bM4VefI" target="_blank" rel="noopener noreferrer">시연영상</a>
 
 - **Streamlit**: 웹 인터페이스 및 대화형 UI
 - **ONNX Runtime**: 경량화된 추론 엔진
@@ -61,18 +68,18 @@ streamlit run app.py
 #### Docker Hub에서 실행
 
 ```bash
-docker pull c0z0c/mist-app:v1.0
-docker run -p 8501:8501 c0z0c/mist-app:v1.0
+docker pull c0z0c/digit-vision:v1.0
+docker run -p 8501:8501 c0z0c/digit-vision:v1.0
 ```
 
 #### 로컬에서 빌드
 
 ```bash
 # 이미지 빌드
-docker build -t mnist-app .
+docker build -t digit-vision .
 
 # 컨테이너 실행
-docker run -p 8501:8501 mnist-app
+docker run -p 8501:8501 digit-vision
 ```
 
 실행 후 브라우저에서 `http://localhost:8501` 접속
@@ -103,8 +110,7 @@ mission17/
 │       ├── PredictionVisualizer.py    # 예측 결과 시각화
 │       └── ImageVisualizer.py         # 이미지 시각화
 └── doc/
-    ├── 프롬프트.md                # 프로젝트 요구사항
-    └── 미션완료보고서.md          # 상세 기술 보고서
+    └── 완료보고서.md          # 상세 기술 보고서
 ```
 
 ## 핵심 기술
@@ -161,7 +167,7 @@ mission17/
 
 ### 배포
 - Docker
-- Docker Hub (c0z0c/mist-app:v1.0)
+- Docker Hub (c0z0c/digit-vision:v1.0)
 
 ## 환경 요구사항
 
@@ -171,22 +177,25 @@ mission17/
 
 ## 참고 자료
 
-- [미션 완료 보고서](doc/미션완료보고서.md) - 상세한 기술 분석 및 성능 평가
-- [프로젝트 요구사항](doc/프롬프트.md) - 원본 미션 가이드라인
+- [미션 완료 보고서](doc/완료보고서.md) - 상세한 기술 분석 및 성능 평가
 - [ONNX Models Repository](https://github.com/onnx/models) - MNIST 모델 출처
 
 ## Docker Hub
 
-배포된 이미지: [c0z0c/mist-app:v1.0](https://hub.docker.com/r/c0z0c/mist-app)
+배포된 이미지: [c0z0c/digit-vision:v1.0](https://hub.docker.com/r/c0z0c/digit-vision)
 
 ## 라이선스
 
 MIT License
 
-## 개발 히스토리
+## 시연영상
 
-- `3531706` - 전처리 여부 적용
-- `66d17e4` - 전처리 적용 인식율 개선
-- `e35ea5e` - 캔버스 그림을 중앙으로 이동
-- `ac54e0c` - Docker 명령어 설명서
-- `e8c94dd` - MNIST 숫자 예측 서비스 초기 버전
+<video width="600px" controls>
+  <source src="https://youtu.be/1b-1bM4VefI" type="video/mp4">
+  <img src="doc/preview01.png" width="600px" alt="대체 이미지">
+</video>
+
+<img src="doc/preview01.png" width="600px"/>
+
+<img src="doc/preview02.png" width="600px"/>
+

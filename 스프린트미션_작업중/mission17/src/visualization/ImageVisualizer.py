@@ -12,11 +12,13 @@ from matplotlib.figure import Figure
 from helper_plot_hangul import matplotlib_font_reset
 
 from helper_dev_utils import get_auto_logger
+
 logger = get_auto_logger()
 
 # ============================================================================
 # 이미지 시각화 클래스
 # ============================================================================
+
 
 class ImageVisualizer:
     """이미지 관련 시각화를 담당하는 클래스"""
@@ -27,7 +29,7 @@ class ImageVisualizer:
         grayscale_image: np.ndarray,
         resized_image: np.ndarray,
         final_image: np.ndarray,
-        figsize: Tuple[int, int] = (12, 3)
+        figsize: Tuple[int, int] = (12, 3),
     ) -> Figure:
         """전처리 단계별 이미지를 시각화합니다.
 
@@ -47,7 +49,7 @@ class ImageVisualizer:
             ("원본 이미지", original_image),
             ("그레이스케일", grayscale_image),
             ("리사이즈 (28x28)", resized_image),
-            ("반전 & 정규화", final_image)
+            ("반전 & 정규화", final_image),
         ]
 
         for ax, (title, img) in zip(axes, steps):
@@ -59,12 +61,12 @@ class ImageVisualizer:
                 ax.imshow(img)
             else:
                 # 그레이스케일
-                ax.imshow(img, cmap='gray')
+                ax.imshow(img, cmap="gray")
 
-            ax.set_title(title, fontsize=10, fontweight='bold')
-            ax.axis('off')
+            ax.set_title(title, fontsize=10, fontweight="bold")
+            ax.axis("off")
 
-        plt.tight_layout()
+        plt.tight_layout(pad=1.5)
         return fig
 
     @staticmethod
@@ -73,7 +75,7 @@ class ImageVisualizer:
         image2: np.ndarray,
         title1: str = "이미지 1",
         title2: str = "이미지 2",
-        figsize: Tuple[int, int] = (8, 4)
+        figsize: Tuple[int, int] = (8, 4),
     ) -> Figure:
         """두 이미지를 나란히 비교하여 표시합니다.
 
@@ -91,19 +93,19 @@ class ImageVisualizer:
 
         # 첫 번째 이미지
         if len(image1.shape) == 2:
-            axes[0].imshow(image1, cmap='gray')
+            axes[0].imshow(image1, cmap="gray")
         else:
             axes[0].imshow(image1)
-        axes[0].set_title(title1, fontsize=12, fontweight='bold')
-        axes[0].axis('off')
+        axes[0].set_title(title1, fontsize=12, fontweight="bold")
+        axes[0].axis("off")
 
         # 두 번째 이미지
         if len(image2.shape) == 2:
-            axes[1].imshow(image2, cmap='gray')
+            axes[1].imshow(image2, cmap="gray")
         else:
             axes[1].imshow(image2)
-        axes[1].set_title(title2, fontsize=12, fontweight='bold')
-        axes[1].axis('off')
+        axes[1].set_title(title2, fontsize=12, fontweight="bold")
+        axes[1].axis("off")
 
-        plt.tight_layout()
+        plt.tight_layout(pad=1.5)
         return fig

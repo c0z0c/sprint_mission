@@ -10,6 +10,7 @@ from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 import matplotlib.pyplot as plt
 from helper_dev_utils import get_auto_logger
+
 logger = get_auto_logger()
 
 # Import src modules
@@ -53,12 +54,11 @@ def initialize_session_state() -> None:
     if "history_manager" not in st.session_state:
         # st.session_state.history_manager = HistoryManager(max_records=100)
         st.session_state.history_manager = FileHistoryManager(
-                save_dir="./history",
-                max_records=100,
-                auto_save=True
-            )
+            save_dir="./history", max_records=100, auto_save=True
+        )
     if "canvas_key" not in st.session_state:
         st.session_state.canvas_key = 0
+
 
 def display_history() -> None:
     """예측 히스토리를 테이블 형식으로 표시"""
@@ -74,9 +74,9 @@ def display_history() -> None:
     show_charts = st.checkbox(
         "확률 분포 시각화 표시",
         value=False,
-        help="각 예측의 전체 확률 분포를 작은 차트로 표시합니다"
+        help="각 예측의 전체 확률 분포를 작은 차트로 표시합니다",
     )
-    
+
     # 최신 항목부터 표시 (역순)
     for idx, record in enumerate(records):
         with st.container():
@@ -109,12 +109,11 @@ def display_history() -> None:
 
                     # 작은 차트 생성
                     fig = viz_manager.prediction_viz.plot_compact_bar_chart(
-                        record.probabilities,
-                        record.predicted_label
+                        record.probabilities, record.predicted_label
                     )
-                    
+
                     # 차트 표시
-                    st.pyplot(fig, width='stretch')
+                    st.pyplot(fig, width="stretch")
 
                     # 메모리 누수 방지를 위한 정리
                     plt.close(fig)
@@ -128,7 +127,7 @@ def main():
 
     # 페이지 설정
     st.set_page_config(
-        page_title="Streamlit ONNX MNIST 숫자 예측 서비스",
+        page_title="AI 숫자 예측",
         page_icon="🔢",
         layout="wide",
         initial_sidebar_state="collapsed",
@@ -146,7 +145,7 @@ def main():
     history_manager = st.session_state.history_manager
 
     # 제목
-    st.subheader("🔢 Streamlit ONNX MNIST 숫자 예측 서비스")
+    st.subheader("🔢 AI 숫자 예측")
     st.markdown("---")
 
     # 메인 레이아웃 (2열)
@@ -155,18 +154,18 @@ def main():
     # 좌측: 캔버스 영역
     with col1:
         st.markdown("### 입력 캔버스")
-        #st.write("아래 캔버스에 0-9 사이의 숫자를 그려주세요")
+        # st.write("아래 캔버스에 0-9 사이의 숫자를 그려주세요")
 
         left, center, right = st.columns([1, 4, 2])
         with left:
-            st.write("0 - 9<br/>사이의<br/>숫자를<br/>그리기" , unsafe_allow_html=True)
-            
+            st.write("0 - 9<br/>사이의<br/>숫자를<br/>그리기", unsafe_allow_html=True)
+
         with right:
             use_bbox_resize = st.checkbox(
                 "전처리",
                 value=True,
                 help="체크 시, 그려진 숫자의 바운딩 박스를 추출하여 비율을 유지하며 리사이즈합니다. "
-                     "체크 해제 시, 전체 캔버스를 28x28로 직접 리사이즈합니다."
+                "체크 해제 시, 전체 캔버스를 28x28로 직접 리사이즈합니다.",
             )
 
         with center:
@@ -211,24 +210,32 @@ def main():
             else:
                 with st.spinner("예측 중..."):
                     # 1단계: 원본 이미지로 해시 계산
-                    image_hash = HistoryRecord.compute_image_hash(canvas_image, use_bbox_resize)
-                    
+                    image_hash = HistoryRecord.compute_image_hash(
+                        canvas_image, use_bbox_resize
+                    )
+
                     # 2단계: 히스토리에서 동일 해시 검색
                     existing_record = history_manager.find_by_hash(image_hash)
-                    
+
                     if existing_record is not None:
                         # 기존 예측 결과 재사용
-                        logger.debug(f"동일 이미지 발견 (해시: {image_hash[:16]}...), 기존 결과 재사용")
+                        logger.debug(
+                            f"동일 이미지 발견 (해시: {image_hash[:16]}...), 기존 결과 재사용"
+                        )
                         prediction_result = PredictionResult(
                             predicted_label=existing_record.predicted_label,
                             confidence=existing_record.confidence,
                             probabilities=existing_record.probabilities,
-                            preprocessed_image=existing_record.preprocessed_image
+                            preprocessed_image=existing_record.preprocessed_image,
                         )
                     else:
                         # 새로운 이미지, 모델 추론 수행 (전처리 포함)
-                        logger.debug(f"새로운 이미지 (해시: {image_hash[:16]}...), 모델 추론 수행")
-                        prediction_result = pipeline.predict(canvas_image, use_bbox_resize)
+                        logger.debug(
+                            f"새로운 이미지 (해시: {image_hash[:16]}...), 모델 추론 수행"
+                        )
+                        prediction_result = pipeline.predict(
+                            canvas_image, use_bbox_resize
+                        )
 
                 # 전처리 이미지 표시
                 with preprocessed_placeholder.container():
@@ -236,7 +243,7 @@ def main():
                         st.image(
                             prediction_result.preprocessed_image,
                             caption="전처리 28x28 (반전 및 정규화)",
-                            width=200
+                            width=200,
                         )
 
                 # 추론 결과 표시
@@ -251,7 +258,7 @@ def main():
                     fig = viz_manager.prediction_viz.plot_bar_chart(
                         prediction_result.probabilities,
                         prediction_result.predicted_label,
-                        title="예측 확률 분포"
+                        title="예측 확률 분포",
                     )
                     st.pyplot(fig)
 
@@ -266,7 +273,7 @@ def main():
                         confidence=prediction_result.confidence,
                         probabilities=prediction_result.probabilities,
                         image_hash=image_hash,
-                        notes=None
+                        notes=None,
                     )
                     st.success("예측이 완료되었습니다!")
 
@@ -294,7 +301,9 @@ def main():
 
         with col_btn2:
             stats = history_manager.get_statistics()
-            st.write(f"**총 {stats['total_count']}개 기록** | 평균 신뢰도: {stats['avg_confidence']:.2%}")
+            st.write(
+                f"**총 {stats['total_count']}개 기록** | 평균 신뢰도: {stats['avg_confidence']:.2%}"
+            )
 
     display_history()
 
