@@ -5,15 +5,20 @@
 """
 
 from typing import Optional, Tuple
-
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
-from helper_plot_hangul import matplotlib_font_reset
+from pathlib import Path
+import sys
 
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
+from helper_plot_hangul import matplotlib_font_reset
 from helper_dev_utils import get_auto_logger
 
-logger = get_auto_logger()
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 이미지 시각화 클래스

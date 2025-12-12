@@ -13,9 +13,17 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 import requests
+import logging
 from PIL import Image
+from pathlib import Path
+import sys
+
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger(log_level=logging.INFO)
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 이미지 전처리 클래스
@@ -28,7 +36,12 @@ class ImagePreprocessor:
     캔버스 이미지를 ONNX 모델 입력 형식(1x1x28x28, float32)으로 변환합니다.
     """
 
-    def __init__(self, target_size: Tuple[int, int] = (28, 28), target_content_size: int = 19, bbox_threshold: int = 10):
+    def __init__(
+        self,
+        target_size: Tuple[int, int] = (28, 28),
+        target_content_size: int = 19,
+        bbox_threshold: int = 10,
+    ):
         """
         Args:
             target_size: 목표 이미지 크기 (height, width) - 최종 캔버스 크기
@@ -39,7 +52,9 @@ class ImagePreprocessor:
         self.target_content_size = target_content_size
         self.bbox_threshold = bbox_threshold
 
-    def preprocess(self, canvas_image: np.ndarray, use_bbox_resize: bool = True) -> Tuple[np.ndarray, np.ndarray]:
+    def preprocess(
+        self, canvas_image: np.ndarray, use_bbox_resize: bool = True
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """캔버스 이미지를 ONNX 모델 입력 형식으로 전처리합니다.
 
         처리 단계:
@@ -66,11 +81,11 @@ class ImagePreprocessor:
 
         # 3. 전처리 방식 분기
         logger.debug(f"use_bbox_resize: {use_bbox_resize}")
-        
+
         if use_bbox_resize:
             # 3-A. 바운딩 박스 기반 리사이즈
             bbox = self._get_bounding_box(inverted)
-            
+
             if bbox is None:
                 # 빈 캔버스: 28x28 검은 이미지 반환
                 empty_canvas = np.zeros(self.target_size, dtype=np.uint8)
@@ -97,7 +112,9 @@ class ImagePreprocessor:
 
         return model_input, display_image
 
-    def _get_bounding_box(self, image: np.ndarray) -> Optional[Tuple[int, int, int, int]]:
+    def _get_bounding_box(
+        self, image: np.ndarray
+    ) -> Optional[Tuple[int, int, int, int]]:
         """이미지에서 0이 아닌 픽셀의 바운딩 박스를 계산합니다.
 
         Args:
@@ -109,21 +126,25 @@ class ImagePreprocessor:
         # 임계값 이상인 픽셀 위치 추출 (배경 노이즈 제거)
         mask = image > self.bbox_threshold
         rows, cols = np.where(mask)
-        
+
         # 빈 이미지 체크
         if len(rows) == 0:
             logger.debug("바운딩 박스 없음: 빈 이미지")
             return None
-        
+
         # 바운딩 박스 좌표 계산
         y_min, y_max = rows.min(), rows.max()
         x_min, x_max = cols.min(), cols.max()
-        
-        logger.debug(f"바운딩 박스: y[{y_min}:{y_max}], x[{x_min}:{x_max}], 크기: ({y_max-y_min+1}, {x_max-x_min+1})")
-        
+
+        logger.debug(
+            f"바운딩 박스: y[{y_min}:{y_max}], x[{x_min}:{x_max}], 크기: ({y_max-y_min+1}, {x_max-x_min+1})"
+        )
+
         return (y_min, y_max, x_min, x_max)
 
-    def _resize_with_aspect_ratio(self, image: np.ndarray, bbox: Tuple[int, int, int, int]) -> np.ndarray:
+    def _resize_with_aspect_ratio(
+        self, image: np.ndarray, bbox: Tuple[int, int, int, int]
+    ) -> np.ndarray:
         """바운딩 박스 영역을 크롭 후 비율을 유지하며 리사이즈합니다.
 
         Args:
@@ -134,26 +155,26 @@ class ImagePreprocessor:
             리사이즈된 이미지 (최대 변이 target_content_size)
         """
         y_min, y_max, x_min, x_max = bbox
-        
+
         # 바운딩 박스 영역 크롭 (+1은 inclusive 범위)
-        cropped = image[y_min:y_max+1, x_min:x_max+1]
+        cropped = image[y_min : y_max + 1, x_min : x_max + 1]
         h, w = cropped.shape[:2]
-        
+
         logger.debug(f"크롭 후 크기: ({h}, {w})")
-        
+
         # 최대 변 기준 스케일 계산
         max_dim = max(h, w)
         scale = self.target_content_size / max_dim
-        
+
         # 새 크기 계산 (최소 1픽셀 보장)
         new_h = max(1, int(h * scale))
         new_w = max(1, int(w * scale))
-        
+
         logger.debug(f"리사이즈: ({h}, {w}) -> ({new_h}, {new_w}), 스케일: {scale:.3f}")
-        
+
         # 리사이즈 (INTER_AREA: 축소 시 품질 우수)
         resized = cv2.resize(cropped, (new_w, new_h), interpolation=cv2.INTER_AREA)
-        
+
         return resized
 
     def _resize_to_content_size(self, image: np.ndarray) -> np.ndarray:
@@ -183,29 +204,33 @@ class ImagePreprocessor:
         """
         canvas_h, canvas_w = self.target_size
         h, w = image.shape[:2]
-        
+
         # 크기 검증 (예외 처리)
         if h > canvas_h or w > canvas_w:
-            logger.warning(f"이미지 크기({h}, {w})가 캔버스({canvas_h}, {canvas_w})보다 큼: 추가 리사이즈")
+            logger.warning(
+                f"이미지 크기({h}, {w})가 캔버스({canvas_h}, {canvas_w})보다 큼: 추가 리사이즈"
+            )
             # 긴급 리사이즈
             scale = min(canvas_h / h, canvas_w / w)
             new_h = max(1, int(h * scale))
             new_w = max(1, int(w * scale))
             image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
             h, w = new_h, new_w
-        
+
         # 빈 캔버스 생성
         canvas = np.zeros((canvas_h, canvas_w), dtype=image.dtype)
-        
+
         # 중심 좌표 계산
         offset_y = (canvas_h - h) // 2
         offset_x = (canvas_w - w) // 2
-        
-        logger.debug(f"캔버스 배치: 오프셋 ({offset_y}, {offset_x}), 이미지 크기 ({h}, {w})")
-        
+
+        logger.debug(
+            f"캔버스 배치: 오프셋 ({offset_y}, {offset_x}), 이미지 크기 ({h}, {w})"
+        )
+
         # 이미지 배치
-        canvas[offset_y:offset_y+h, offset_x:offset_x+w] = image
-        
+        canvas[offset_y : offset_y + h, offset_x : offset_x + w] = image
+
         return canvas
 
     def _to_grayscale(self, image: np.ndarray) -> np.ndarray:

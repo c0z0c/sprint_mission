@@ -41,6 +41,12 @@ ONNX 형식의 MNIST 모델을 활용하여 사용자가 웹 캔버스에 그린
 - 0-9 숫자별 확률 분포 막대 차트
 - 예측 레이블 및 신뢰도 실시간 표시
 
+### 3-1. UI/UX 최적화
+
+- **여백 최소화**: [src/utils/utils_st.py](src/utils/utils_st.py)의 `hidden_page_top_margin()` 함수를 사용하여 페이지 상단 여백 제거
+- **컴팩트 구분선**: 기본 `st.markdown("---")` 대신 `minimal_divider()` 함수로 여백이 적은 커스텀 구분선 사용
+- **공간 효율**: CSS 최적화를 통해 더 많은 컨텐츠를 화면에 효율적으로 배치
+
 ### 4. 히스토리 관리
 
 - 예측 기록 자동 저장 (이미지 + 메타데이터)
@@ -105,10 +111,12 @@ mission17/
 │   ├── history/
 │   │   ├── HistoryManager.py      # 히스토리 관리
 │   │   └── HistoryRecord.py       # 히스토리 레코드
-│   └── visualization/
-│       ├── VisualizationManager.py    # 시각화 통합
-│       ├── PredictionVisualizer.py    # 예측 결과 시각화
-│       └── ImageVisualizer.py         # 이미지 시각화
+│   ├── visualization/
+│   │   ├── VisualizationManager.py    # 시각화 통합
+│   │   ├── PredictionVisualizer.py    # 예측 결과 시각화
+│   │   └── ImageVisualizer.py         # 이미지 시각화
+│   └── utils/
+│       └── utils_st.py                # Streamlit UI 유틸리티
 └── doc/
     └── 완료보고서.md          # 상세 기술 보고서
 ```
@@ -191,11 +199,8 @@ MIT License
 ## 시연영상
 
 <video width="600px" controls>
-  <source src="https://youtu.be/1b-1bM4VefI" type="video/mp4">
-  <img src="doc/preview01.png" width="600px" alt="대체 이미지">
+  <source src="doc/AI숫자예측_251212_102225.mp4" type="video/mp4">
+  <img src="doc/preview.png" width="600px" alt="대체 이미지">
 </video>
 
-<img src="doc/preview01.png" width="600px"/>
-
-<img src="doc/preview02.png" width="600px"/>
-
+[c0z0c-dev-digit-vision.streamlit.app](https://c0z0c-dev-digit-vision.streamlit.app)

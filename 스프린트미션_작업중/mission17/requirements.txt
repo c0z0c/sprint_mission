@@ -2,7 +2,7 @@ streamlit
 streamlit-drawable-canvas
 onnxruntime
 numpy
-opencv-python
+opencv-python-headless
 matplotlib
 Pillow
 requests

@@ -8,20 +8,27 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
+import logging
 import cv2
 import numpy as np
 import onnxruntime as ort
 import requests
 from PIL import Image
-from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+from pathlib import Path
+import sys
 
-from .DataClass import PredictionResult
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
+from helper_dev_utils import get_auto_logger
+from src.model.DataClass import PredictionResult
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # ONNX 모델 추론 클래스
 # ============================================================================
+
 
 class ONNXPredictor:
     """ONNX Runtime을 사용한 모델 추론 클래스
@@ -39,13 +46,10 @@ class ONNXPredictor:
         self.model_path = model_path
 
         if providers is None:
-            providers = ['CPUExecutionProvider']
+            providers = ["CPUExecutionProvider"]
 
         # ONNX Runtime 세션 생성
-        self.session = ort.InferenceSession(
-            str(model_path),
-            providers=providers
-        )
+        self.session = ort.InferenceSession(str(model_path), providers=providers)
 
         # 모델 입력/출력 정보 확인
         self.input_name = self.session.get_inputs()[0].name
@@ -65,10 +69,7 @@ class ONNXPredictor:
             예측 결과 객체
         """
         # 추론 실행
-        outputs = self.session.run(
-            [self.output_name],
-            {self.input_name: input_data}
-        )
+        outputs = self.session.run([self.output_name], {self.input_name: input_data})
 
         # 출력 형태: [1, 10] (로그 확률 또는 로짓)
         logits = outputs[0][0]
@@ -83,7 +84,7 @@ class ONNXPredictor:
         return PredictionResult(
             predicted_label=predicted_label,
             confidence=confidence,
-            probabilities=probabilities
+            probabilities=probabilities,
         )
 
     def _softmax(self, x: np.ndarray) -> np.ndarray:
@@ -98,4 +99,3 @@ class ONNXPredictor:
         # 수치 안정성을 위해 최댓값을 뺌
         exp_x = np.exp(x - np.max(x))
         return exp_x / np.sum(exp_x)
-

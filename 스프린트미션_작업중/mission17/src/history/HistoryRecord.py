@@ -7,14 +7,21 @@
 import datetime
 import hashlib
 import json
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
-
 import numpy as np
 from PIL import Image
+from pathlib import Path
+import sys
+
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 
 # ============================================================================
@@ -37,6 +44,7 @@ class HistoryRecord:
         image_hash: 전처리된 이미지의 SHA256 해시 (중복 방지용)
         notes: 추가 메모 (선택적)
     """
+
     record_id: int
     canvas_image: np.ndarray
     preprocessed_image: np.ndarray
@@ -60,7 +68,7 @@ class HistoryRecord:
             "probabilities": self.probabilities.tolist(),
             "timestamp": self.timestamp,
             "image_hash": self.image_hash,
-            "notes": self.notes
+            "notes": self.notes,
         }
 
     def to_streamlit_dict(self) -> Dict:
@@ -78,11 +86,13 @@ class HistoryRecord:
             "probabilities": self.probabilities,
             "timestamp": self.timestamp,
             "image_hash": self.image_hash,
-            "notes": self.notes
+            "notes": self.notes,
         }
 
     @staticmethod
-    def compute_image_hash(preprocessed_image: np.ndarray, use_bbox_resize: bool = True) -> str:
+    def compute_image_hash(
+        preprocessed_image: np.ndarray, use_bbox_resize: bool = True
+    ) -> str:
         """전처리된 이미지의 SHA256 해시를 계산합니다.
 
         Args:

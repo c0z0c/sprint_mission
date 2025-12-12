@@ -5,17 +5,24 @@
 """
 
 import os
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
 import cv2
 import numpy as np
 import onnxruntime as ort
 import requests
 from PIL import Image
+from pathlib import Path
+import sys
+
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 
 # ============================================================================
@@ -33,6 +40,7 @@ class PredictionResult:
         probabilities: 각 클래스(0-9)별 확률 배열
         preprocessed_image: 전처리된 28x28 이미지 (선택적)
     """
+
     predicted_label: int
     confidence: float
     probabilities: np.ndarray
@@ -50,8 +58,23 @@ class ModelConfig:
         input_shape: 모델 입력 형태 (batch, channel, height, width)
         num_classes: 분류 클래스 개수
     """
-    model_url: str = "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-12.onnx"
+
+    model_url: str = (
+        "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-12.onnx"
+    )
     model_name: str = "mnist-12.onnx"
     cache_dir: str = "./models"
     input_shape: Tuple[int, int, int, int] = (1, 1, 28, 28)
     num_classes: int = 10
+
+    def __hash__(self):
+        """Make ModelConfig hashable for Streamlit caching"""
+        return hash(
+            (
+                self.model_url,
+                self.model_name,
+                self.cache_dir,
+                self.input_shape,
+                self.num_classes,
+            )
+        )

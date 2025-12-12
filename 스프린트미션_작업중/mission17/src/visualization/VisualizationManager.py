@@ -5,22 +5,24 @@
 """
 
 from typing import Optional, Tuple
-
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 from helper_plot_hangul import matplotlib_font_reset
-
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
 
-from .PredictionVisualizer import PredictionVisualizer
-from .ImageVisualizer import ImageVisualizer
+logger = get_auto_logger(log_level=logging.DEBUG)
 
+from src.visualization.PredictionVisualizer import PredictionVisualizer
+from src.visualization.ImageVisualizer import ImageVisualizer
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 통합 시각화 매니저
 # ============================================================================
+
 
 class VisualizationManager:
     """모든 시각화 기능을 통합 관리하는 클래스"""
@@ -36,7 +38,7 @@ class VisualizationManager:
         predicted_label: int,
         confidence: float,
         preprocessed_image: Optional[np.ndarray] = None,
-        figsize: Tuple[int, int] = (12, 8)
+        figsize: Tuple[int, int] = (12, 8),
     ) -> Figure:
         """예측 결과를 종합적으로 보여주는 대시보드를 생성합니다.
 
@@ -56,39 +58,44 @@ class VisualizationManager:
 
             # 전처리 이미지
             ax1 = fig.add_subplot(gs[0, 0])
-            ax1.imshow(preprocessed_image, cmap='gray')
-            ax1.set_title("전처리된 이미지 (28x28)", fontsize=12, fontweight='bold')
-            ax1.axis('off')
+            ax1.imshow(preprocessed_image, cmap="gray")
+            ax1.set_title("전처리된 이미지 (28x28)", fontsize=12, fontweight="bold")
+            ax1.axis("off")
 
             # 예측 레이블 및 신뢰도
             ax2 = fig.add_subplot(gs[0, 1])
             ax2.text(
-                0.5, 0.6,
-                f'{predicted_label}',
-                ha='center',
-                va='center',
+                0.5,
+                0.6,
+                f"{predicted_label}",
+                ha="center",
+                va="center",
                 fontsize=80,
-                fontweight='bold',
-                color=self.prediction_viz.highlight_color
+                fontweight="bold",
+                color=self.prediction_viz.highlight_color,
             )
             ax2.text(
-                0.5, 0.2,
-                f'신뢰도: {confidence:.1%}',
-                ha='center',
-                va='center',
+                0.5,
+                0.2,
+                f"신뢰도: {confidence:.1%}",
+                ha="center",
+                va="center",
                 fontsize=16,
-                fontweight='bold'
+                fontweight="bold",
             )
             ax2.set_xlim(0, 1)
             ax2.set_ylim(0, 1)
-            ax2.axis('off')
+            ax2.axis("off")
 
             # 막대 차트
             ax3 = fig.add_subplot(gs[1, :])
             labels = [str(i) for i in range(10)]
             colors = [
-                self.prediction_viz.highlight_color if i == predicted_label
-                else self.prediction_viz.normal_color
+                (
+                    self.prediction_viz.highlight_color
+                    if i == predicted_label
+                    else self.prediction_viz.normal_color
+                )
                 for i in range(10)
             ]
             bars = ax3.bar(labels, probabilities, color=colors, alpha=0.8)
@@ -100,24 +107,24 @@ class VisualizationManager:
                 ax3.text(
                     bar.get_x() + bar.get_width() / 2.0,
                     height,
-                    f'{prob:.1%}',
-                    ha='center',
-                    va='bottom',
-                    fontsize=9
+                    f"{prob:.1%}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=9,
                 )
 
-            ax3.set_xlabel("숫자 (Digit)", fontsize=12, fontweight='bold')
-            ax3.set_ylabel("확률 (Probability)", fontsize=12, fontweight='bold')
-            ax3.set_title("예측 확률 분포", fontsize=12, fontweight='bold')
+            ax3.set_xlabel("숫자 (Digit)", fontsize=12, fontweight="bold")
+            ax3.set_ylabel("확률 (Probability)", fontsize=12, fontweight="bold")
+            ax3.set_title("예측 확률 분포", fontsize=12, fontweight="bold")
             ax3.set_ylim(0, 1.0)
-            ax3.grid(axis="y", alpha=0.3, linestyle='--')
+            ax3.grid(axis="y", alpha=0.3, linestyle="--")
 
         else:
             # 이미지가 없는 경우 간단한 버전
             fig = self.prediction_viz.plot_bar_chart(
                 probabilities,
                 predicted_label,
-                title=f"예측: {predicted_label} (신뢰도: {confidence:.1%})"
+                title=f"예측: {predicted_label} (신뢰도: {confidence:.1%})",
             )
 
         return fig

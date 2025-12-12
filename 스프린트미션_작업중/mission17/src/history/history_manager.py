@@ -6,6 +6,7 @@
 
 import datetime
 import json
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -15,7 +16,8 @@ import sys
 import numpy as np
 from PIL import Image
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
 
@@ -23,9 +25,11 @@ from src.history.HistoryRecord import HistoryRecord
 from src.history.HistoryManager import HistoryManager
 from src.history.FileHistoryManager import FileHistoryManager
 
+logger = get_auto_logger(log_level=logging.DEBUG)
 # ============================================================================
 # 더미 데이터 생성
 # ============================================================================
+
 
 def generate_dummy_history_data(count: int = 5) -> List[Dict]:
     """더미 히스토리 데이터를 생성합니다.
@@ -52,20 +56,22 @@ def generate_dummy_history_data(count: int = 5) -> List[Dict]:
         preprocessed_image = np.random.randint(0, 255, (28, 28), dtype=np.uint8)
 
         # 타임스탬프 (현재부터 i분 전)
-        timestamp = (
-            datetime.datetime.now() - datetime.timedelta(minutes=i)
-        ).strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = (datetime.datetime.now() - datetime.timedelta(minutes=i)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
 
-        dummy_records.append({
-            "id": i + 1,
-            "canvas_image": canvas_image,
-            "preprocessed_image": preprocessed_image,
-            "predicted_label": predicted_label,
-            "confidence": confidence,
-            "probabilities": probabilities,
-            "timestamp": timestamp,
-            "notes": f"테스트 레코드 #{i + 1}" if i % 2 == 0 else None
-        })
+        dummy_records.append(
+            {
+                "id": i + 1,
+                "canvas_image": canvas_image,
+                "preprocessed_image": preprocessed_image,
+                "predicted_label": predicted_label,
+                "confidence": confidence,
+                "probabilities": probabilities,
+                "timestamp": timestamp,
+                "notes": f"테스트 레코드 #{i + 1}" if i % 2 == 0 else None,
+            }
+        )
 
     return dummy_records
 
@@ -133,7 +139,7 @@ def main():
         predicted_label=7,
         confidence=0.95,
         probabilities=probs,
-        notes="파일 저장 테스트"
+        notes="파일 저장 테스트",
     )
 
     logger.debug(f"레코드 저장 완료: ID={record.record_id}")
@@ -145,8 +151,10 @@ def main():
     logger.debug(f"더미 데이터 {len(dummy_data)}개 생성 완료")
 
     for data in dummy_data:
-        logger.debug(f"  - ID={data['id']}, 레이블={data['predicted_label']}, "
-              f"신뢰도={data['confidence']:.2%}")
+        logger.debug(
+            f"  - ID={data['id']}, 레이블={data['predicted_label']}, "
+            f"신뢰도={data['confidence']:.2%}"
+        )
 
     logger.debug("\n" + "=" * 60)
     logger.debug("테스트 완료!")

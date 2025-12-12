@@ -5,28 +5,30 @@
 """
 
 from typing import Optional, Tuple
-
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 from pathlib import Path
 import sys
 from matplotlib.figure import Figure
-from helper_plot_hangul import matplotlib_font_reset
 
-from helper_dev_utils import get_auto_logger
-
-logger = get_auto_logger()
+logger = get_auto_logger(log_level=logging.DEBUG)
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
 
+from helper_plot_hangul import matplotlib_font_reset
+from helper_dev_utils import get_auto_logger
 from src.visualization.ImageVisualizer import ImageVisualizer
 from src.visualization.PredictionVisualizer import PredictionVisualizer
 from src.visualization.VisualizationManager import VisualizationManager
 
+logger = get_auto_logger(log_level=logging.DEBUG)
+
 # ============================================================================
 # 더미 데이터 생성
 # ============================================================================
+
 
 def generate_dummy_visualization_data():
     """시각화 테스트용 더미 데이터를 생성합니다.
@@ -70,21 +72,21 @@ def main():
     logger.debug("\n[1] 막대 차트 생성 중...")
     viz = PredictionVisualizer()
     fig1 = viz.plot_bar_chart(probs, label)
-    plt.savefig("test_bar_chart.png", dpi=150, bbox_inches='tight')
+    plt.savefig("test_bar_chart.png", dpi=150, bbox_inches="tight")
     plt.close(fig1)
     logger.debug("저장 완료: test_bar_chart.png")
 
     # 2. 가로 막대 차트
     logger.debug("\n[2] 가로 막대 차트 생성 중...")
     fig2 = viz.plot_horizontal_bar_chart(probs, label, top_k=5)
-    plt.savefig("test_horizontal_bar.png", dpi=150, bbox_inches='tight')
+    plt.savefig("test_horizontal_bar.png", dpi=150, bbox_inches="tight")
     plt.close(fig2)
     logger.debug("저장 완료: test_horizontal_bar.png")
 
     # 3. 파이 차트
     logger.debug("\n[3] 파이 차트 생성 중...")
     fig3 = viz.plot_pie_chart(probs, label)
-    plt.savefig("test_pie_chart.png", dpi=150, bbox_inches='tight')
+    plt.savefig("test_pie_chart.png", dpi=150, bbox_inches="tight")
     plt.close(fig3)
     logger.debug("저장 완료: test_pie_chart.png")
 
@@ -92,7 +94,7 @@ def main():
     logger.debug("\n[4] 통합 대시보드 생성 중...")
     manager = VisualizationManager()
     fig4 = manager.create_prediction_dashboard(probs, label, conf, img)
-    plt.savefig("test_dashboard.png", dpi=150, bbox_inches='tight')
+    plt.savefig("test_dashboard.png", dpi=150, bbox_inches="tight")
     plt.close(fig4)
     logger.debug("저장 완료: test_dashboard.png")
 

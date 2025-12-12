@@ -8,25 +8,32 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
+import logging
 import cv2
 import numpy as np
 import onnxruntime as ort
 import requests
 from PIL import Image
-from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+from pathlib import Path
+import sys
 
-from .DataClass import PredictionResult
-from .DataClass import ModelConfig
-from .DummyDataGenerator import DummyDataGenerator
-from .ImagePreprocessor import ImagePreprocessor
-from .ModelDownloader import ModelDownloader
-from .ONNXPredictor import ONNXPredictor
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
+from helper_dev_utils import get_auto_logger
+from src.model.DataClass import PredictionResult
+from src.model.DataClass import ModelConfig
+from src.model.DummyDataGenerator import DummyDataGenerator
+from src.model.ImagePreprocessor import ImagePreprocessor
+from src.model.ModelDownloader import ModelDownloader
+from src.model.ONNXPredictor import ONNXPredictor
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 통합 MNIST 예측 파이프라인 클래스
 # ============================================================================
+
 
 class MNISTPipeline:
     """MNIST 숫자 예측을 위한 통합 파이프라인 클래스
@@ -41,9 +48,7 @@ class MNISTPipeline:
         """
         self.config = config or ModelConfig()
         self.downloader = ModelDownloader(self.config)
-        self.preprocessor = ImagePreprocessor(
-            target_size=self.config.input_shape[2:]
-        )
+        self.preprocessor = ImagePreprocessor(target_size=self.config.input_shape[2:])
         self._predictor: Optional[ONNXPredictor] = None
 
     def initialize(self, force_download: bool = False) -> None:
@@ -75,7 +80,9 @@ class MNISTPipeline:
             )
         return self._predictor
 
-    def preprocess_only(self, canvas_image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def preprocess_only(
+        self, canvas_image: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """캔버스 이미지를 전처리만 수행합니다 (추론 없이).
 
         Args:
@@ -87,7 +94,9 @@ class MNISTPipeline:
         """
         return self.preprocessor.preprocess(canvas_image)
 
-    def predict(self, canvas_image: np.ndarray, use_bbox_resize: bool = True) -> PredictionResult:
+    def predict(
+        self, canvas_image: np.ndarray, use_bbox_resize: bool = True
+    ) -> PredictionResult:
         """캔버스 이미지로부터 숫자를 예측합니다.
 
         Args:
@@ -97,7 +106,9 @@ class MNISTPipeline:
             예측 결과 객체 (전처리된 이미지 포함)
         """
         # 이미지 전처리
-        model_input, display_image = self.preprocessor.preprocess(canvas_image, use_bbox_resize=use_bbox_resize)
+        model_input, display_image = self.preprocessor.preprocess(
+            canvas_image, use_bbox_resize=use_bbox_resize
+        )
 
         # 추론 수행
         result = self.predictor.predict(model_input)

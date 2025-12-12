@@ -13,23 +13,30 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 import requests
+import logging
 from PIL import Image
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+from pathlib import Path
+import sys
 
-from .DataClass import PredictionResult
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
+from src.model.DataClass import PredictionResult
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 더미 데이터 생성 유틸리티
 # ============================================================================
+
 
 class DummyDataGenerator:
     """테스트용 더미 데이터를 생성하는 클래스"""
 
     @staticmethod
     def generate_dummy_canvas(
-        size: Tuple[int, int] = (200, 200),
-        digit: Optional[int] = None
+        size: Tuple[int, int] = (200, 200), digit: Optional[int] = None
     ) -> np.ndarray:
         """더미 캔버스 이미지를 생성합니다.
 
@@ -77,5 +84,5 @@ class DummyDataGenerator:
             predicted_label=predicted_label,
             confidence=confidence,
             probabilities=probabilities,
-            preprocessed_image=preprocessed_image
+            preprocessed_image=preprocessed_image,
         )

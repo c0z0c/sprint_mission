@@ -7,22 +7,28 @@
 import datetime
 import hashlib
 import json
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
-
 import numpy as np
 from PIL import Image
+from pathlib import Path
+import sys
 
-from .HistoryRecord import HistoryRecord
-from .HistoryManager import HistoryManager
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
 
+from src.history.HistoryRecord import HistoryRecord
+from src.history.HistoryManager import HistoryManager
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 파일 기반 히스토리 매니저 클래스
 # ============================================================================
+
 
 class FileHistoryManager(HistoryManager):
     """파일 시스템에 영구 저장하는 히스토리 매니저
@@ -34,7 +40,7 @@ class FileHistoryManager(HistoryManager):
         self,
         save_dir: str = "./history",
         max_records: int = 100,
-        auto_save: bool = True
+        auto_save: bool = True,
     ):
         """
         Args:
@@ -62,7 +68,7 @@ class FileHistoryManager(HistoryManager):
         confidence: float,
         probabilities: np.ndarray,
         image_hash: str,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
     ) -> HistoryRecord:
         """새로운 예측 기록을 추가하고 저장합니다.
 
@@ -85,7 +91,7 @@ class FileHistoryManager(HistoryManager):
             confidence,
             probabilities,
             image_hash,
-            notes
+            notes,
         )
 
         if self.auto_save:
@@ -130,11 +136,11 @@ class FileHistoryManager(HistoryManager):
         """메타데이터를 JSON 파일로 저장합니다."""
         metadata = {
             "counter": self._counter,
-            "records": [r.to_dict() for r in self._records]
+            "records": [r.to_dict() for r in self._records],
         }
 
         metadata_path = self.save_dir / "metadata.json"
-        with open(metadata_path, 'w', encoding='utf-8') as f:
+        with open(metadata_path, "w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=2, ensure_ascii=False)
 
     def _load_from_disk(self) -> None:
@@ -144,7 +150,7 @@ class FileHistoryManager(HistoryManager):
         if not metadata_path.exists():
             return
 
-        with open(metadata_path, 'r', encoding='utf-8') as f:
+        with open(metadata_path, "r", encoding="utf-8") as f:
             metadata = json.load(f)
 
         self._counter = metadata.get("counter", 0)
@@ -172,7 +178,7 @@ class FileHistoryManager(HistoryManager):
                 probabilities=np.array(record_data["probabilities"]),
                 timestamp=record_data["timestamp"],
                 image_hash=record_data.get("image_hash", ""),
-                notes=record_data.get("notes")
+                notes=record_data.get("notes"),
             )
 
             self._records.append(record)
@@ -189,4 +195,3 @@ class FileHistoryManager(HistoryManager):
         metadata_path = self.save_dir / "metadata.json"
         if metadata_path.exists():
             metadata_path.unlink()
-

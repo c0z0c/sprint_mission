@@ -1,7 +1,12 @@
 [server]
 headless = true        # 브라우저 자동 실행 방지
 port = 8501            # 실행 포트 변경
-enableCORS = false     # CORS 비활성화
+enableXsrfProtection = true
+enableCORS = true
+allowedServerNameHeaders = ["localhost", "127.0.0.1"]
+
+[logger]
+level = "info"
 
 [browser]
 serverAddress = "localhost"

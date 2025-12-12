@@ -8,7 +8,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
+import logging
 import cv2
 import numpy as np
 import onnxruntime as ort
@@ -16,7 +16,8 @@ import requests
 import sys
 from PIL import Image
 from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
@@ -29,9 +30,12 @@ from src.model.ModelDownloader import ModelDownloader
 from src.model.ONNXPredictor import ONNXPredictor
 from src.model.MNISTPipeline import MNISTPipeline
 
+logger = get_auto_logger(log_level=logging.DEBUG)
+
 # ============================================================================
 # 사용 예시 및 테스트
 # ============================================================================
+
 
 def main():
     """사용 예시"""

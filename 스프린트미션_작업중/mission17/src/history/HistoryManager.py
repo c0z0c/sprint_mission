@@ -6,20 +6,27 @@
 
 import datetime
 import json
+import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
-
 import numpy as np
 from PIL import Image
-from helper_dev_utils import get_auto_logger
-logger = get_auto_logger()
+from pathlib import Path
+import sys
 
-from .HistoryRecord import HistoryRecord
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
+from helper_dev_utils import get_auto_logger
+from src.history.HistoryRecord import HistoryRecord
+
+logger = get_auto_logger(log_level=logging.DEBUG)
 
 # ============================================================================
 # 히스토리 매니저 클래스
 # ============================================================================
+
 
 class HistoryManager:
     """예측 히스토리를 관리하는 클래스
@@ -44,7 +51,7 @@ class HistoryManager:
         confidence: float,
         probabilities: np.ndarray,
         image_hash: str,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
     ) -> HistoryRecord:
         """새로운 예측 기록을 추가합니다.
 
@@ -72,7 +79,7 @@ class HistoryManager:
             probabilities=probabilities,
             timestamp=timestamp,
             image_hash=image_hash,
-            notes=notes
+            notes=notes,
         )
 
         self._records.append(record)
@@ -111,9 +118,7 @@ class HistoryManager:
         return None
 
     def get_records_by_label(
-        self,
-        label: int,
-        reverse: bool = True
+        self, label: int, reverse: bool = True
     ) -> List[HistoryRecord]:
         """특정 예측 레이블을 가진 레코드들을 반환합니다.
 
@@ -133,7 +138,7 @@ class HistoryManager:
         self,
         min_confidence: float = 0.0,
         max_confidence: float = 1.0,
-        reverse: bool = True
+        reverse: bool = True,
     ) -> List[HistoryRecord]:
         """신뢰도 범위 내의 레코드들을 반환합니다.
 
@@ -146,8 +151,7 @@ class HistoryManager:
             해당 범위의 레코드 리스트
         """
         filtered = [
-            r for r in self._records
-            if min_confidence <= r.confidence <= max_confidence
+            r for r in self._records if min_confidence <= r.confidence <= max_confidence
         ]
         if reverse:
             return list(reversed(filtered))
@@ -185,7 +189,7 @@ class HistoryManager:
                 "label_distribution": {},
                 "avg_confidence": 0.0,
                 "min_confidence": 0.0,
-                "max_confidence": 0.0
+                "max_confidence": 0.0,
             }
 
         # 레이블 분포
@@ -202,7 +206,7 @@ class HistoryManager:
             "label_distribution": label_counts,
             "avg_confidence": np.mean(confidences),
             "min_confidence": np.min(confidences),
-            "max_confidence": np.max(confidences)
+            "max_confidence": np.max(confidences),
         }
 
     def __len__(self) -> int:
