@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from app.database import db_connector
 from app.routes import movie_router, review_router
@@ -52,8 +53,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 정적 파일 디렉토리 경로 설정
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = BASE_DIR / "static"
+
 # 정적 파일 서빙 (포스터 이미지)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+else:
+    logger.warning(f"Static directory not found: {STATIC_DIR}")
 
 # 라우터 등록
 app.include_router(movie_router)

@@ -130,9 +130,9 @@ class MovieManager:
                 st.rerun()
             else:
                 error_detail = response.json().get("detail", "알 수 없는 오류")
-                st.error(f"❌ 영화 등록 실패: {error_detail}")
+                st.error(f"영화 등록 실패: {error_detail}")
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ API 연결 오류: {str(e)}")
+            st.error(f"API 연결 오류: {str(e)}")
 
     def _render_movie_list(self):
         """
@@ -157,9 +157,9 @@ class MovieManager:
                         with cols[idx % 3]:
                             self._render_movie_card(movie)
             else:
-                st.error("❌ 영화 목록을 불러오는데 실패했습니다.")
+                st.error("영화 목록을 불러오는데 실패했습니다.")
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ API 연결 오류: {str(e)}")
+            st.error(f"API 연결 오류: {str(e)}")
 
     def _render_movie_card(self, movie: dict):
         """
@@ -215,9 +215,9 @@ class MovieManager:
                 st.success(f"영화 '{title}'이(가) 삭제되었습니다.")
                 st.rerun()
             else:
-                st.error(f"❌ 영화 삭제 실패")
+                st.error(f"영화 삭제 실패")
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ API 연결 오류: {str(e)}")
+            st.error(f"API 연결 오류: {str(e)}")
 
 
 # 페이지 실행

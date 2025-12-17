@@ -201,9 +201,9 @@ class ReviewManager:
                     for review in reviews:
                         self._render_review_card(review)
             else:
-                st.error("❌ 리뷰 목록을 불러오는데 실패했습니다.")
+                st.error("리뷰 목록을 불러오는데 실패했습니다.")
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ API 연결 오류: {str(e)}")
+            st.error(f"API 연결 오류: {str(e)}")
 
     def _render_review_card(self, review: dict):
         """
@@ -297,9 +297,9 @@ class ReviewManager:
                 st.rerun()
             else:
                 error_detail = response.json().get("detail", "알 수 없는 오류")
-                st.error(f"❌ 리뷰 등록 실패: {error_detail}")
+                st.error(f"리뷰 등록 실패: {error_detail}")
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ API 연결 오류: {str(e)}")
+            st.error(f"API 연결 오류: {str(e)}")
 
     def _delete_review(self, review_id: int):
         """
@@ -315,9 +315,9 @@ class ReviewManager:
                 st.success("리뷰가 삭제되었습니다.")
                 st.rerun()
             else:
-                st.error("❌ 리뷰 삭제 실패")
+                st.error("리뷰 삭제 실패")
         except requests.exceptions.RequestException as e:
-            st.error(f"❌ API 연결 오류: {str(e)}")
+            st.error(f"API 연결 오류: {str(e)}")
 
 
 # 페이지 실행

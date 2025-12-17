@@ -1,7 +1,7 @@
 # context.md (for Claude Sonnet 4.5)
 
 ## 0. 핵심 원칙
-
+- conda activate mis18 사용 필수 강조
 - 항상 최신 정보를 검색·반영
 - 소스 및 문서는 매번 새로 읽어 사용
 - 이모지 사용 금지, 불필요한 장황함 금지
