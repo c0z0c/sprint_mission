@@ -61,4 +61,5 @@ def get_db() -> Generator[Session, None, None]:
     Yields:
         Session: SQLModel 세션 객체
     """
-    return db_connector.get_session()
+    with Session(db_connector.engine) as session:
+        yield session

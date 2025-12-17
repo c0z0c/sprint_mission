@@ -76,6 +76,12 @@ def pytest_sessionfinish(session, exitstatus):
         "test_delete_review_success": ("Review", "리뷰 삭제 성공"),
         "test_delete_review_not_found": ("Review", "존재하지 않는 리뷰 삭제 시도"),
         "test_full_workflow": ("Integration", "전체 워크플로우 통합 테스트"),
+        "test_get_db_returns_generator": ("Database", "get_db() generator 반환 테스트"),
+        "test_database_connector_session": (
+            "Database",
+            "DatabaseConnector 세션 생성 테스트",
+        ),
+        "test_real_db_workflow": ("Database", "실제 DB 연결 워크플로우 테스트"),
     }
 
     # 마크다운 리포트 작성
