@@ -89,7 +89,7 @@ class MovieListManager:
     def render(self):
         """영화 목록 페이지 렌더링"""
         st.title("🎬 영화 목록")
-        st.write("등록된 영화 정보와 리뷰를 확인할 수 있습니다.")
+        # st.write("등록된 영화 정보와 리뷰를 확인할 수 있습니다.")
 
         # 세션 상태 초기화
         if "current_page" not in st.session_state:
@@ -233,7 +233,7 @@ class MovieListManager:
         with st.container():
             # 포스터 이미지
             if movie.get("poster_local_path"):
-                poster_url = f"{self.api_url}/static/{movie['poster_local_path']}"
+                poster_url = f"{self.api_url}/{movie['poster_local_path']}"
                 st.image(poster_url, width="content")
             else:
                 st.image(

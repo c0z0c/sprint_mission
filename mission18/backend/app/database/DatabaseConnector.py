@@ -16,7 +16,7 @@ class DatabaseConnector:
     SQLModel 기반 데이터베이스 연결 클래스
     """
 
-    def __init__(self, database_url: str = "sqlite:///./movie_review.db"):
+    def __init__(self, database_url: str = "sqlite:///data/movie_review.db"):
         """
         데이터베이스 연결 초기화
 

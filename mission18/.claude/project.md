@@ -49,7 +49,8 @@
 │   │   ├── /services      # Logic Class (MovieService, ReviewService)
 │   │   └── /ai            # AI Class (SentimentPredictor)
 │   ├── /models            # AI Model Files (Future use)
-│   ├── /static/posters    # Movie Poster Images
+│   ├── /data/posters       # 포스터 이미지
+│   ├── /data/movie_review.db # DB
 │   └── Dockerfile
 ├── /frontend
 │   ├── app.py             # Main Entry (Multi-page setup)
@@ -91,7 +92,7 @@
 
 > "앞서 정의한 모델을 바탕으로 `routes/`와 `services/` 폴더에 들어갈 코드를 작성해줘.
 > * 모든 엔드포인트는 `APIRouter`를 사용하는 클래스 스타일로 구성해줘.
-> * 영화 등록 시 전달받은 포스터 이미지를 `static/posters/{tmdb_id}.jpg` 경로로 저장하는 로직을 포함해줘.
+> * 영화 등록 시 전달받은 포스터 이미지를 `data/posters/{tmdb_id}.jpg` 경로로 저장하는 로직을 포함해줘.
 > * 리뷰 등록 시 `SentimentPredictor` 클래스를 호출해서 `is_positive` 값을 채워넣어야 해.
 > * `main.py`에서 이 모든 라우터를 통합해줘."
 > 
@@ -110,7 +111,7 @@
 #### **프롬프트 4: Docker 배포 설정**
 
 > "백엔드(FastAPI)와 프론트엔드(Streamlit)를 각각 빌드할 수 있는 `Dockerfile`을 작성해줘.
-> * 백엔드는 `python:3.11-slim` 기반으로 하고 `static/` 폴더를 유지해줘.
+> * 백엔드는 `python:3.11-slim` 기반으로 하고 `data/` 폴더를 유지해줘.
 > * 프론트엔드는 8501 포트를 사용하도록 설정해줘.
 > * Google Cloud Run 배포를 고려하여 각 컨테이너의 포트 설정을 유연하게 만들어줘.
 > * 두 서비스를 연결하는 `docker-compose.yml` 파일도 작성해줘."

@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 애플리케이션 코드 복사
 COPY ./app ./app
 
-# static 폴더 생성 (포스터 이미지 저장용)
-RUN mkdir -p static/posters
+# data 폴더 생성 (포스터 이미지 저장용)
+RUN mkdir -p data/posters
 
 # 포트 설정 (환경변수로 유연하게 설정 가능)
 ENV PORT=8000

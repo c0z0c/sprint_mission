@@ -15,7 +15,8 @@
 │   │   ├── /routes         # API 라우터
 │   │   ├── /services       # 비즈니스 로직
 │   │   └── /ai             # 감성 분석 AI
-│   ├── /static/posters     # 포스터 이미지
+│   ├── /data/posters       # 포스터 이미지
+│   ├── /data/movie_review.db # DB
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── /frontend               # Streamlit 프론트엔드

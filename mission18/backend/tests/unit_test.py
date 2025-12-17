@@ -668,8 +668,8 @@ def test_poster_path_format(client: TestClient):
 
 def test_poster_path_no_leading_slash(client: TestClient):
     """
-    포스터 경로에 /static이 포함되지 않는지 테스트
-    프론트엔드에서 /static을 추가하므로 백엔드는 posters/파일명만 반환
+    포스터 경로에 /data이 포함되지 않는지 테스트
+    프론트엔드에서 /data을 추가하므로 백엔드는 posters/파일명만 반환
     """
     movie_data = {
         "tmdb_id": 54321,
@@ -685,12 +685,10 @@ def test_poster_path_no_leading_slash(client: TestClient):
     assert response.status_code == 201
     data = response.json()
 
-    # poster_local_path가 있다면 /static으로 시작하지 않아야 함
+    # poster_local_path가 있다면 data/posters/ 형식이어야 함
     if data["poster_local_path"]:
-        assert not data["poster_local_path"].startswith("/static")
-        assert not data["poster_local_path"].startswith("static/")
-        # posters/파일명 형식이어야 함
-        assert data["poster_local_path"].startswith("posters/")
+        assert not data["poster_local_path"].startswith("/data")
+        assert data["poster_local_path"].startswith("data/posters/")
 
 
 def test_get_movies_paginated_default(client: TestClient):

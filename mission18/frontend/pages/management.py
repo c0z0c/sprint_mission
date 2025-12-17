@@ -8,6 +8,7 @@ from typing import Optional
 import os
 import random
 import logging
+import time
 from helper_dev_utils import get_auto_logger
 
 logger = get_auto_logger(log_level=logging.DEBUG)
@@ -74,40 +75,52 @@ class MovieManager:
         """
         self.api_url = API_BASE_URL
 
+    def _get_max_tmdb_id(self) -> int:
+        """
+        서버에 저장된 최대 TMDB ID 조회 (효율적인 API 사용)
+
+        Returns:
+            int: 최대 TMDB ID (영화가 없으면 0)
+        """
+        try:
+            response = requests.get(f"{self.api_url}/movies/max-tmdb-id", timeout=3)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("max_tmdb_id", 0)
+        except Exception as e:
+            logger.warning(f"Failed to get max TMDB ID: {e}")
+        return 0
+
     def render(self):
         """
         영화 관리 페이지 렌더링
         """
+        logger.debug(f"영화 관리 페이지 렌더링 시작")
+
         st.title("🎬 영화 관리")
-        st.write("영화 정보를 등록하고 관리할 수 있습니다.")
 
-        # 탭 구성
-        tab1, tab2 = st.tabs(["영화 등록", "영화 목록"])
-
-        with tab1:
-            self._render_movie_registration()
-
-        with tab2:
-            self._render_movie_list()
+        # 영화 등록만 표시 (목록은 메인 페이지에 있음)
+        self._render_movie_registration()
 
     def _render_movie_registration(self):
         """
         영화 등록 폼 렌더링
         """
         st.header("영화 등록")
-
         with st.form("movie_registration_form"):
             col1, col2 = st.columns(2)
 
             with col1:
-                test_counter = st.session_state.get("test_counter", 0)
+                # 서버에서 최대 TMDB ID 가져오기
+                max_tmdb_id = self._get_max_tmdb_id()
+                next_tmdb_id = max_tmdb_id + 1
 
                 tmdb_id = st.number_input(
                     "TMDB ID *",
-                    min_value=(test_counter + 1),
-                    help="The Movie Database (TMDB)의 영화 ID",
+                    min_value=1,
+                    value=next_tmdb_id,
+                    help=f"The Movie Database (TMDB)의 영화 ID (현재 최대값: {max_tmdb_id})",
                 )
-                st.session_state["test_counter"] = tmdb_id
 
                 title = st_text_input("영화 제목 *", placeholder="예: 인터스텔라")
                 release_date = st.text_input(
@@ -119,7 +132,7 @@ class MovieManager:
 
             with col2:
                 genre = st_text_input("장르", placeholder="예: SF, 드라마")
-                test_value = "https://media.themoviedb.org/t/p/w440_and_h660_face/klfSEbFOquMFjBQJ5uKAfp0rrsK.jpg"
+                test_value = "https://media.themoviedb.org/t/p/w440_and_h660_face/aEyqU9xvpT1ewVfutj6ctEX1sjq.jpg"
                 poster_url = st.text_input(
                     "포스터 URL",
                     placeholder="이미지 URL을 입력하세요",
@@ -133,21 +146,35 @@ class MovieManager:
                     value=0.0,
                 )
 
-            submitted = st.form_submit_button("영화 등록", width="content")
-
-            if submitted:
+            # 버튼 비활성화는 무조건 3초후에 풀린다.
+            if st.form_submit_button("영화 등록", width="content"):
                 if not tmdb_id or not title:
                     st.error("TMDB ID와 영화 제목은 필수 입력 항목입니다.")
                 else:
-                    self._register_movie(
-                        tmdb_id=int(tmdb_id),
-                        title=title,
-                        release_date=release_date if release_date else None,
-                        director=director if director else None,
-                        genre=genre if genre else None,
-                        poster_url=poster_url if poster_url else None,
-                        tmdb_rating=float(tmdb_rating) if tmdb_rating > 0 else None,
-                    )
+                    # is_registering = st.session_state.get("is_registering", False)
+                    # if is_registering:
+                    #     st.warning(
+                    #         "이미 영화 등록이 진행 중입니다. 잠시만 기다려주세요."
+                    #     )
+                    #     return
+                    # st.session_state["is_registering"] = True
+
+                    # 등록할 영화 데이터를 session_state에 저장
+                    movie_data = {
+                        "tmdb_id": int(tmdb_id),
+                        "title": title,
+                        "release_date": release_date if release_date else None,
+                        "director": director if director else None,
+                        "genre": genre if genre else None,
+                        "poster_url": poster_url if poster_url else None,
+                        "tmdb_rating": float(tmdb_rating) if tmdb_rating > 0 else None,
+                    }
+                    self._register_movie(**movie_data)
+                    logger.debug("등록 완료")
+
+                    # st.session_state["is_registering"] = False
+                    # logger.debug("st.rerun()")
+                    # st.rerun()
 
     def _register_movie(
         self,
@@ -181,13 +208,25 @@ class MovieManager:
             "tmdb_rating": tmdb_rating,
         }
 
+        logger.debug(f"Sending POST request to {self.api_url}/movies/")
+        request_start = time.time()
+
         try:
-            response = requests.post(f"{self.api_url}/movies/", json=movie_data)
+            response = requests.post(
+                f"{self.api_url}/movies/", json=movie_data, timeout=3  # 3초 타임아웃
+            )
+            request_elapsed = time.time() - request_start
+            logger.debug(
+                f"API request completed in {request_elapsed:.2f} seconds (status: {response.status_code})"
+            )
 
             if response.status_code == 201:
-                st.success(f"영화 '{title}'이(가) 성공적으로 등록되었습니다!")
-                st.balloons()
-                st.rerun()
+                # rerun 제거: 성공 메시지만 표시하고 다음 페이지 전환 시 자동 업데이트
+                st.success(
+                    f"✅ 영화 '{title}'이(가) 성공적으로 등록되었습니다! (등록 시간: {request_elapsed:.2f}초)"
+                )
+                # st.balloons()
+                # st.rerun() 제거 - 페이지 전환 시 자동으로 목록이 업데이트됨
             elif response.status_code == 400:
                 # 중복 등록 등의 잘못된 요청
                 error_detail = response.json().get("detail", "잘못된 요청입니다.")
@@ -202,94 +241,12 @@ class MovieManager:
                 logger.error(
                     f"Movie registration failed - Status {response.status_code}: {error_detail}"
                 )
+        except requests.exceptions.Timeout:
+            st.error("⏱️ 요청 시간 초과: 서버 응답이 3초를 초과했습니다.")
+            logger.error("API request timeout after 3 seconds")
         except requests.exceptions.RequestException as e:
             st.error(f"🔌 API 연결 오류: {str(e)}")
             logger.error(f"API connection error: {str(e)}")
-
-    def _render_movie_list(self):
-        """
-        영화 목록 렌더링
-        """
-        st.header("등록된 영화 목록")
-
-        try:
-            response = requests.get(f"{self.api_url}/movies/")
-
-            if response.status_code == 200:
-                movies = response.json()
-
-                if not movies:
-                    st.info("📭 등록된 영화가 없습니다.")
-                else:
-                    st.write(f"총 {len(movies)}개의 영화가 등록되어 있습니다.")
-
-                    # 그리드 레이아웃으로 영화 카드 표시
-                    cols = st.columns(3)
-                    for idx, movie in enumerate(movies):
-                        with cols[idx % 3]:
-                            self._render_movie_card(movie)
-            else:
-                st.error("영화 목록을 불러오는데 실패했습니다.")
-        except requests.exceptions.RequestException as e:
-            st.error(f"API 연결 오류: {str(e)}")
-
-    def _render_movie_card(self, movie: dict):
-        """
-        영화 카드 렌더링
-
-        Args:
-            movie: 영화 정보 딕셔너리
-        """
-        with st.container(border=True):
-            # 포스터 이미지
-            if movie.get("poster_local_path"):
-                poster_url = f"{self.api_url}/static/{movie['poster_local_path'].replace('static/', '')}"
-                st.image(poster_url, width="content")
-            else:
-                st.image(
-                    "https://via.placeholder.com/300x450?text=No+Poster",
-                    width="content",
-                )
-
-            # 영화 정보
-            st.subheader(movie["title"])
-            st.caption(f"TMDB ID: {movie['tmdb_id']}")
-
-            if movie.get("director"):
-                st.write(f"🎬 감독: {movie['director']}")
-            if movie.get("genre"):
-                st.write(f"🎭 장르: {movie['genre']}")
-            if movie.get("release_date"):
-                st.write(f"📅 개봉일: {movie['release_date']}")
-            if movie.get("tmdb_rating"):
-                st.write(f"⭐ 평점: {movie['tmdb_rating']}/10")
-
-            # 삭제 버튼
-            if st.button(
-                "🗑️ 삭제",
-                key=f"delete_{movie['id']}",
-                width="content",
-            ):
-                self._delete_movie(movie["id"], movie["title"])
-
-    def _delete_movie(self, movie_id: int, title: str):
-        """
-        영화 삭제
-
-        Args:
-            movie_id: 영화 ID
-            title: 영화 제목
-        """
-        try:
-            response = requests.delete(f"{self.api_url}/movies/{movie_id}")
-
-            if response.status_code == 204:
-                st.success(f"영화 '{title}'이(가) 삭제되었습니다.")
-                st.rerun()
-            else:
-                st.error(f"영화 삭제 실패")
-        except requests.exceptions.RequestException as e:
-            st.error(f"API 연결 오류: {str(e)}")
 
 
 # 페이지 실행

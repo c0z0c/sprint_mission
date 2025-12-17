@@ -12,9 +12,9 @@ services:
       - PORT=8000
     volumes:
       # 데이터베이스 파일 영속성
-      - ./backend/movie_review.db:/app/movie_review.db
+      - ./backend/data/movie_review.db:/app/data/movie_review.db
       # 포스터 이미지 영속성
-      - ./backend/static:/app/static
+      - ./backend/data:/app/data
     networks:
       - movie-review-network
     healthcheck:

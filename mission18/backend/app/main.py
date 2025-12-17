@@ -55,13 +55,14 @@ app.add_middleware(
 
 # 정적 파일 디렉토리 경로 설정
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = BASE_DIR / "static"
+DATA_DIR = BASE_DIR / "data"
+POSTERS_DIR = DATA_DIR / "posters"
 
 # 정적 파일 서빙 (포스터 이미지)
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-else:
-    logger.warning(f"Static directory not found: {STATIC_DIR}")
+# 디렉토리가 없으면 생성
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+POSTERS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/data", StaticFiles(directory=str(DATA_DIR)), name="data")
 
 # 라우터 등록
 app.include_router(movie_router)

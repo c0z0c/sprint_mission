@@ -2,10 +2,11 @@
 영화(Movie) API 라우터
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlmodel import Session
 from typing import List
 import math
+import time
 
 from app.database import get_db
 from app.services.MovieService import MovieService
@@ -57,6 +58,14 @@ class MovieRouter:
             description="등록된 모든 영화 목록을 조회합니다.",
         )
         self.router.add_api_route(
+            "/max-tmdb-id",
+            self.get_max_tmdb_id,
+            methods=["GET"],
+            response_model=dict,
+            summary="최대 TMDB ID 조회",
+            description="DB에 저장된 최대 TMDB ID를 효율적으로 조회합니다.",
+        )
+        self.router.add_api_route(
             "/paginated",
             self.get_movies_paginated,
             methods=["GET"],
@@ -82,7 +91,10 @@ class MovieRouter:
         )
 
     def create_movie(
-        self, movie_data: MovieCreate, db: Session = Depends(get_db)
+        self,
+        movie_data: MovieCreate,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
     ) -> MovieResponse:
         """
         영화 등록
@@ -97,6 +109,11 @@ class MovieRouter:
         Raises:
             HTTPException: TMDB ID가 이미 존재하는 경우
         """
+        logger.debug(
+            f"[Router] Movie registration started: {movie_data.title} (TMDB ID: {movie_data.tmdb_id})"
+        )
+        start_time = time.time()
+
         service = MovieService(db)
 
         # TMDB ID 중복 체크
@@ -110,9 +127,14 @@ class MovieRouter:
                 detail=f"TMDB ID {movie_data.tmdb_id}는 이미 등록된 영화입니다. (등록된 영화: {existing_movie.title})",
             )
 
-        movie = service.create_movie(movie_data)
+        # 포스터 다운로드를 백그라운드 작업으로 등록
+        has_poster = movie_data.poster_url is not None
+        movie = service.create_movie(movie_data, background_tasks)
+
+        elapsed = time.time() - start_time
         logger.info(
-            f"Movie created successfully: {movie.title} (TMDB ID: {movie.tmdb_id})"
+            f"[Router] Movie created successfully in {elapsed:.2f}s: {movie.title} (TMDB ID: {movie.tmdb_id})"
+            + (" - Poster download scheduled in background" if has_poster else "")
         )
         return movie
 
@@ -129,6 +151,20 @@ class MovieRouter:
         service = MovieService(db)
         movies = service.get_all_movies()
         return movies
+
+    def get_max_tmdb_id(self, db: Session = Depends(get_db)) -> dict:
+        """
+        최대 TMDB ID 조회
+
+        Args:
+            db: 데이터베이스 세션
+
+        Returns:
+            dict: {"max_tmdb_id": int}
+        """
+        service = MovieService(db)
+        max_id = service.get_max_tmdb_id()
+        return {"max_tmdb_id": max_id}
 
     def get_movies_paginated(
         self,
