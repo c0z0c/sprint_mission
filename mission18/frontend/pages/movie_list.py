@@ -308,22 +308,22 @@ class MovieListManager:
             logger.error(f"Failed to fetch movies: {str(e)}")
         return []
 
-    def _get_movie_rating(self, movie_id: int) -> Optional[Dict]:
+    def _get_movie_rating(self, tmdb_id: int) -> Optional[Dict]:
         """
         영화 평점 가져오기
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
 
         Returns:
             평점 데이터 또는 None
         """
         try:
-            response = requests.get(f"{self.api_url}/reviews/movie/{movie_id}/rating")
+            response = requests.get(f"{self.api_url}/reviews/movie/{tmdb_id}/rating")
             if response.status_code == 200:
                 return response.json()
         except requests.exceptions.RequestException as e:
-            logger.debug(f"No rating data for movie {movie_id}: {str(e)}")
+            logger.debug(f"No rating data for movie {tmdb_id}: {str(e)}")
         return None
 
 

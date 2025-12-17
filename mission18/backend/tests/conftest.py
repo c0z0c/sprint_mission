@@ -5,10 +5,102 @@ Pytest 설정 및 Hook
 from datetime import datetime
 from pathlib import Path
 import pytest
+import sys
+from fastapi.testclient import TestClient
+from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel.pool import StaticPool
+import time
+
+project_root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(project_root))
+
+from app.main import app
+from app.database import get_db, db_connector
 
 
 # 테스트 결과를 저장할 딕셔너리
 test_results = {}
+
+
+# ==================== Pytest Fixtures ====================
+
+
+@pytest.fixture(name="session")
+def session_fixture():
+    """
+    테스트용 인메모리 데이터베이스 세션 생성
+    """
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        yield session
+
+
+@pytest.fixture(name="client")
+def client_fixture(session: Session):
+    """
+    테스트 클라이언트 생성
+
+    Note: get_db를 override하지만, generator 형태를 유지하여
+    실제 코드의 동작 방식을 더 잘 반영합니다.
+    """
+
+    def get_session_override():
+        """실제 get_db()와 동일하게 generator로 yield"""
+        yield session
+
+    app.dependency_overrides[get_db] = get_session_override
+    client = TestClient(app)
+    yield client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="client_with_real_db")
+def client_with_real_db_fixture():
+    """
+    실제 get_db() 함수를 테스트하기 위한 클라이언트
+    override 없이 실제 데이터베이스 연결 사용
+    """
+    # 테스트용 임시 데이터베이스 파일
+    test_db_path = Path(__file__).parent / "test_temp.db"
+
+    # 기존 파일 삭제
+    if test_db_path.exists():
+        test_db_path.unlink()
+
+    # 임시 데이터베이스로 테스트
+    original_engine = db_connector.engine
+
+    # 테스트용 엔진으로 교체
+    test_engine = create_engine(
+        f"sqlite:///{test_db_path}",
+        connect_args={"check_same_thread": False},
+    )
+    db_connector.engine = test_engine
+    SQLModel.metadata.create_all(test_engine)
+
+    client = TestClient(app)
+    yield client
+
+    # 엔진 정리 및 원래 엔진으로 복구
+    test_engine.dispose()  # 모든 연결 닫기
+    db_connector.engine = original_engine
+
+    # 테스트 DB 파일 삭제 (시도)
+    for _ in range(3):  # 3번 재시도
+        try:
+            if test_db_path.exists():
+                test_db_path.unlink()
+            break
+        except PermissionError:
+            time.sleep(0.1)  # 잠시 대기 후 재시도
+
+
+# ==================== Pytest Hooks ====================
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

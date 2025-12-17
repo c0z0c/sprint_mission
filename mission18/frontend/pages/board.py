@@ -123,7 +123,7 @@ class ReviewManager:
 
         # 영화 선택 (폼 외부에서 처리하여 AI 평점과 동기화)
         movie_options = {
-            f"{m['title']} (TMDB ID: {m['tmdb_id']})": m["id"] for m in movies
+            f"{m['title']} (TMDB ID: {m['tmdb_id']})": m["tmdb_id"] for m in movies
         }
         movie_names = list(movie_options.keys())
 
@@ -136,8 +136,8 @@ class ReviewManager:
             "영화 선택 *", options=movie_names, key="selected_movie_for_review"
         )
 
-        # 선택된 영화 ID 가져오기
-        selected_movie_id = movie_options[selected_movie]
+        # 선택된 영화 TMDB ID 가져오기
+        selected_tmdb_id = movie_options[selected_movie]
 
         with st.form("review_form"):
             # 작성자 이름
@@ -156,11 +156,11 @@ class ReviewManager:
                 if not author or not content:
                     st.error("작성자 이름과 리뷰 내용은 필수 입력 항목입니다.")
                 else:
-                    self._register_review(selected_movie_id, author, content)
+                    self._register_review(selected_tmdb_id, author, content)
 
         # 선택된 영화의 AI 평점 표시
         st.divider()
-        self._render_movie_rating_section(selected_movie_id, movies)
+        self._render_movie_rating_section(selected_tmdb_id, movies)
 
     def _render_movie_rating_section(self, movie_id: int, movies: List[Dict]):
         """
@@ -291,7 +291,7 @@ class ReviewManager:
                 if "movie" in review and review["movie"]:
                     st.subheader(f"🎬 {review['movie']['title']}")
                 else:
-                    st.subheader(f"🎬 영화 ID: {review['movie_id']}")
+                    st.subheader(f"🎬 TMDB ID: {review['tmdb_id']}")
 
                 # 작성자
                 st.caption(f"✍️ {review['author']}")
@@ -328,34 +328,34 @@ class ReviewManager:
             pass
         return []
 
-    def _get_movie_rating(self, movie_id: int) -> Optional[Dict]:
+    def _get_movie_rating(self, tmdb_id: int) -> Optional[Dict]:
         """
-        영화 평점 가져오기
+        영화 평점 조회
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
 
         Returns:
             평점 데이터 또는 None
         """
         try:
-            response = requests.get(f"{self.api_url}/reviews/movie/{movie_id}/rating")
+            response = requests.get(f"{self.api_url}/reviews/movie/{tmdb_id}/rating")
             if response.status_code == 200:
                 return response.json()
         except requests.exceptions.RequestException:
             pass
         return None
 
-    def _register_review(self, movie_id: int, author: str, content: str):
+    def _register_review(self, tmdb_id: int, author: str, content: str):
         """
         리뷰 등록
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
             author: 작성자
             content: 리뷰 내용
         """
-        review_data = {"movie_id": movie_id, "author": author, "content": content}
+        review_data = {"tmdb_id": tmdb_id, "author": author, "content": content}
 
         try:
             response = requests.post(f"{self.api_url}/reviews/", json=review_data)

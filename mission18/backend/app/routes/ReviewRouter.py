@@ -51,15 +51,15 @@ class ReviewRouter:
             description="최근 등록된 리뷰 목록을 조회합니다 (기본 10개).",
         )
         self.router.add_api_route(
-            "/movie/{movie_id}",
+            "/movie/{tmdb_id}",
             self.get_reviews_by_movie,
             methods=["GET"],
             response_model=List[ReviewResponse],
             summary="특정 영화의 리뷰 목록 조회",
-            description="영화 ID로 해당 영화의 모든 리뷰를 조회합니다.",
+            description="TMDB 영화 ID로 해당 영화의 모든 리뷰를 조회합니다.",
         )
         self.router.add_api_route(
-            "/movie/{movie_id}/rating",
+            "/movie/{tmdb_id}/rating",
             self.get_movie_rating,
             methods=["GET"],
             response_model=MovieRating,
@@ -101,11 +101,11 @@ class ReviewRouter:
         """
         # 영화 존재 여부 확인
         movie_service = MovieService(db)
-        movie = movie_service.get_movie_by_id(review_data.movie_id)
+        movie = movie_service.get_movie_by_tmdb_id(review_data.tmdb_id)
         if not movie:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"영화 ID {review_data.movie_id}를 찾을 수 없습니다.",
+                detail=f"TMDB 영화 ID {review_data.tmdb_id}를 찾을 수 없습니다.",
             )
 
         # 리뷰 등록
@@ -131,13 +131,13 @@ class ReviewRouter:
         return reviews
 
     def get_reviews_by_movie(
-        self, movie_id: int, db: Session = Depends(get_db)
+        self, tmdb_id: int, db: Session = Depends(get_db)
     ) -> List[ReviewResponse]:
         """
         특정 영화의 리뷰 목록 조회
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
             db: 데이터베이스 세션
 
         Returns:
@@ -148,25 +148,25 @@ class ReviewRouter:
         """
         # 영화 존재 여부 확인
         movie_service = MovieService(db)
-        movie = movie_service.get_movie_by_id(movie_id)
+        movie = movie_service.get_movie_by_tmdb_id(tmdb_id)
         if not movie:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"영화 ID {movie_id}를 찾을 수 없습니다.",
+                detail=f"TMDB 영화 ID {tmdb_id}를 찾을 수 없습니다.",
             )
 
         service = ReviewService(db)
-        reviews = service.get_reviews_by_movie_id(movie_id)
+        reviews = service.get_reviews_by_tmdb_id(tmdb_id)
         return reviews
 
     def get_movie_rating(
-        self, movie_id: int, db: Session = Depends(get_db)
+        self, tmdb_id: int, db: Session = Depends(get_db)
     ) -> MovieRating:
         """
         영화 평점 조회 (AI 평점 및 감성 분석 통계)
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
             db: 데이터베이스 세션
 
         Returns:
@@ -177,19 +177,19 @@ class ReviewRouter:
         """
         # 영화 존재 여부 확인
         movie_service = MovieService(db)
-        movie = movie_service.get_movie_by_id(movie_id)
+        movie = movie_service.get_movie_by_tmdb_id(tmdb_id)
         if not movie:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"영화 ID {movie_id}를 찾을 수 없습니다.",
+                detail=f"TMDB 영화 ID {tmdb_id}를 찾을 수 없습니다.",
             )
 
         # 평점 계산
         review_service = ReviewService(db)
-        rating_data = review_service.get_movie_rating(movie_id)
+        rating_data = review_service.get_movie_rating(tmdb_id)
 
         return MovieRating(
-            movie_id=movie_id,
+            movie_id=movie.id,
             title=movie.title,
             total_reviews=rating_data["total_reviews"],
             positive_reviews=rating_data["positive_reviews"],

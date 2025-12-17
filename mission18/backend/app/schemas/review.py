@@ -4,6 +4,7 @@
 
 from pydantic import BaseModel, Field
 from typing import Optional, TYPE_CHECKING, Any
+from datetime import datetime
 
 if TYPE_CHECKING:
     from app.schemas.movie import MovieResponse
@@ -19,12 +20,12 @@ class ReviewCreate(BaseModel):
     리뷰 등록 요청 스키마
 
     Attributes:
-        movie_id: 영화 ID
+        tmdb_id: TMDB 영화 ID
         author: 작성자 이름
         content: 리뷰 내용
     """
 
-    movie_id: int = Field(..., description="영화 ID")
+    tmdb_id: int = Field(..., description="TMDB 영화 ID")
     author: str = Field(..., max_length=100, description="작성자 이름")
     content: str = Field(..., max_length=2000, description="리뷰 내용")
 
@@ -35,19 +36,23 @@ class ReviewResponse(BaseModel):
 
     Attributes:
         id: 리뷰 ID
-        movie_id: 영화 ID
+        tmdb_id: TMDB 영화 ID
         author: 작성자 이름
         content: 리뷰 내용
         is_positive: 감성 분석 결과 (1: 긍정, 0: 부정, None: 미분석)
+        created_at: 생성 시간
+        updated_at: 수정 시간
     """
 
     id: int = Field(..., description="리뷰 ID")
-    movie_id: int = Field(..., description="영화 ID")
+    tmdb_id: int = Field(..., description="TMDB 영화 ID")
     author: str = Field(..., description="작성자 이름")
     content: str = Field(..., description="리뷰 내용")
     is_positive: Optional[int] = Field(
         None, description="감성 분석 결과 (1: 긍정, 0: 부정, None: 미분석)"
     )
+    created_at: datetime = Field(..., description="생성 시간")
+    updated_at: datetime = Field(..., description="수정 시간")
 
     class Config:
         from_attributes = True

@@ -45,7 +45,7 @@ class ReviewService:
 
         # 리뷰 모델 생성
         review = ReviewModel(
-            movie_id=review_data.movie_id,
+            tmdb_id=review_data.tmdb_id,
             author=review_data.author,
             content=review_data.content,
             is_positive=is_positive,
@@ -71,17 +71,17 @@ class ReviewService:
         results = self.session.exec(statement)
         return results.all()
 
-    def get_reviews_by_movie_id(self, movie_id: int) -> List[ReviewModel]:
+    def get_reviews_by_tmdb_id(self, tmdb_id: int) -> List[ReviewModel]:
         """
         특정 영화의 리뷰 목록 조회
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
 
         Returns:
             List[ReviewModel]: 리뷰 모델 리스트
         """
-        statement = select(ReviewModel).where(ReviewModel.movie_id == movie_id)
+        statement = select(ReviewModel).where(ReviewModel.tmdb_id == tmdb_id)
         results = self.session.exec(statement)
         return results.all()
 
@@ -115,17 +115,17 @@ class ReviewService:
         self.session.commit()
         return True
 
-    def get_movie_rating(self, movie_id: int) -> dict:
+    def get_movie_rating(self, tmdb_id: int) -> dict:
         """
         영화 평점 조회 (리뷰 감성 분석 기반)
 
         Args:
-            movie_id: 영화 ID
+            tmdb_id: TMDB 영화 ID
 
         Returns:
             dict: 평점 정보
         """
-        reviews = self.get_reviews_by_movie_id(movie_id)
+        reviews = self.get_reviews_by_tmdb_id(tmdb_id)
 
         if not reviews:
             return {
