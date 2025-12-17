@@ -88,7 +88,7 @@ class MovieListManager:
 
     def render(self):
         """영화 목록 페이지 렌더링"""
-        st.title("🎬 영화 목록")
+        st.write("###### 🎬 영화 목록")
 
         # 세션 상태 초기화 (무한 스크롤 방식)
         if "loaded_movies" not in st.session_state:
@@ -110,8 +110,19 @@ class MovieListManager:
             return
 
         # 로드된 영화 수 표시
-        st.write(f"**{len(st.session_state['loaded_movies'])}개의 영화**")
-        st.divider()
+        cols = st.columns([1.5, 1.5, 8])
+        with cols[0]:
+            if st.button("🔄 새로고침", type="secondary", width="stretch"):
+                st.session_state["loaded_movies"] = []
+                st.session_state["current_page"] = 1
+                st.session_state["has_more"] = True
+                self._load_more_movies()
+                st.rerun()
+
+        with cols[1]:
+            st_label(f"{len(st.session_state['loaded_movies'])}개의 영화")
+
+        st_div_divider()
 
         # 그리드 레이아웃 (한 줄에 4개) - 누적된 모든 영화 표시
         movies = st.session_state["loaded_movies"]
