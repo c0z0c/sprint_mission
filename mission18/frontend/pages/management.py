@@ -151,13 +151,6 @@ class MovieManager:
                 if not tmdb_id or not title:
                     st.error("TMDB ID와 영화 제목은 필수 입력 항목입니다.")
                 else:
-                    # is_registering = st.session_state.get("is_registering", False)
-                    # if is_registering:
-                    #     st.warning(
-                    #         "이미 영화 등록이 진행 중입니다. 잠시만 기다려주세요."
-                    #     )
-                    #     return
-                    # st.session_state["is_registering"] = True
 
                     # 등록할 영화 데이터를 session_state에 저장
                     movie_data = {
@@ -171,10 +164,6 @@ class MovieManager:
                     }
                     self._register_movie(**movie_data)
                     logger.debug("등록 완료")
-
-                    # st.session_state["is_registering"] = False
-                    # logger.debug("st.rerun()")
-                    # st.rerun()
 
     def _register_movie(
         self,

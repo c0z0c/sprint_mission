@@ -89,132 +89,32 @@ class MovieListManager:
     def render(self):
         """영화 목록 페이지 렌더링"""
         st.title("🎬 영화 목록")
-        # st.write("등록된 영화 정보와 리뷰를 확인할 수 있습니다.")
 
-        # 세션 상태 초기화
-        if "current_page" not in st.session_state:
+        # 세션 상태 초기화 (무한 스크롤 방식)
+        if "loaded_movies" not in st.session_state:
+            st.session_state["loaded_movies"] = []
             st.session_state["current_page"] = 1
+            st.session_state["has_more"] = True
         if "page_size" not in st.session_state:
             st.session_state["page_size"] = 8
 
-        # 페이지네이션 설정
-        # col1, col2, col3 = st.columns([2, 1, 2])
+        # 초기 로드: 첫 페이지 자동 로드
+        if not st.session_state["loaded_movies"] and st.session_state["has_more"]:
+            self._load_more_movies()
 
-        # with col1:
-        #     page_size_selected = st.selectbox(
-        #         "페이지 크기",
-        #         options=[8, 12, 16, 20],
-        #         index=[8, 12, 16, 20].index(st.session_state["page_size"]),
-        #         key="page_size_selector",
-        #     )
-        #     # 페이지 크기가 변경되면 첫 페이지로 이동
-        #     if page_size_selected != st.session_state["page_size"]:
-        #         st.session_state["page_size"] = page_size_selected
-        #         st.session_state["current_page"] = 1
-        #         st.rerun()
-
-        # with col2:
-        #     st.write("")  # 간격 조정
-
-        # 영화 목록 가져오기 (페이지네이션)
-        pagination_data = self._get_movies_paginated(
-            st.session_state["current_page"], st.session_state["page_size"]
-        )
-
-        if not pagination_data:
-            st.error("영화 목록을 불러오는데 실패했습니다.")
-            return
-
-        movies = pagination_data.get("movies", [])
-        total = pagination_data.get("total", 0)
-        total_pages = pagination_data.get("total_pages", 0)
-
-        if not movies:
+        # 로드된 영화가 없으면 안내 메시지
+        if not st.session_state["loaded_movies"]:
             st.info(
                 "📭 등록된 영화가 없습니다. 영화 관리 페이지에서 영화를 등록해주세요."
             )
             return
 
-        # 페이지 정보 및 네비게이션
-        st.write(
-            f"**총 {total}개의 영화** | 페이지 {st.session_state['current_page']} / {total_pages}"
-        )
-
-        # 페이지 네비게이션 버튼
-        lable_col, page_col, nav_col1, nav_col2, nav_col3, nav_col4, nav_col5 = (
-            st.columns([2, 2, 3, 3, 4, 3, 3])
-        )
-        with lable_col:
-            st_label("페이지 크기")
-
-        with page_col:
-            page_size_selected = st.selectbox(
-                "페이지 크기",
-                options=[8, 12, 16, 20],
-                index=[8, 12, 16, 20].index(st.session_state["page_size"]),
-                key="page_size_selector",
-                label_visibility="collapsed",
-            )
-            # 페이지 크기가 변경되면 첫 페이지로 이동
-            if page_size_selected != st.session_state["page_size"]:
-                st.session_state["page_size"] = page_size_selected
-                st.session_state["current_page"] = 1
-                st.rerun()
-
-        with nav_col1:
-            if st.button(
-                "⏮️ 처음",
-                disabled=(st.session_state["current_page"] == 1),
-                width="stretch",
-            ):
-                st.session_state["current_page"] = 1
-                st.rerun()
-
-        with nav_col2:
-            if st.button(
-                "◀️ 이전",
-                disabled=(st.session_state["current_page"] == 1),
-                width="stretch",
-            ):
-                st.session_state["current_page"] -= 1
-                st.rerun()
-
-        with nav_col3:
-            # 페이지 번호 직접 입력
-            page_input = st.number_input(
-                "페이지 이동",
-                min_value=1,
-                max_value=max(1, total_pages),
-                value=st.session_state["current_page"],
-                step=1,
-                key="page_input",
-                label_visibility="collapsed",
-            )
-            if page_input != st.session_state["current_page"]:
-                st.session_state["current_page"] = page_input
-                st.rerun()
-
-        with nav_col4:
-            if st.button(
-                "다음 ▶️",
-                disabled=(st.session_state["current_page"] >= total_pages),
-                width="stretch",
-            ):
-                st.session_state["current_page"] += 1
-                st.rerun()
-
-        with nav_col5:
-            if st.button(
-                "마지막 ⏭️",
-                disabled=(st.session_state["current_page"] >= total_pages),
-                width="stretch",
-            ):
-                st.session_state["current_page"] = total_pages
-                st.rerun()
-
+        # 로드된 영화 수 표시
+        st.write(f"**{len(st.session_state['loaded_movies'])}개의 영화**")
         st.divider()
 
-        # 그리드 레이아웃 (한 줄에 4개)
+        # 그리드 레이아웃 (한 줄에 4개) - 누적된 모든 영화 표시
+        movies = st.session_state["loaded_movies"]
         cols_per_row = 4
         for i in range(0, len(movies), cols_per_row):
             cols = st.columns(cols_per_row)
@@ -222,6 +122,16 @@ class MovieListManager:
                 if i + j < len(movies):
                     with cols[j]:
                         self._render_movie_card(movies[i + j])
+
+        # "더 불러오기" 버튼
+        if st.session_state["has_more"]:
+            _, col2, _ = st.columns([1, 8, 1])
+            with col2:
+                if st.button("📥 더 불러오기", width="stretch", type="primary"):
+                    self._load_more_movies()
+                    st.rerun()
+        else:
+            st.info("✅ 모든 영화를 불러왔습니다.")
 
     def _render_movie_card(self, movie: Dict):
         """
@@ -322,6 +232,31 @@ class MovieListManager:
             """,
             unsafe_allow_html=True,
         )
+
+    def _load_more_movies(self):
+        """
+        다음 페이지의 영화를 로드하여 누적 목록에 추가
+        """
+        pagination_data = self._get_movies_paginated(
+            st.session_state["current_page"], st.session_state["page_size"]
+        )
+
+        if pagination_data:
+            movies = pagination_data.get("movies", [])
+            total_pages = pagination_data.get("total_pages", 0)
+
+            if movies:
+                # 기존 목록에 새 영화 추가
+                st.session_state["loaded_movies"].extend(movies)
+                st.session_state["current_page"] += 1
+
+                # 더 이상 로드할 페이지가 없는지 확인
+                if st.session_state["current_page"] > total_pages:
+                    st.session_state["has_more"] = False
+            else:
+                st.session_state["has_more"] = False
+        else:
+            st.session_state["has_more"] = False
 
     def _get_movies_paginated(self, page: int, page_size: int) -> Optional[Dict]:
         """

@@ -96,7 +96,7 @@ class ReviewManager:
         """
         리뷰 게시판 페이지 렌더링
         """
-        st.title("리뷰 게시판")
+        st.write("##### 리뷰 게시판")
         st.write("영화 리뷰를 작성하고 AI 감성 분석 결과를 확인할 수 있습니다.")
 
         # 탭 구성
@@ -112,7 +112,7 @@ class ReviewManager:
         """
         리뷰 작성 폼 렌더링
         """
-        st.header("리뷰 작성")
+        st.write("##### 리뷰 작성")
 
         # 영화 목록 불러오기
         movies = self._get_movies()
@@ -121,15 +121,25 @@ class ReviewManager:
             st.warning("등록된 영화가 없습니다. 먼저 영화를 등록해주세요.")
             return
 
-        with st.form("review_form"):
-            # 영화 선택
-            movie_options = {
-                f"{m['title']} (TMDB ID: {m['tmdb_id']})": m["id"] for m in movies
-            }
-            selected_movie = st.selectbox(
-                "영화 선택 *", options=list(movie_options.keys())
-            )
+        # 영화 선택 (폼 외부에서 처리하여 AI 평점과 동기화)
+        movie_options = {
+            f"{m['title']} (TMDB ID: {m['tmdb_id']})": m["id"] for m in movies
+        }
+        movie_names = list(movie_options.keys())
 
+        # 세션 상태 초기화: 첫 번째 영화를 기본값으로 설정
+        if "selected_movie_for_review" not in st.session_state:
+            st.session_state["selected_movie_for_review"] = movie_names[0]
+
+        # 영화 선택 드롭다운
+        selected_movie = st.selectbox(
+            "영화 선택 *", options=movie_names, key="selected_movie_for_review"
+        )
+
+        # 선택된 영화 ID 가져오기
+        selected_movie_id = movie_options[selected_movie]
+
+        with st.form("review_form"):
             # 작성자 이름
             author = st_text_input("작성자 이름 *", placeholder="예: 홍길동")
 
@@ -137,7 +147,7 @@ class ReviewManager:
             content = st_text_review_memo(
                 "리뷰 내용 *",
                 placeholder="영화에 대한 리뷰를 작성해주세요...",
-                height=200,
+                height=100,
             )
 
             submitted = st.form_submit_button("리뷰 등록", width="content")
@@ -146,56 +156,48 @@ class ReviewManager:
                 if not author or not content:
                     st.error("작성자 이름과 리뷰 내용은 필수 입력 항목입니다.")
                 else:
-                    movie_id = movie_options[selected_movie]
-                    self._register_review(movie_id, author, content)
+                    self._register_review(selected_movie_id, author, content)
 
         # 선택된 영화의 AI 평점 표시
-        if movies:
-            st.divider()
-            self._render_movie_rating_section(movies)
+        st.divider()
+        self._render_movie_rating_section(selected_movie_id, movies)
 
-    def _render_movie_rating_section(self, movies: List[Dict]):
+    def _render_movie_rating_section(self, movie_id: int, movies: List[Dict]):
         """
         영화 AI 평점 섹션 렌더링
 
         Args:
+            movie_id: 선택된 영화 ID
             movies: 영화 목록
         """
         st.header("영화 AI 평점")
 
-        # 영화 선택
-        movie_options = {f"{m['title']}": m["id"] for m in movies}
-        selected_movie_name = st.selectbox(
-            "평점을 확인할 영화 선택",
-            options=list(movie_options.keys()),
-            key="rating_movie_select",
-        )
+        # 선택된 영화의 평점 데이터 가져오기
+        rating_data = self._get_movie_rating(movie_id)
 
-        if selected_movie_name:
-            movie_id = movie_options[selected_movie_name]
-            rating_data = self._get_movie_rating(movie_id)
+        if rating_data:
+            col1, col2 = st.columns([2, 1])
 
-            if rating_data:
-                col1, col2 = st.columns([2, 1])
+            with col1:
+                # Gauge Chart
+                self._render_gauge_chart(rating_data)
 
-                with col1:
-                    # Gauge Chart
-                    self._render_gauge_chart(rating_data)
-
-                with col2:
-                    # 통계 정보
-                    st.metric("총 리뷰 수", rating_data["total_reviews"])
-                    st.metric(
-                        "긍정 리뷰",
-                        rating_data["positive_reviews"],
-                        delta_color="normal",
-                    )
-                    st.metric(
-                        "부정 리뷰",
-                        rating_data["negative_reviews"],
-                        delta_color="inverse",
-                    )
-                    st.metric("AI 평점", f"{rating_data['ai_rating']}/5.0")
+            with col2:
+                # 통계 정보
+                st.metric("총 리뷰 수", rating_data["total_reviews"])
+                st.metric(
+                    "긍정 리뷰",
+                    rating_data["positive_reviews"],
+                    delta_color="normal",
+                )
+                st.metric(
+                    "부정 리뷰",
+                    rating_data["negative_reviews"],
+                    delta_color="inverse",
+                )
+                st.metric("AI 평점", f"{rating_data['ai_rating']}/5.0")
+        else:
+            st.info("해당 영화에 대한 리뷰가 아직 없습니다.")
 
     def _render_gauge_chart(self, rating_data: Dict):
         """
