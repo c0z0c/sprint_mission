@@ -9,6 +9,7 @@ from typing import List, Dict, Optional
 import os
 import random
 import logging
+from datetime import datetime
 from helper_dev_utils import get_auto_logger
 
 logger = get_auto_logger(log_level=logging.DEBUG)
@@ -123,7 +124,8 @@ class ReviewManager:
 
         # 영화 선택 (폼 외부에서 처리하여 AI 평점과 동기화)
         movie_options = {
-            f"{m['title']} (TMDB ID: {m['tmdb_id']})": m["tmdb_id"] for m in movies
+            f"{m['title']} ({m.get('release_date') or '개봉일 미정'})": m["tmdb_id"]
+            for m in movies
         }
         movie_names = list(movie_options.keys())
 
@@ -141,13 +143,16 @@ class ReviewManager:
 
         with st.form("review_form"):
             # 작성자 이름
-            author = st_text_input("작성자 이름 *", placeholder="예: 홍길동")
+            author = st_text_input(
+                "작성자 이름 *", placeholder="예: 홍길동", value="작성자"
+            )
 
             # 리뷰 내용
             content = st_text_review_memo(
                 "리뷰 내용 *",
                 placeholder="영화에 대한 리뷰를 작성해주세요...",
                 height=100,
+                value="이 영화는 정말 ",
             )
 
             submitted = st.form_submit_button("리뷰 등록", width="content")
@@ -289,12 +294,34 @@ class ReviewManager:
             with col1:
                 # 영화 정보
                 if "movie" in review and review["movie"]:
-                    st.subheader(f"🎬 {review['movie']['title']}")
+                    movie = review["movie"]
+                    release_date = movie.get("release_date") or "개봉일 미정"
+                    st.subheader(f"🎬 {movie['title']} ({release_date})")
                 else:
                     st.subheader(f"🎬 TMDB ID: {review['tmdb_id']}")
 
                 # 작성자
                 st.caption(f"✍️ {review['author']}")
+
+                # 작성시간 및 수정시간
+                if review.get("created_at"):
+                    try:
+                        created_at = datetime.fromisoformat(
+                            review["created_at"].replace("Z", "+00:00")
+                        )
+                        time_text = f"📅 {created_at.strftime('%Y-%m-%d %H:%M')}"
+
+                        # 수정 여부 확인
+                        if review.get("updated_at"):
+                            updated_at = datetime.fromisoformat(
+                                review["updated_at"].replace("Z", "+00:00")
+                            )
+                            if updated_at > created_at:
+                                time_text += f" (수정됨: {updated_at.strftime('%Y-%m-%d %H:%M')})"
+
+                        st.caption(time_text)
+                    except Exception as e:
+                        logger.debug(f"Failed to parse datetime: {e}")
 
                 # 리뷰 내용
                 st.write(review["content"])

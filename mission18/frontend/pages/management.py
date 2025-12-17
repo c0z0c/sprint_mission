@@ -23,35 +23,12 @@ logger.debug(f"TEST_MODE: {TEST_MODE}")
 
 
 def random_text(text: str) -> str:
-    """텍스트에 순차적인 한글 자음 추가"""
-    # 한글 자음: 가, 나, 다, 라, 마, 바, 사, 아, 자, 차, 카, 타, 파, 하
-    consonants = [
-        "가",
-        "나",
-        "다",
-        "라",
-        "마",
-        "바",
-        "사",
-        "아",
-        "자",
-        "차",
-        "카",
-        "타",
-        "파",
-        "하",
-    ]
+    """텍스트에 랜덤 한글 자음 추가"""
+    consonants = "가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후그느드르므브스으즈츠크트프흐기니디리미비시이지치키티피히"
 
-    # 세션 상태에 카운터가 없으면 초기화
-    if "text_counter" not in st.session_state:
-        st.session_state["text_counter"] = 0
-
-    # 현재 카운터에 해당하는 자음 선택
-    consonant = consonants[st.session_state["text_counter"] % len(consonants)]
-    st.session_state["text_counter"] += 1
-
+    consonant = random.choice(consonants)
     result = text + consonant
-    logger.debug(f"Generated sequential text: {result}")
+    logger.debug(f"Generated random text: {result}")
     return result
 
 
@@ -122,16 +99,22 @@ class MovieManager:
                     help=f"The Movie Database (TMDB)의 영화 ID (현재 최대값: {max_tmdb_id})",
                 )
 
-                title = st_text_input("영화 제목 *", placeholder="예: 인터스텔라")
+                title = st_text_input(
+                    "영화 제목 *", placeholder="예: 인터스텔라", value="제목"
+                )
                 release_date = st.text_input(
                     "개봉일",
                     placeholder="예: 2014-11-26 (YYYY-MM-DD)",
                     value="2025-12-17",
                 )
-                director = st_text_input("감독", placeholder="예: 크리스토퍼 놀란")
+                director = st_text_input(
+                    "감독", placeholder="예: 크리스토퍼 놀란", value="감독"
+                )
 
             with col2:
-                genre = st_text_input("장르", placeholder="예: SF, 드라마")
+                genre = st_text_input(
+                    "장르", placeholder="예: SF, 드라마", value="장르"
+                )
                 test_value = "https://media.themoviedb.org/t/p/w440_and_h660_face/aEyqU9xvpT1ewVfutj6ctEX1sjq.jpg"
                 poster_url = st.text_input(
                     "포스터 URL",
@@ -143,7 +126,7 @@ class MovieManager:
                     min_value=0.0,
                     max_value=10.0,
                     step=0.1,
-                    value=0.0,
+                    value=5.0,
                 )
 
             # 버튼 비활성화는 무조건 3초후에 풀린다.

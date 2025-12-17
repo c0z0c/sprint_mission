@@ -67,7 +67,9 @@ class ReviewService:
         Returns:
             List[ReviewModel]: 리뷰 모델 리스트
         """
-        statement = select(ReviewModel).order_by(ReviewModel.id.desc()).limit(limit)
+        statement = (
+            select(ReviewModel).order_by(ReviewModel.created_at.desc()).limit(limit)
+        )
         results = self.session.exec(statement)
         return results.all()
 
