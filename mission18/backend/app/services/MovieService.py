@@ -76,6 +76,32 @@ class MovieService:
         results = self.session.exec(statement)
         return results.all()
 
+    def get_movies_paginated(
+        self, page: int = 1, page_size: int = 10
+    ) -> tuple[List[MovieModel], int]:
+        """
+        페이지네이션된 영화 목록 조회
+
+        Args:
+            page: 페이지 번호 (1부터 시작)
+            page_size: 페이지당 항목 수
+
+        Returns:
+            tuple[List[MovieModel], int]: (영화 목록, 전체 영화 수)
+        """
+        # 전체 영화 수 조회
+        from sqlmodel import func
+
+        count_statement = select(func.count(MovieModel.id))
+        total = self.session.exec(count_statement).one()
+
+        # 페이지네이션된 영화 목록 조회
+        offset = (page - 1) * page_size
+        statement = select(MovieModel).offset(offset).limit(page_size)
+        results = self.session.exec(statement)
+
+        return results.all(), total
+
     def get_movie_by_id(self, movie_id: int) -> Optional[MovieModel]:
         """
         특정 영화 조회
@@ -147,6 +173,7 @@ class MovieService:
         if response.status_code == 200:
             with open(file_path, "wb") as f:
                 f.write(response.content)
-            return str(file_path)
+            # static 마운트 경로를 제외한 상대 경로 반환 (프론트엔드에서 /static/ 추가)
+            return f"posters/{tmdb_id}.{file_extension}"
 
         return None

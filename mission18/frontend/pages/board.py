@@ -7,6 +7,7 @@ import requests
 import plotly.graph_objects as go
 from typing import List, Dict, Optional
 import os
+import random
 import logging
 from helper_dev_utils import get_auto_logger
 
@@ -15,6 +16,69 @@ logger = get_auto_logger(log_level=logging.DEBUG)
 
 # 백엔드 API URL
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+TEST_MODE = os.getenv("TEST_MODE", "False") == "True"
+
+logger.debug(f"API_BASE_URL: {API_BASE_URL}")
+logger.debug(f"TEST_MODE: {TEST_MODE}")
+
+
+def random_text(text: str) -> str:
+    """텍스트에 순차적인 한글 자음 추가"""
+    # 한글 자음: 가, 나, 다, 라, 마, 바, 사, 아, 자, 차, 카, 타, 파, 하
+    consonants = [
+        "가",
+        "나",
+        "다",
+        "라",
+        "마",
+        "바",
+        "사",
+        "아",
+        "자",
+        "차",
+        "카",
+        "타",
+        "파",
+        "하",
+    ]
+
+    # 세션 상태에 카운터가 없으면 초기화
+    if "text_counter" not in st.session_state:
+        st.session_state["text_counter"] = 0
+
+    # 현재 카운터에 해당하는 자음 선택
+    consonant = consonants[st.session_state["text_counter"] % len(consonants)]
+    st.session_state["text_counter"] += 1
+
+    result = text + consonant
+    logger.debug(f"Generated sequential text: {result}")
+    return result
+
+
+def st_text_input(label, **kwargs):
+    """테스트 모드에서 랜덤 한글 글자 추가된 텍스트 입력"""
+    if TEST_MODE and "value" in kwargs:
+        kwargs["value"] = random_text(kwargs["value"])
+    if TEST_MODE and not "value" in kwargs:
+        kwargs["value"] = random_text("테스트_")
+    return st.text_input(label, **kwargs)
+
+
+def st_text_review_memo(label, **kwargs):
+    """테스트 모드에서 랜덤 리뷰 문장 추가된 텍스트 입력"""
+    if TEST_MODE:
+        review_sentences = [
+            "그럼에도 불구하고 너무나 재미 있어요 ㅋㅋㅋ",
+            "그래서 너무 재미 없어요ㅠㅠ",
+        ]
+        random_review = random.choice(review_sentences)
+
+        if "value" in kwargs:
+            kwargs["value"] = kwargs["value"] + " " + random_review
+        else:
+            kwargs["value"] = "심야 영화를 봤는데 " + random_review
+
+    return st.text_area(label, **kwargs)
 
 
 class ReviewManager:
@@ -32,7 +96,7 @@ class ReviewManager:
         """
         리뷰 게시판 페이지 렌더링
         """
-        st.title("💬 리뷰 게시판")
+        st.title("리뷰 게시판")
         st.write("영화 리뷰를 작성하고 AI 감성 분석 결과를 확인할 수 있습니다.")
 
         # 탭 구성
@@ -67,10 +131,10 @@ class ReviewManager:
             )
 
             # 작성자 이름
-            author = st.text_input("작성자 이름 *", placeholder="예: 홍길동")
+            author = st_text_input("작성자 이름 *", placeholder="예: 홍길동")
 
             # 리뷰 내용
-            content = st.text_area(
+            content = st_text_review_memo(
                 "리뷰 내용 *",
                 placeholder="영화에 대한 리뷰를 작성해주세요...",
                 height=200,
@@ -97,7 +161,7 @@ class ReviewManager:
         Args:
             movies: 영화 목록
         """
-        st.header("📊 영화 AI 평점")
+        st.header("영화 AI 평점")
 
         # 영화 선택
         movie_options = {f"{m['title']}": m["id"] for m in movies}
@@ -237,14 +301,14 @@ class ReviewManager:
                 # 감성 분석 결과
                 if review.get("is_positive") is not None:
                     if review["is_positive"] == 1:
-                        st.success("😊 긍정")
+                        st.success("긍정")
                     else:
-                        st.error("😞 부정")
+                        st.error("부정")
                 else:
-                    st.info("❓ 분석중")
+                    st.info("분석중")
 
                 # 삭제 버튼
-                if st.button("🗑️", key=f"delete_review_{review['id']}"):
+                if st.button("삭제", key=f"delete_review_{review['id']}"):
                     self._delete_review(review["id"])
 
     def _get_movies(self) -> List[Dict]:
@@ -296,7 +360,7 @@ class ReviewManager:
 
             if response.status_code == 201:
                 review = response.json()
-                sentiment = "긍정 😊" if review.get("is_positive") == 1 else "부정 😞"
+                sentiment = "긍정" if review.get("is_positive") == 1 else "부정"
                 st.success(f"리뷰가 등록되었습니다! (AI 분석 결과: {sentiment})")
                 st.balloons()
                 st.rerun()

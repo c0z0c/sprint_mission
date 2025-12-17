@@ -2,13 +2,20 @@
 영화(Movie) API 라우터
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session
 from typing import List
+import math
 
 from app.database import get_db
 from app.services.MovieService import MovieService
-from app.schemas import MovieCreate, MovieResponse, MovieWithReviews
+from app.schemas import (
+    MovieCreate,
+    MovieResponse,
+    MovieWithReviews,
+    MovieWithReviewsAndRating,
+    MoviePaginationResponse,
+)
 
 import logging
 from helper_dev_utils import get_auto_logger
@@ -48,6 +55,14 @@ class MovieRouter:
             response_model=List[MovieResponse],
             summary="전체 영화 목록 조회",
             description="등록된 모든 영화 목록을 조회합니다.",
+        )
+        self.router.add_api_route(
+            "/paginated",
+            self.get_movies_paginated,
+            methods=["GET"],
+            response_model=MoviePaginationResponse,
+            summary="영화 목록 페이지네이션 조회",
+            description="페이지 번호와 페이지 크기를 기반으로 영화 목록을 조회합니다. 리뷰 정보도 함께 반환됩니다.",
         )
         self.router.add_api_route(
             "/{movie_id}",
@@ -114,6 +129,70 @@ class MovieRouter:
         service = MovieService(db)
         movies = service.get_all_movies()
         return movies
+
+    def get_movies_paginated(
+        self,
+        page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
+        page_size: int = Query(
+            10, ge=1, le=100, description="페이지당 항목 수 (최대 100)"
+        ),
+        db: Session = Depends(get_db),
+    ) -> MoviePaginationResponse:
+        """
+        페이지네이션된 영화 목록 조회 (리뷰 및 AI 평점 포함)
+
+        Args:
+            page: 페이지 번호 (1부터 시작)
+            page_size: 페이지당 항목 수
+            db: 데이터베이스 세션
+
+        Returns:
+            MoviePaginationResponse: 페이지네이션 정보와 영화 목록 (AI 평점 포함)
+        """
+        service = MovieService(db)
+        movies, total = service.get_movies_paginated(page, page_size)
+
+        # 각 영화의 리뷰 정보 및 AI 평점 계산
+        movies_with_data = []
+        for movie in movies:
+            # 기본 영화 정보
+            movie_dict = MovieWithReviews.model_validate(movie).model_dump()
+            movie_dict["reviews"] = movie.reviews
+
+            # AI 평점 계산
+            total_reviews = len(movie.reviews)
+            positive_reviews = sum(
+                1 for review in movie.reviews if review.is_positive == 1
+            )
+            negative_reviews = sum(
+                1 for review in movie.reviews if review.is_positive == 0
+            )
+
+            if total_reviews > 0:
+                positive_ratio = positive_reviews / total_reviews
+                ai_rating = positive_ratio * 5.0
+            else:
+                positive_ratio = 0.0
+                ai_rating = 0.0
+
+            # AI 평점 정보 추가
+            movie_dict["total_reviews"] = total_reviews
+            movie_dict["positive_reviews"] = positive_reviews
+            movie_dict["negative_reviews"] = negative_reviews
+            movie_dict["positive_ratio"] = round(positive_ratio, 2)
+            movie_dict["ai_rating"] = round(ai_rating, 1)
+
+            movies_with_data.append(MovieWithReviewsAndRating(**movie_dict))
+
+        total_pages = math.ceil(total / page_size) if total > 0 else 0
+
+        return MoviePaginationResponse(
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            movies=movies_with_data,
+        )
 
     def get_movie(
         self, movie_id: int, db: Session = Depends(get_db)

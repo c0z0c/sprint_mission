@@ -634,3 +634,247 @@ def test_real_db_workflow(client_with_real_db: TestClient):
     # 4. 정리
     delete_response = client_with_real_db.delete(f"/movies/{movie_id}")
     assert delete_response.status_code == 204
+
+
+def test_poster_path_format(client: TestClient):
+    """
+    포스터 경로 형식 테스트
+    poster_local_path가 올바른 형식(posters/파일명)으로 저장되는지 확인
+    """
+    movie_data = {
+        "tmdb_id": 12345,
+        "title": "포스터 경로 테스트",
+        "release_date": "2024-01-01",
+        "director": "테스트 감독",
+        "genre": "액션",
+        "poster_url": None,  # URL 없이 테스트
+        "tmdb_rating": 8.0,
+    }
+
+    response = client.post("/movies/", json=movie_data)
+    assert response.status_code == 201
+    data = response.json()
+
+    # poster_url이 None이면 poster_local_path도 None이어야 함
+    assert data["poster_local_path"] is None
+
+    # 영화 조회 시에도 동일한 형식이어야 함
+    movie_id = data["id"]
+    get_response = client.get(f"/movies/{movie_id}")
+    assert get_response.status_code == 200
+    get_data = get_response.json()
+    assert get_data["poster_local_path"] is None
+
+
+def test_poster_path_no_leading_slash(client: TestClient):
+    """
+    포스터 경로에 /static이 포함되지 않는지 테스트
+    프론트엔드에서 /static을 추가하므로 백엔드는 posters/파일명만 반환
+    """
+    movie_data = {
+        "tmdb_id": 54321,
+        "title": "경로 슬래시 테스트",
+        "release_date": "2024-01-01",
+        "director": "테스트 감독",
+        "genre": "드라마",
+        "poster_url": None,
+        "tmdb_rating": 7.5,
+    }
+
+    response = client.post("/movies/", json=movie_data)
+    assert response.status_code == 201
+    data = response.json()
+
+    # poster_local_path가 있다면 /static으로 시작하지 않아야 함
+    if data["poster_local_path"]:
+        assert not data["poster_local_path"].startswith("/static")
+        assert not data["poster_local_path"].startswith("static/")
+        # posters/파일명 형식이어야 함
+        assert data["poster_local_path"].startswith("posters/")
+
+
+def test_get_movies_paginated_default(client: TestClient):
+    """
+    영화 목록 페이지네이션 기본 테스트
+    """
+    # 영화 5개 등록
+    for i in range(5):
+        movie_data = {
+            "tmdb_id": 10000 + i,
+            "title": f"페이지네이션 테스트 영화 {i+1}",
+            "release_date": "2024-01-01",
+            "director": "테스트 감독",
+            "genre": "액션",
+            "poster_url": None,
+            "tmdb_rating": 8.0,
+        }
+        client.post("/movies/", json=movie_data)
+
+    # 페이지네이션 조회 (기본값: page=1, page_size=10)
+    response = client.get("/movies/paginated")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total"] == 5
+    assert data["page"] == 1
+    assert data["page_size"] == 10
+    assert data["total_pages"] == 1
+    assert len(data["movies"]) == 5
+
+
+def test_get_movies_paginated_with_params(client: TestClient):
+    """
+    페이지네이션 파라미터 테스트
+    """
+    # 영화 15개 등록
+    for i in range(15):
+        movie_data = {
+            "tmdb_id": 20000 + i,
+            "title": f"페이지 테스트 영화 {i+1}",
+            "release_date": "2024-01-01",
+            "director": "테스트 감독",
+            "genre": "드라마",
+            "poster_url": None,
+            "tmdb_rating": 7.5,
+        }
+        client.post("/movies/", json=movie_data)
+
+    # 첫 번째 페이지 (5개씩)
+    response1 = client.get("/movies/paginated?page=1&page_size=5")
+    assert response1.status_code == 200
+    data1 = response1.json()
+    assert data1["total"] == 15
+    assert data1["page"] == 1
+    assert data1["page_size"] == 5
+    assert data1["total_pages"] == 3
+    assert len(data1["movies"]) == 5
+
+    # 두 번째 페이지
+    response2 = client.get("/movies/paginated?page=2&page_size=5")
+    assert response2.status_code == 200
+    data2 = response2.json()
+    assert data2["page"] == 2
+    assert len(data2["movies"]) == 5
+
+    # 세 번째 페이지 (마지막 페이지)
+    response3 = client.get("/movies/paginated?page=3&page_size=5")
+    assert response3.status_code == 200
+    data3 = response3.json()
+    assert data3["page"] == 3
+    assert len(data3["movies"]) == 5
+
+
+def test_get_movies_paginated_with_reviews(client: TestClient):
+    """
+    페이지네이션에 리뷰 포함 테스트
+    """
+    # 영화 등록
+    movie_data = {
+        "tmdb_id": 30000,
+        "title": "리뷰 포함 페이지네이션 테스트",
+        "release_date": "2024-01-01",
+        "director": "테스트 감독",
+        "genre": "코미디",
+        "poster_url": None,
+        "tmdb_rating": 8.5,
+    }
+    movie_response = client.post("/movies/", json=movie_data)
+    movie_id = movie_response.json()["id"]
+
+    # 리뷰 2개 등록
+    for i in range(2):
+        review_data = {
+            "movie_id": movie_id,
+            "author": f"리뷰어 {i+1}",
+            "content": f"테스트 리뷰 {i+1}",
+        }
+        client.post("/reviews/", json=review_data)
+
+    # 페이지네이션 조회
+    response = client.get("/movies/paginated")
+    assert response.status_code == 200
+    data = response.json()
+
+    # 영화에 리뷰가 포함되어 있는지 확인
+    movie = data["movies"][0]
+    assert "reviews" in movie
+    assert len(movie["reviews"]) == 2
+
+    # AI 평점 정보가 포함되어 있는지 확인
+    assert "total_reviews" in movie
+    assert "positive_reviews" in movie
+    assert "negative_reviews" in movie
+    assert "positive_ratio" in movie
+    assert "ai_rating" in movie
+    assert movie["total_reviews"] == 2
+
+
+def test_movies_paginated_ai_rating_calculation(client: TestClient):
+    """
+    페이지네이션 API의 AI 평점 계산 테스트
+    """
+    # 영화 등록
+    movie_data = {
+        "tmdb_id": 40000,
+        "title": "AI 평점 계산 테스트",
+        "release_date": "2024-01-01",
+        "director": "테스트 감독",
+        "genre": "드라마",
+        "poster_url": None,
+        "tmdb_rating": 8.0,
+    }
+    movie_response = client.post("/movies/", json=movie_data)
+    movie_id = movie_response.json()["id"]
+
+    # 리뷰 4개 등록 (AI가 실제로 분석)
+    reviews = [
+        {
+            "movie_id": movie_id,
+            "author": "리뷰어 1",
+            "content": "정말 재미있었습니다! 강력 추천합니다.",
+        },
+        {
+            "movie_id": movie_id,
+            "author": "리뷰어 2",
+            "content": "최고의 영화입니다. 감동적이에요.",
+        },
+        {
+            "movie_id": movie_id,
+            "author": "리뷰어 3",
+            "content": "훌륭한 작품입니다.",
+        },
+        {
+            "movie_id": movie_id,
+            "author": "리뷰어 4",
+            "content": "별로였습니다. 실망스러웠어요.",
+        },
+    ]
+
+    for review_data in reviews:
+        client.post("/reviews/", json=review_data)
+
+    # 페이지네이션 조회
+    response = client.get("/movies/paginated")
+    assert response.status_code == 200
+    data = response.json()
+
+    movie = data["movies"][0]
+
+    # 기본 필드 존재 확인
+    assert "total_reviews" in movie
+    assert "positive_reviews" in movie
+    assert "negative_reviews" in movie
+    assert "positive_ratio" in movie
+    assert "ai_rating" in movie
+
+    # 전체 리뷰 수 확인
+    assert movie["total_reviews"] == 4
+
+    # 긍정/부정 리뷰 합이 전체 리뷰 수와 일치하는지 확인
+    assert movie["positive_reviews"] + movie["negative_reviews"] == 4
+
+    # AI 평점이 0~5 사이인지 확인
+    assert 0.0 <= movie["ai_rating"] <= 5.0
+
+    # 긍정 비율이 0~1 사이인지 확인
+    assert 0.0 <= movie["positive_ratio"] <= 1.0

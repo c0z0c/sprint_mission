@@ -74,3 +74,43 @@ class MovieWithReviews(MovieResponse):
     """
 
     reviews: List[Any] = []  # 순환 참조 방지를 위해 Any 사용
+
+
+class MovieWithReviewsAndRating(MovieWithReviews):
+    """
+    리뷰 및 AI 평점 포함 영화 응답 스키마
+
+    Attributes:
+        total_reviews: 전체 리뷰 수
+        positive_reviews: 긍정 리뷰 수
+        negative_reviews: 부정 리뷰 수
+        positive_ratio: 긍정 비율
+        ai_rating: AI 평점 (5점 만점)
+    """
+
+    total_reviews: int = Field(0, description="전체 리뷰 수")
+    positive_reviews: int = Field(0, description="긍정 리뷰 수")
+    negative_reviews: int = Field(0, description="부정 리뷰 수")
+    positive_ratio: float = Field(0.0, description="긍정 비율 (0.0 ~ 1.0)")
+    ai_rating: float = Field(0.0, description="AI 평점 (긍정 비율 기반 5점 만점)")
+
+
+class MoviePaginationResponse(BaseModel):
+    """
+    영화 목록 페이지네이션 응답 스키마
+
+    Attributes:
+        total: 전체 영화 수
+        page: 현재 페이지 번호
+        page_size: 페이지당 항목 수
+        total_pages: 전체 페이지 수
+        movies: 영화 목록 (리뷰 및 AI 평점 포함)
+    """
+
+    total: int = Field(..., description="전체 영화 수")
+    page: int = Field(..., description="현재 페이지 번호")
+    page_size: int = Field(..., description="페이지당 항목 수")
+    total_pages: int = Field(..., description="전체 페이지 수")
+    movies: List[MovieWithReviewsAndRating] = Field(
+        ..., description="영화 목록 (리뷰 및 AI 평점 포함)"
+    )

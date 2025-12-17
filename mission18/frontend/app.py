@@ -18,11 +18,17 @@ st.set_page_config(
 )
 
 # 페이지 정의
+movie_list_page = st.Page(
+    "pages/movie_list.py",
+    title="영화 목록",
+    icon="🎥",
+    default=True,
+)
+
 management_page = st.Page(
     "pages/management.py",
     title="영화 관리",
     icon="🎬",
-    default=True,
 )
 
 board_page = st.Page(
@@ -34,7 +40,7 @@ board_page = st.Page(
 # 네비게이션 설정
 pg = st.navigation(
     {
-        "메인": [management_page, board_page],
+        "메인": [movie_list_page, management_page, board_page],
     }
 )
 

@@ -22,13 +22,36 @@ logger.debug(f"TEST_MODE: {TEST_MODE}")
 
 
 def random_text(text: str) -> str:
-    """텍스트에 랜덤 한글 글자 추가"""
-    # 한글 음절 범위: 가(44032) ~ 힣(55203)
-    random_chars = "".join(
-        chr(random.randint(44032, 55203)) for _ in range(random.randint(3, 4))
-    )
-    logger.debug(f"Generated random text: {text + random_chars}")
-    return text + random_chars
+    """텍스트에 순차적인 한글 자음 추가"""
+    # 한글 자음: 가, 나, 다, 라, 마, 바, 사, 아, 자, 차, 카, 타, 파, 하
+    consonants = [
+        "가",
+        "나",
+        "다",
+        "라",
+        "마",
+        "바",
+        "사",
+        "아",
+        "자",
+        "차",
+        "카",
+        "타",
+        "파",
+        "하",
+    ]
+
+    # 세션 상태에 카운터가 없으면 초기화
+    if "text_counter" not in st.session_state:
+        st.session_state["text_counter"] = 0
+
+    # 현재 카운터에 해당하는 자음 선택
+    consonant = consonants[st.session_state["text_counter"] % len(consonants)]
+    st.session_state["text_counter"] += 1
+
+    result = text + consonant
+    logger.debug(f"Generated sequential text: {result}")
+    return result
 
 
 def st_text_input(label, **kwargs):
@@ -96,9 +119,11 @@ class MovieManager:
 
             with col2:
                 genre = st_text_input("장르", placeholder="예: SF, 드라마")
+                test_value = "https://media.themoviedb.org/t/p/w440_and_h660_face/klfSEbFOquMFjBQJ5uKAfp0rrsK.jpg"
                 poster_url = st.text_input(
                     "포스터 URL",
                     placeholder="이미지 URL을 입력하세요",
+                    value=test_value if TEST_MODE else "",
                 )
                 tmdb_rating = st.number_input(
                     "TMDB 평점",
