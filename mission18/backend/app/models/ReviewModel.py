@@ -7,7 +7,7 @@ from sqlalchemy import UniqueConstraint
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from backend.app.models.MovieModel import MovieModel
+    from app.models.MovieModel import MovieModel
 
 import logging
 from helper_dev_utils import get_auto_logger

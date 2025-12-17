@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from backend.app.models.ReviewModel import ReviewModel
+    from app.models.ReviewModel import ReviewModel
 
 import logging
 from helper_dev_utils import get_auto_logger

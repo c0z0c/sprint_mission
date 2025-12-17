@@ -7,7 +7,7 @@ from sqlmodel import Session
 from typing import List
 
 from app.database import get_db
-from backend.app.services.MovieService import MovieService
+from app.services.MovieService import MovieService
 from app.schemas import MovieCreate, MovieResponse, MovieWithReviews
 
 import logging

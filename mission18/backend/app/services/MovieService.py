@@ -8,7 +8,7 @@ import os
 import requests
 from pathlib import Path
 
-from backend.app.models.MovieModel import MovieModel
+from app.models.MovieModel import MovieModel
 from app.schemas import MovieCreate
 
 import logging

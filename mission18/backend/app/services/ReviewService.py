@@ -5,9 +5,9 @@
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from backend.app.models.ReviewModel import ReviewModel
+from app.models.ReviewModel import ReviewModel
 from app.schemas import ReviewCreate
-from backend.app.ai.SentimentPredictor import SentimentPredictor
+from app.ai.SentimentPredictor import SentimentPredictor
 
 import logging
 from helper_dev_utils import get_auto_logger
