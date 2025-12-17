@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: movie-review-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    volumes:
+      # 데이터베이스 파일 영속성
+      - ./backend/movie_review.db:/app/movie_review.db
+      # 포스터 이미지 영속성
+      - ./backend/static:/app/static
+    networks:
+      - movie-review-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: movie-review-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - PORT=8501
+      - API_BASE_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - movie-review-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  movie-review-network:
+    driver: bridge
+
+volumes:
+  db-data:
+  static-data:
