@@ -154,11 +154,15 @@ def test_create_movie_duplicate_tmdb_id(client: TestClient):
     # 첫 번째 등록
     response1 = client.post("/movies/", json=movie_data)
     assert response1.status_code == 201
+    assert response1.json()["title"] == "첫 번째 영화"
 
     # 중복 등록 시도
     response2 = client.post("/movies/", json=movie_data)
     assert response2.status_code == 400
-    assert "이미 등록된 영화" in response2.json()["detail"]
+    error_detail = response2.json()["detail"]
+    assert "이미 등록된 영화" in error_detail
+    assert "99999" in error_detail
+    assert "첫 번째 영화" in error_detail
 
 
 def test_get_all_movies_empty(client: TestClient):

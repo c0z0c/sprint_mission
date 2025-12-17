@@ -3,6 +3,11 @@ Streamlit 멀티페이지 애플리케이션 메인 엔트리
 """
 
 import streamlit as st
+import logging
+from helper_dev_utils import get_auto_logger
+
+logger = get_auto_logger(log_level=logging.DEBUG)
+
 
 # 페이지 설정
 st.set_page_config(

@@ -15,7 +15,14 @@ logger = get_auto_logger(log_level=logging.DEBUG)
 
 
 class ReviewCreate(BaseModel):
-    """리뷰 등록 요청 스키마"""
+    """
+    리뷰 등록 요청 스키마
+
+    Attributes:
+        movie_id: 영화 ID
+        author: 작성자 이름
+        content: 리뷰 내용
+    """
 
     movie_id: int = Field(..., description="영화 ID")
     author: str = Field(..., max_length=100, description="작성자 이름")
@@ -23,19 +30,35 @@ class ReviewCreate(BaseModel):
 
 
 class ReviewResponse(BaseModel):
-    """리뷰 조회 응답 스키마"""
+    """
+    리뷰 조회 응답 스키마
 
-    id: int
-    movie_id: int
-    author: str
-    content: str
-    is_positive: Optional[int] = None
+    Attributes:
+        id: 리뷰 ID
+        movie_id: 영화 ID
+        author: 작성자 이름
+        content: 리뷰 내용
+        is_positive: 감성 분석 결과 (1: 긍정, 0: 부정, None: 미분석)
+    """
+
+    id: int = Field(..., description="리뷰 ID")
+    movie_id: int = Field(..., description="영화 ID")
+    author: str = Field(..., description="작성자 이름")
+    content: str = Field(..., description="리뷰 내용")
+    is_positive: Optional[int] = Field(
+        None, description="감성 분석 결과 (1: 긍정, 0: 부정, None: 미분석)"
+    )
 
     class Config:
         from_attributes = True
 
 
 class ReviewWithMovie(ReviewResponse):
-    """영화 정보 포함 리뷰 조회 응답 스키마"""
+    """
+    영화 정보 포함 리뷰 조회 응답 스키마
 
-    movie: Any  # 순환 참조 방지를 위해 Any 사용
+    Attributes:
+        movie: 영화 정보
+    """
+
+    movie: Any = Field(..., description="영화 정보")  # 순환 참조 방지를 위해 Any 사용

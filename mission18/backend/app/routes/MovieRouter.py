@@ -87,12 +87,18 @@ class MovieRouter:
         # TMDB ID 중복 체크
         existing_movie = service.get_movie_by_tmdb_id(movie_data.tmdb_id)
         if existing_movie:
+            logger.warning(
+                f"Duplicate TMDB ID detected: {movie_data.tmdb_id} - Movie: {existing_movie.title}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"TMDB ID {movie_data.tmdb_id}는 이미 등록된 영화입니다.",
+                detail=f"TMDB ID {movie_data.tmdb_id}는 이미 등록된 영화입니다. (등록된 영화: {existing_movie.title})",
             )
 
         movie = service.create_movie(movie_data)
+        logger.info(
+            f"Movie created successfully: {movie.title} (TMDB ID: {movie.tmdb_id})"
+        )
         return movie
 
     def get_all_movies(self, db: Session = Depends(get_db)) -> List[MovieResponse]:

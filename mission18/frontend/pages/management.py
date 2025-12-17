@@ -6,9 +6,38 @@ import streamlit as st
 import requests
 from typing import Optional
 import os
+import random
+import logging
+from helper_dev_utils import get_auto_logger
+
+logger = get_auto_logger(log_level=logging.DEBUG)
+
 
 # 백엔드 API URL
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+TEST_MODE = os.getenv("TEST_MODE", "False") == "True"
+
+logger.debug(f"API_BASE_URL: {API_BASE_URL}")
+logger.debug(f"TEST_MODE: {TEST_MODE}")
+
+
+def random_text(text: str) -> str:
+    """텍스트에 랜덤 한글 글자 추가"""
+    # 한글 음절 범위: 가(44032) ~ 힣(55203)
+    random_chars = "".join(
+        chr(random.randint(44032, 55203)) for _ in range(random.randint(3, 4))
+    )
+    logger.debug(f"Generated random text: {text + random_chars}")
+    return text + random_chars
+
+
+def st_text_input(label, **kwargs):
+    """테스트 모드에서 랜덤 한글 글자 추가된 텍스트 입력"""
+    if TEST_MODE and "value" in kwargs:
+        kwargs["value"] = random_text(kwargs["value"])
+    if TEST_MODE and not "value" in kwargs:
+        kwargs["value"] = random_text("테스트_")
+    return st.text_input(label, **kwargs)
 
 
 class MovieManager:
@@ -48,19 +77,25 @@ class MovieManager:
             col1, col2 = st.columns(2)
 
             with col1:
+                test_counter = st.session_state.get("test_counter", 0)
+
                 tmdb_id = st.number_input(
                     "TMDB ID *",
-                    min_value=1,
+                    min_value=(test_counter + 1),
                     help="The Movie Database (TMDB)의 영화 ID",
                 )
-                title = st.text_input("영화 제목 *", placeholder="예: 인터스텔라")
+                st.session_state["test_counter"] = tmdb_id
+
+                title = st_text_input("영화 제목 *", placeholder="예: 인터스텔라")
                 release_date = st.text_input(
-                    "개봉일", placeholder="예: 2014-11-26 (YYYY-MM-DD)"
+                    "개봉일",
+                    placeholder="예: 2014-11-26 (YYYY-MM-DD)",
+                    value="2025-12-17",
                 )
-                director = st.text_input("감독", placeholder="예: 크리스토퍼 놀란")
+                director = st_text_input("감독", placeholder="예: 크리스토퍼 놀란")
 
             with col2:
-                genre = st.text_input("장르", placeholder="예: SF, 드라마")
+                genre = st_text_input("장르", placeholder="예: SF, 드라마")
                 poster_url = st.text_input(
                     "포스터 URL",
                     placeholder="이미지 URL을 입력하세요",
@@ -73,11 +108,11 @@ class MovieManager:
                     value=0.0,
                 )
 
-            submitted = st.form_submit_button("영화 등록", use_container_width=True)
+            submitted = st.form_submit_button("영화 등록", width="content")
 
             if submitted:
                 if not tmdb_id or not title:
-                    st.error("⚠️ TMDB ID와 영화 제목은 필수 입력 항목입니다.")
+                    st.error("TMDB ID와 영화 제목은 필수 입력 항목입니다.")
                 else:
                     self._register_movie(
                         tmdb_id=int(tmdb_id),
@@ -128,11 +163,23 @@ class MovieManager:
                 st.success(f"영화 '{title}'이(가) 성공적으로 등록되었습니다!")
                 st.balloons()
                 st.rerun()
+            elif response.status_code == 400:
+                # 중복 등록 등의 잘못된 요청
+                error_detail = response.json().get("detail", "잘못된 요청입니다.")
+                st.error(f"{error_detail}")
+                logger.warning(
+                    f"Movie registration failed - Bad Request: {error_detail}"
+                )
             else:
+                # 기타 서버 오류
                 error_detail = response.json().get("detail", "알 수 없는 오류")
                 st.error(f"영화 등록 실패: {error_detail}")
+                logger.error(
+                    f"Movie registration failed - Status {response.status_code}: {error_detail}"
+                )
         except requests.exceptions.RequestException as e:
-            st.error(f"API 연결 오류: {str(e)}")
+            st.error(f"🔌 API 연결 오류: {str(e)}")
+            logger.error(f"API connection error: {str(e)}")
 
     def _render_movie_list(self):
         """
@@ -172,11 +219,11 @@ class MovieManager:
             # 포스터 이미지
             if movie.get("poster_local_path"):
                 poster_url = f"{self.api_url}/static/{movie['poster_local_path'].replace('static/', '')}"
-                st.image(poster_url, use_container_width=True)
+                st.image(poster_url, width="content")
             else:
                 st.image(
                     "https://via.placeholder.com/300x450?text=No+Poster",
-                    use_container_width=True,
+                    width="content",
                 )
 
             # 영화 정보
@@ -196,7 +243,7 @@ class MovieManager:
             if st.button(
                 "🗑️ 삭제",
                 key=f"delete_{movie['id']}",
-                use_container_width=True,
+                width="content",
             ):
                 self._delete_movie(movie["id"], movie["title"])
 

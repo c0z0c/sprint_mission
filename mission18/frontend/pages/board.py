@@ -7,6 +7,11 @@ import requests
 import plotly.graph_objects as go
 from typing import List, Dict, Optional
 import os
+import logging
+from helper_dev_utils import get_auto_logger
+
+logger = get_auto_logger(log_level=logging.DEBUG)
+
 
 # 백엔드 API URL
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
@@ -49,7 +54,7 @@ class ReviewManager:
         movies = self._get_movies()
 
         if not movies:
-            st.warning("⚠️ 등록된 영화가 없습니다. 먼저 영화를 등록해주세요.")
+            st.warning("등록된 영화가 없습니다. 먼저 영화를 등록해주세요.")
             return
 
         with st.form("review_form"):
@@ -71,11 +76,11 @@ class ReviewManager:
                 height=200,
             )
 
-            submitted = st.form_submit_button("리뷰 등록", use_container_width=True)
+            submitted = st.form_submit_button("리뷰 등록", width="content")
 
             if submitted:
                 if not author or not content:
-                    st.error("⚠️ 작성자 이름과 리뷰 내용은 필수 입력 항목입니다.")
+                    st.error("작성자 이름과 리뷰 내용은 필수 입력 항목입니다.")
                 else:
                     movie_id = movie_options[selected_movie]
                     self._register_review(movie_id, author, content)
@@ -174,7 +179,7 @@ class ReviewManager:
             height=400,
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="content")
 
     def _render_review_list(self):
         """
