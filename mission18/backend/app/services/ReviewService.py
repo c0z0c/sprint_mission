@@ -288,3 +288,81 @@ class ReviewService:
             "positive_ratio": positive_ratio,
             "ai_rating": round(ai_rating, 2),
         }
+
+    def update_review(
+        self, review_id: int, review_data: "ReviewUpdate"
+    ) -> Optional[ReviewModel]:
+        """
+        리뷰 정보 업데이트 (전체 또는 부분 업데이트 - PUT/PATCH)
+
+        Args:
+            review_id: 리뷰 ID
+            review_data: 리뷰 업데이트 데이터 (ReviewUpdate 또는 ReviewPatch)
+
+        Returns:
+            Optional[ReviewModel]: 업데이트된 리뷰 모델 또는 None
+
+        Raises:
+            ValueError: UniqueConstraint 위반 시 (동일한 tmdb_id, author, content 조합)
+        """
+        from app.schemas.review import ReviewUpdate, ReviewPatch
+        from sqlalchemy.exc import IntegrityError
+        from datetime import datetime
+
+        logger.debug(f"[Service] update_review started for review ID: {review_id}")
+
+        # 리뷰 조회
+        review = self.session.get(ReviewModel, review_id)
+        if not review:
+            logger.warning(f"[Service] Review not found for ID: {review_id}")
+            return None
+
+        # 필드 업데이트 (exclude_unset=True로 PATCH 지원)
+        update_dict = review_data.model_dump(exclude_unset=True)
+
+        # content 변경 감지
+        content_changed = (
+            "content" in update_dict and update_dict["content"] != review.content
+        )
+
+        # 필드 업데이트
+        for key, value in update_dict.items():
+            setattr(review, key, value)
+
+        # content 변경 시 AI 감성 분석 재수행
+        if content_changed:
+            is_positive = self.sentiment_predictor.predict(review.content)
+            review.is_positive = is_positive
+            logger.debug(
+                f"[Service] Content changed, re-analyzed sentiment: is_positive={is_positive}"
+            )
+
+        # updated_at 갱신
+        review.updated_at = datetime.now()
+
+        try:
+            self.session.add(review)
+            self.session.commit()
+            self.session.refresh(review)
+        except IntegrityError as e:
+            self.session.rollback()
+            logger.error(
+                f"[Service] UniqueConstraint violation for review ID: {review_id} - {str(e)}"
+            )
+            raise ValueError(
+                "동일한 영화에 동일한 작성자가 동일한 내용의 리뷰를 이미 작성했습니다. "
+                "리뷰 내용을 변경해주세요."
+            )
+
+        # 영화 AI 평점 업데이트 (content 변경 시)
+        if content_changed:
+            from app.services.MovieService import MovieService
+
+            movie_service = MovieService(self.session)
+            movie_service.update_movie_ai_rating(review.tmdb_id)
+            logger.debug(
+                f"[Service] Movie AI rating updated for TMDB ID: {review.tmdb_id}"
+            )
+
+        logger.debug(f"[Service] Review updated successfully: ID={review_id}")
+        return review

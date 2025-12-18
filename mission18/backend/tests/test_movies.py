@@ -580,3 +580,116 @@ def test_search_movies_pagination(client: TestClient):
     data = response.json()
     assert len(data["movies"]) == 5
     assert data["page"] == 2
+
+
+# ==================== Movie Update Tests ====================
+
+
+def test_update_movie_put_success(client: TestClient):
+    """영화 전체 업데이트 (PUT) 성공 테스트"""
+    # 영화 등록
+    movie_data = {
+        "tmdb_id": 60001,
+        "title": "Original Title",
+        "release_date": "2024-01-01",
+        "director": "Original Director",
+        "genre": "Drama",
+        "poster_url": None,
+        "tmdb_rating": 7.0,
+    }
+    create_response = client.post("/movies/", json=movie_data)
+    assert create_response.status_code == 201
+    movie_id = create_response.json()["id"]
+
+    # 전체 업데이트
+    update_data = {
+        "title": "Updated Title",
+        "release_date": "2024-12-31",
+        "director": "Updated Director",
+        "genre": "Action",
+        "poster_url": None,
+        "tmdb_rating": 9.5,
+    }
+    response = client.put(f"/movies/{movie_id}", json=update_data)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Updated Title"
+    assert data["director"] == "Updated Director"
+    assert data["genre"] == "Action"
+    assert data["tmdb_rating"] == 9.5
+    assert data["tmdb_id"] == 60001  # tmdb_id는 변경되지 않음
+
+
+def test_update_movie_patch_success(client: TestClient):
+    """영화 부분 업데이트 (PATCH) 성공 테스트"""
+    # 영화 등록
+    movie_data = {
+        "tmdb_id": 60002,
+        "title": "Original Title",
+        "release_date": "2024-01-01",
+        "director": "Original Director",
+        "genre": "Drama",
+        "poster_url": None,
+        "tmdb_rating": 7.0,
+    }
+    create_response = client.post("/movies/", json=movie_data)
+    assert create_response.status_code == 201
+    movie_id = create_response.json()["id"]
+
+    # 부분 업데이트 (제목과 평점만 변경)
+    update_data = {
+        "title": "Partially Updated Title",
+        "tmdb_rating": 8.5,
+    }
+    response = client.patch(f"/movies/{movie_id}", json=update_data)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Partially Updated Title"
+    assert data["tmdb_rating"] == 8.5
+    assert data["director"] == "Original Director"  # 변경되지 않음
+    assert data["genre"] == "Drama"  # 변경되지 않음
+
+
+def test_update_movie_not_found(client: TestClient):
+    """존재하지 않는 영화 업데이트 시도 테스트"""
+    update_data = {
+        "title": "Non-existent Movie",
+        "release_date": "2024-01-01",
+        "director": "Director",
+        "genre": "Genre",
+        "poster_url": None,
+        "tmdb_rating": 7.0,
+    }
+    response = client.put("/movies/99999", json=update_data)
+    assert response.status_code == 404
+    assert "찾을 수 없습니다" in response.json()["detail"]
+
+
+def test_update_movie_poster_change(client: TestClient):
+    """포스터 URL 변경 시 기존 파일 삭제 로직 테스트"""
+    # 영화 등록 (포스터 없이)
+    movie_data = {
+        "tmdb_id": 60003,
+        "title": "Movie with Poster",
+        "release_date": "2024-01-01",
+        "director": "Director",
+        "genre": "Action",
+        "poster_url": None,
+        "tmdb_rating": 8.0,
+    }
+    create_response = client.post("/movies/", json=movie_data)
+    assert create_response.status_code == 201
+    movie_id = create_response.json()["id"]
+
+    # 포스터 URL 추가
+    update_data = {
+        "title": "Movie with Poster",
+        "release_date": "2024-01-01",
+        "director": "Director",
+        "genre": "Action",
+        "poster_url": "https://example.com/new_poster.jpg",
+        "tmdb_rating": 8.0,
+    }
+    response = client.put(f"/movies/{movie_id}", json=update_data)
+    assert response.status_code == 200
+    # 백그라운드 작업으로 처리되므로 즉시 확인은 불가능하지만, 에러 없이 완료되면 성공

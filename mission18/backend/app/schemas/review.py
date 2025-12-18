@@ -130,3 +130,46 @@ class ReviewSearchFilters(BaseModel):
     sort_order: str = Field("desc", description="정렬 방향 (asc, desc)")
     page: int = Field(1, ge=1, description="페이지 번호")
     page_size: int = Field(10, ge=1, le=100, description="페이지당 항목 수")
+
+
+class ReviewUpdate(BaseModel):
+    """
+    리뷰 전체 업데이트 요청 스키마 (PUT)
+
+    Note:
+        - tmdb_id는 불변이므로 수정 불가
+        - content 변경 시 AI 감성 분석 자동 재수행
+        - 수정 후 해당 영화의 AI 평점 자동 업데이트
+        - (tmdb_id, author, content) 조합의 중복 체크 (동일한 리뷰 중복 방지)
+
+    Attributes:
+        author: 작성자 이름
+        content: 리뷰 내용 (변경 시 감성 분석 재수행)
+    """
+
+    author: str = Field(..., max_length=100, description="작성자 이름")
+    content: str = Field(
+        ..., max_length=2000, description="리뷰 내용 (변경 시 감성 분석 재수행)"
+    )
+
+
+class ReviewPatch(BaseModel):
+    """
+    리뷰 부분 업데이트 요청 스키마 (PATCH)
+
+    Note:
+        - 모든 필드가 Optional이므로 원하는 필드만 선택적으로 수정 가능
+        - tmdb_id는 불변이므로 수정 불가
+        - content 변경 시 AI 감성 분석 자동 재수행
+        - 수정 후 해당 영화의 AI 평점 자동 업데이트
+        - (tmdb_id, author, content) 조합의 중복 체크 (동일한 리뷰 중복 방지)
+
+    Attributes:
+        author: 작성자 이름 (선택)
+        content: 리뷰 내용 (선택, 변경 시 감성 분석 재수행)
+    """
+
+    author: Optional[str] = Field(None, max_length=100, description="작성자 이름")
+    content: Optional[str] = Field(
+        None, max_length=2000, description="리뷰 내용 (변경 시 감성 분석 재수행)"
+    )

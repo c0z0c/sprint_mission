@@ -166,3 +166,58 @@ class MovieSearchFilters(BaseModel):
     sort_order: str = Field("desc", description="정렬 방향 (asc, desc)")
     page: int = Field(1, ge=1, description="페이지 번호")
     page_size: int = Field(10, ge=1, le=100, description="페이지당 항목 수")
+
+
+class MovieUpdate(BaseModel):
+    """
+    영화 전체 업데이트 요청 스키마 (PUT)
+
+    Note:
+        - tmdb_id는 불변이므로 수정 불가 (잘못 입력 시 삭제 후 재생성 필요)
+        - poster_url 변경 시 기존 포스터 파일 삭제 및 재다운로드 수행
+
+    Attributes:
+        title: 영화 제목
+        release_date: 개봉일
+        director: 감독
+        genre: 장르
+        poster_url: 포스터 이미지 URL (변경 시 재다운로드)
+        tmdb_rating: TMDB 평점
+    """
+
+    title: str = Field(..., max_length=255, description="영화 제목")
+    release_date: Optional[str] = Field(None, max_length=50, description="개봉일")
+    director: Optional[str] = Field(None, max_length=100, description="감독")
+    genre: Optional[str] = Field(None, max_length=100, description="장르")
+    poster_url: Optional[str] = Field(
+        None, description="포스터 이미지 URL (변경 시 재다운로드)"
+    )
+    tmdb_rating: Optional[float] = Field(None, description="TMDB 평점")
+
+
+class MoviePatch(BaseModel):
+    """
+    영화 부분 업데이트 요청 스키마 (PATCH)
+
+    Note:
+        - 모든 필드가 Optional이므로 원하는 필드만 선택적으로 수정 가능
+        - tmdb_id는 불변이므로 수정 불가
+        - poster_url 변경 시 기존 포스터 파일 삭제 및 재다운로드 수행
+
+    Attributes:
+        title: 영화 제목 (선택)
+        release_date: 개봉일 (선택)
+        director: 감독 (선택)
+        genre: 장르 (선택)
+        poster_url: 포스터 이미지 URL (선택, 변경 시 재다운로드)
+        tmdb_rating: TMDB 평점 (선택)
+    """
+
+    title: Optional[str] = Field(None, max_length=255, description="영화 제목")
+    release_date: Optional[str] = Field(None, max_length=50, description="개봉일")
+    director: Optional[str] = Field(None, max_length=100, description="감독")
+    genre: Optional[str] = Field(None, max_length=100, description="장르")
+    poster_url: Optional[str] = Field(
+        None, description="포스터 이미지 URL (변경 시 재다운로드)"
+    )
+    tmdb_rating: Optional[float] = Field(None, description="TMDB 평점")

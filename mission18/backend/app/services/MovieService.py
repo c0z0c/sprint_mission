@@ -409,3 +409,78 @@ class MovieService:
             logger.error(f"[Service] Poster download failed: {str(e)}")
 
         return None
+
+    def update_movie(
+        self, movie_id: int, movie_data: "MovieUpdate", background_tasks=None
+    ) -> Optional[MovieModel]:
+        """
+        영화 정보 업데이트 (전체 업데이트 - PUT)
+
+        Args:
+            movie_id: 영화 ID
+            movie_data: 영화 업데이트 데이터 (MovieUpdate 또는 MoviePatch)
+            background_tasks: FastAPI BackgroundTasks (선택사항)
+
+        Returns:
+            Optional[MovieModel]: 업데이트된 영화 모델 또는 None
+        """
+        from app.schemas.movie import MovieUpdate, MoviePatch
+
+        logger.debug(f"[Service] update_movie started for movie ID: {movie_id}")
+
+        # 영화 조회
+        movie = self.session.get(MovieModel, movie_id)
+        if not movie:
+            logger.warning(f"[Service] Movie not found for ID: {movie_id}")
+            return None
+
+        # 기존 poster_url 추출 (변경 감지용)
+        old_poster_path = movie.poster_local_path
+
+        # 필드 업데이트 (exclude_unset=True로 PATCH 지원)
+        update_dict = movie_data.model_dump(exclude_unset=True)
+
+        # poster_url 처리 (변경 시 재다운로드)
+        poster_url = update_dict.pop("poster_url", None)
+        if poster_url is not None:
+            # 기존 포스터 파일 삭제
+            if old_poster_path:
+                old_file_path = Path(old_poster_path)
+                if old_file_path.exists():
+                    try:
+                        os.remove(old_file_path)
+                        logger.info(
+                            f"[Service] Deleted old poster file: {old_poster_path}"
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            f"[Service] Failed to delete old poster file: {old_poster_path} - {str(e)}"
+                        )
+                else:
+                    logger.warning(
+                        f"[Service] Old poster file not found: {old_poster_path}"
+                    )
+
+            # 새 포스터 다운로드 준비 (백그라운드)
+            movie.poster_local_path = None
+            if poster_url and background_tasks:
+                logger.debug(
+                    f"[Service] Scheduling new poster download for movie ID: {movie_id}"
+                )
+                background_tasks.add_task(
+                    self._download_and_update_poster,
+                    movie_id,
+                    poster_url,
+                    movie.tmdb_id,
+                )
+
+        # 나머지 필드 업데이트
+        for key, value in update_dict.items():
+            setattr(movie, key, value)
+
+        self.session.add(movie)
+        self.session.commit()
+        self.session.refresh(movie)
+
+        logger.debug(f"[Service] Movie updated successfully: ID={movie_id}")
+        return movie

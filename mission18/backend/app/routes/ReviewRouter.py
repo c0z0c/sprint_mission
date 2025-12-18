@@ -17,6 +17,8 @@ from app.schemas import (
     ReviewWithMovie,
     MovieRating,
     ReviewPaginationResponse,
+    ReviewUpdate,
+    ReviewPatch,
 )
 
 import logging
@@ -97,6 +99,22 @@ class ReviewRouter:
             response_model=ReviewWithMovie,
             summary="특정 리뷰 조회",
             description="리뷰 ID로 특정 리뷰를 조회합니다.",
+        )
+        self.router.add_api_route(
+            "/{review_id}",
+            self.update_review_put,
+            methods=["PUT"],
+            response_model=ReviewResponse,
+            summary="리뷰 전체 업데이트",
+            description="리뷰 ID로 특정 리뷰의 모든 필드를 업데이트합니다. content 변경 시 AI 감성 분석이 자동으로 재수행되며, 영화의 AI 평점이 업데이트됩니다. tmdb_id는 수정 불가합니다.",
+        )
+        self.router.add_api_route(
+            "/{review_id}",
+            self.update_review_patch,
+            methods=["PATCH"],
+            response_model=ReviewResponse,
+            summary="리뷰 부분 업데이트",
+            description="리뷰 ID로 특정 리뷰의 일부 필드만 선택적으로 업데이트합니다. content 변경 시 AI 감성 분석이 자동으로 재수행되며, 영화의 AI 평점이 업데이트됩니다. tmdb_id는 수정 불가합니다.",
         )
         self.router.add_api_route(
             "/{review_id}",
@@ -400,6 +418,82 @@ class ReviewRouter:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"리뷰 ID {review_id}를 찾을 수 없습니다.",
             )
+
+    def update_review_put(
+        self,
+        review_id: int,
+        review_data: ReviewUpdate,
+        db: Session = Depends(get_db),
+    ) -> ReviewResponse:
+        """
+        리뷰 전체 업데이트 (PUT)
+
+        Args:
+            review_id: 리뷰 ID
+            review_data: 리뷰 업데이트 데이터 (전체 필드)
+            db: 데이터베이스 세션
+
+        Returns:
+            ReviewResponse: 업데이트된 리뷰 정보
+
+        Raises:
+            HTTPException: 리뷰를 찾을 수 없거나 UniqueConstraint 위반 시
+        """
+        service = ReviewService(db)
+
+        try:
+            updated_review = service.update_review(review_id, review_data)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+            )
+
+        if not updated_review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"리뷰 ID {review_id}를 찾을 수 없습니다.",
+            )
+
+        return updated_review
+
+    def update_review_patch(
+        self,
+        review_id: int,
+        review_data: ReviewPatch,
+        db: Session = Depends(get_db),
+    ) -> ReviewResponse:
+        """
+        리뷰 부분 업데이트 (PATCH)
+
+        Args:
+            review_id: 리뷰 ID
+            review_data: 리뷰 업데이트 데이터 (선택적 필드)
+            db: 데이터베이스 세션
+
+        Returns:
+            ReviewResponse: 업데이트된 리뷰 정보
+
+        Raises:
+            HTTPException: 리뷰를 찾을 수 없거나 UniqueConstraint 위반 시
+        """
+        service = ReviewService(db)
+
+        try:
+            updated_review = service.update_review(review_id, review_data)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+            )
+
+        if not updated_review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"리뷰 ID {review_id}를 찾을 수 없습니다.",
+            )
+
+        return updated_review
 
 
 # 라우터 인스턴스 생성

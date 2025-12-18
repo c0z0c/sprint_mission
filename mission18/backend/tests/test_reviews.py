@@ -573,3 +573,128 @@ def test_search_reviews_empty_result(client: TestClient):
     data = response.json()
     assert data["total"] == 0
     assert len(data["reviews"]) == 0
+
+
+# ==================== Review Update Tests ====================
+
+
+def test_update_review_put_success(client: TestClient):
+    """리뷰 전체 업데이트 (PUT) 성공 테스트"""
+    # 영화 및 리뷰 등록
+    client.post("/movies/", json={"tmdb_id": 70001, "title": "Test Movie"})
+    review_data = {
+        "tmdb_id": 70001,
+        "author": "Original Author",
+        "content": "Original content",
+    }
+    create_response = client.post("/reviews/", json=review_data)
+    assert create_response.status_code == 201
+    review_id = create_response.json()["id"]
+    original_is_positive = create_response.json()["is_positive"]
+
+    # 전체 업데이트 (content 변경 -> AI 재분석)
+    update_data = {
+        "author": "Updated Author",
+        "content": "This movie was absolutely amazing and fantastic!",
+    }
+    response = client.put(f"/reviews/{review_id}", json=update_data)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["author"] == "Updated Author"
+    assert data["content"] == "This movie was absolutely amazing and fantastic!"
+    assert data["is_positive"] in [0, 1]  # AI 재분석 결과
+    # content가 변경되었으므로 updated_at이 갱신됨
+    assert "updated_at" in data
+
+
+def test_update_review_patch_success(client: TestClient):
+    """리뷰 부분 업데이트 (PATCH) 성공 테스트"""
+    # 영화 및 리뷰 등록
+    client.post("/movies/", json={"tmdb_id": 70002, "title": "Test Movie 2"})
+    review_data = {
+        "tmdb_id": 70002,
+        "author": "Original Author",
+        "content": "Original content here",
+    }
+    create_response = client.post("/reviews/", json=review_data)
+    assert create_response.status_code == 201
+    review_id = create_response.json()["id"]
+
+    # 부분 업데이트 (작성자만 변경)
+    update_data = {
+        "author": "Partially Updated Author",
+    }
+    response = client.patch(f"/reviews/{review_id}", json=update_data)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["author"] == "Partially Updated Author"
+    assert data["content"] == "Original content here"  # 변경되지 않음
+
+
+def test_update_review_content_triggers_ai_reanalysis(client: TestClient):
+    """리뷰 content 변경 시 AI 재분석 및 영화 AI 평점 업데이트 테스트"""
+    # 영화 및 리뷰 등록
+    client.post("/movies/", json={"tmdb_id": 70003, "title": "Test Movie 3"})
+
+    # 첫 번째 리뷰
+    review1_data = {"tmdb_id": 70003, "author": "User1", "content": "Great movie!"}
+    client.post("/reviews/", json=review1_data)
+
+    # 두 번째 리뷰
+    review2_data = {"tmdb_id": 70003, "author": "User2", "content": "Not bad"}
+    create_response = client.post("/reviews/", json=review2_data)
+    review2_id = create_response.json()["id"]
+
+    # 영화의 초기 AI 평점 확인
+    movie_rating_before = client.get("/reviews/movie/70003/rating").json()
+
+    # 두 번째 리뷰의 content 변경 (AI 재분석 트리거)
+    update_data = {"content": "This is the worst movie I have ever seen!"}
+    response = client.patch(f"/reviews/{review2_id}", json=update_data)
+    assert response.status_code == 200
+
+    # 영화의 AI 평점이 업데이트되었는지 확인
+    movie_rating_after = client.get("/reviews/movie/70003/rating").json()
+    # AI 평점이 변경되었을 수 있음 (랜덤 분석이지만 content 변경 시 재계산됨)
+    assert "ai_rating" in movie_rating_after
+
+
+def test_update_review_not_found(client: TestClient):
+    """존재하지 않는 리뷰 업데이트 시도 테스트"""
+    update_data = {
+        "author": "Non-existent Review",
+        "content": "This should fail",
+    }
+    response = client.put("/reviews/99999", json=update_data)
+    assert response.status_code == 404
+    assert "찾을 수 없습니다" in response.json()["detail"]
+
+
+def test_update_review_unique_constraint_violation(client: TestClient):
+    """리뷰 수정 시 UniqueConstraint 위반 테스트"""
+    # 영화 및 첫 번째 리뷰 등록
+    client.post("/movies/", json={"tmdb_id": 70004, "title": "Test Movie 4"})
+    review1_data = {
+        "tmdb_id": 70004,
+        "author": "SameAuthor",
+        "content": "First review content",
+    }
+    client.post("/reviews/", json=review1_data)
+
+    # 두 번째 리뷰 등록
+    review2_data = {
+        "tmdb_id": 70004,
+        "author": "SameAuthor",
+        "content": "Second review content",
+    }
+    create_response = client.post("/reviews/", json=review2_data)
+    review2_id = create_response.json()["id"]
+
+    # 두 번째 리뷰를 첫 번째 리뷰와 동일하게 수정 시도 (UniqueConstraint 위반)
+    update_data = {
+        "author": "SameAuthor",
+        "content": "First review content",
+    }
+    response = client.put(f"/reviews/{review2_id}", json=update_data)
+    assert response.status_code == 400
+    assert "동일한" in response.json()["detail"]

@@ -16,6 +16,8 @@ from app.schemas import (
     MovieWithReviews,
     MovieWithReviewsAndRating,
     MoviePaginationResponse,
+    MovieUpdate,
+    MoviePatch,
 )
 
 import logging
@@ -88,6 +90,22 @@ class MovieRouter:
             response_model=MovieWithReviews,
             summary="특정 영화 조회",
             description="영화 ID로 특정 영화를 조회합니다. 리뷰 정보도 함께 반환됩니다.",
+        )
+        self.router.add_api_route(
+            "/{movie_id}",
+            self.update_movie_put,
+            methods=["PUT"],
+            response_model=MovieResponse,
+            summary="영화 전체 업데이트",
+            description="영화 ID로 특정 영화의 모든 필드를 업데이트합니다. poster_url 변경 시 기존 파일 삭제 및 재다운로드가 수행됩니다. tmdb_id는 수정 불가합니다.",
+        )
+        self.router.add_api_route(
+            "/{movie_id}",
+            self.update_movie_patch,
+            methods=["PATCH"],
+            response_model=MovieResponse,
+            summary="영화 부분 업데이트",
+            description="영화 ID로 특정 영화의 일부 필드만 선택적으로 업데이트합니다. poster_url 변경 시 기존 파일 삭제 및 재다운로드가 수행됩니다. tmdb_id는 수정 불가합니다.",
         )
         self.router.add_api_route(
             "/{movie_id}",
@@ -417,6 +435,72 @@ class MovieRouter:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"영화 ID {movie_id}를 찾을 수 없습니다.",
             )
+
+    def update_movie_put(
+        self,
+        movie_id: int,
+        movie_data: MovieUpdate,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+    ) -> MovieResponse:
+        """
+        영화 전체 업데이트 (PUT)
+
+        Args:
+            movie_id: 영화 ID
+            movie_data: 영화 업데이트 데이터 (전체 필드)
+            background_tasks: 백그라운드 작업
+            db: 데이터베이스 세션
+
+        Returns:
+            MovieResponse: 업데이트된 영화 정보
+
+        Raises:
+            HTTPException: 영화를 찾을 수 없는 경우
+        """
+        service = MovieService(db)
+        updated_movie = service.update_movie(movie_id, movie_data, background_tasks)
+
+        if not updated_movie:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"영화 ID {movie_id}를 찾을 수 없습니다.",
+            )
+
+        return updated_movie
+
+    def update_movie_patch(
+        self,
+        movie_id: int,
+        movie_data: MoviePatch,
+        background_tasks: BackgroundTasks,
+        db: Session = Depends(get_db),
+    ) -> MovieResponse:
+        """
+        영화 부분 업데이트 (PATCH)
+
+        Args:
+            movie_id: 영화 ID
+            movie_data: 영화 업데이트 데이터 (선택적 필드)
+            background_tasks: 백그라운드 작업
+            db: 데이터베이스 세션
+
+        Returns:
+            MovieResponse: 업데이트된 영화 정보
+
+        Raises:
+            HTTPException: 영화를 찾을 수 없는 경우
+        """
+        service = MovieService(db)
+        updated_movie = service.update_movie(movie_id, movie_data, background_tasks)
+
+        if not updated_movie:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"영화 ID {movie_id}를 찾을 수 없습니다.",
+            )
+
+        return updated_movie
 
 
 # 라우터 인스턴스 생성
