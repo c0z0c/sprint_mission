@@ -24,35 +24,12 @@ logger.debug(f"TEST_MODE: {TEST_MODE}")
 
 
 def random_text(text: str) -> str:
-    """텍스트에 순차적인 한글 자음 추가"""
-    # 한글 자음: 가, 나, 다, 라, 마, 바, 사, 아, 자, 차, 카, 타, 파, 하
-    consonants = [
-        "가",
-        "나",
-        "다",
-        "라",
-        "마",
-        "바",
-        "사",
-        "아",
-        "자",
-        "차",
-        "카",
-        "타",
-        "파",
-        "하",
-    ]
+    """텍스트에 랜덤 한글 자음 추가"""
+    consonants = "가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후그느드르므브스으즈츠크트프흐기니디리미비시이지치키티피히"
 
-    # 세션 상태에 카운터가 없으면 초기화
-    if "text_counter" not in st.session_state:
-        st.session_state["text_counter"] = 0
-
-    # 현재 카운터에 해당하는 자음 선택
-    consonant = consonants[st.session_state["text_counter"] % len(consonants)]
-    st.session_state["text_counter"] += 1
-
+    consonant = random.choice(consonants)
     result = text + consonant
-    logger.debug(f"Generated sequential text: {result}")
+    logger.debug(f"Generated random text: {result}")
     return result
 
 
@@ -115,8 +92,11 @@ class ReviewManager:
         """
         st.write("##### 리뷰 작성")
 
-        # 영화 목록 불러오기
-        movies = self._get_movies()
+        # 영화 목록 캐싱 (중복 API 호출 방지)
+        if "cached_movies" not in st.session_state:
+            st.session_state["cached_movies"] = self._get_movies()
+
+        movies = st.session_state["cached_movies"]
 
         if not movies:
             st.warning("등록된 영화가 없습니다. 먼저 영화를 등록해주세요.")
@@ -177,8 +157,12 @@ class ReviewManager:
         """
         st.header("영화 AI 평점")
 
-        # 선택된 영화의 평점 데이터 가져오기
-        rating_data = self._get_movie_rating(movie_id)
+        # 선택된 영화의 평점 데이터 캐싱 (중복 API 호출 방지)
+        cache_key = f"cached_rating_{movie_id}"
+        if cache_key not in st.session_state:
+            st.session_state[cache_key] = self._get_movie_rating(movie_id)
+
+        rating_data = st.session_state[cache_key]
 
         if rating_data:
             col1, col2 = st.columns([2, 1])
@@ -254,32 +238,70 @@ class ReviewManager:
 
     def _render_review_list(self):
         """
-        리뷰 목록 렌더링
+        리뷰 목록 렌더링 (무한 스크롤 방식)
         """
         st.header("최근 리뷰 목록")
 
-        # 리뷰 개수 선택
-        limit = st.slider(
-            "표시할 리뷰 개수", min_value=5, max_value=50, value=10, step=5
-        )
+        # 세션 상태 초기화
+        if "loaded_reviews" not in st.session_state:
+            st.session_state["loaded_reviews"] = []
+            st.session_state["reviews_current_page"] = 1
+            st.session_state["reviews_has_more"] = True
+        if "reviews_page_size" not in st.session_state:
+            st.session_state["reviews_page_size"] = 10
 
-        try:
-            response = requests.get(f"{self.api_url}/reviews/", params={"limit": limit})
+        # 페이지 크기 선택 및 새로고침 버튼
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            new_page_size = st.slider(
+                "한 번에 불러올 리뷰 개수",
+                min_value=5,
+                max_value=50,
+                value=st.session_state["reviews_page_size"],
+                step=5,
+                key="reviews_page_size_slider",
+            )
+        with col2:
+            st.write("")  # 버튼 위치 정렬을 위한 공백
+            if st.button("🔄 새로고침", key="refresh_reviews"):
+                st.session_state["loaded_reviews"] = []
+                st.session_state["reviews_current_page"] = 1
+                st.session_state["reviews_has_more"] = True
+                st.rerun()
 
-            if response.status_code == 200:
-                reviews = response.json()
+        # 페이지 크기가 변경되면 크기만 업데이트 (다시 불러오기는 하지 않음)
+        if new_page_size != st.session_state["reviews_page_size"]:
+            st.session_state["reviews_page_size"] = new_page_size
 
-                if not reviews:
-                    st.info("📭 등록된 리뷰가 없습니다.")
-                else:
-                    st.write(f"총 {len(reviews)}개의 리뷰")
+        # 초기 로드: 첫 페이지 자동 로드
+        if (
+            not st.session_state["loaded_reviews"]
+            and st.session_state["reviews_has_more"]
+        ):
+            self._load_more_reviews()
 
-                    for review in reviews:
-                        self._render_review_card(review)
-            else:
-                st.error("리뷰 목록을 불러오는데 실패했습니다.")
-        except requests.exceptions.RequestException as e:
-            st.error(f"API 연결 오류: {str(e)}")
+        # 로드된 리뷰가 없으면 안내 메시지
+        if not st.session_state["loaded_reviews"]:
+            st.info("📭 등록된 리뷰가 없습니다.")
+            return
+
+        # 로드된 리뷰 수 표시
+        st.write(f"**{len(st.session_state['loaded_reviews'])}개의 리뷰**")
+        st.divider()
+
+        # 누적된 모든 리뷰 표시
+        for review in st.session_state["loaded_reviews"]:
+            self._render_review_card(review)
+
+        # "더 불러오기" 버튼
+        if st.session_state["reviews_has_more"]:
+            _, col2, _ = st.columns([1, 8, 1])
+            with col2:
+                if st.button("📥 더 불러오기", width="stretch", type="primary"):
+                    self._load_more_reviews()
+                    st.rerun()
+        else:
+            st.info("✅ 모든 리뷰를 불러왔습니다.")
 
     def _render_review_card(self, review: dict):
         """
@@ -373,6 +395,54 @@ class ReviewManager:
             pass
         return None
 
+    def _load_more_reviews(self):
+        """
+        다음 페이지의 리뷰를 로드하여 누적 목록에 추가
+        """
+        pagination_data = self._get_reviews_paginated(
+            st.session_state["reviews_current_page"],
+            st.session_state["reviews_page_size"],
+        )
+
+        if pagination_data:
+            reviews = pagination_data.get("reviews", [])
+            total_pages = pagination_data.get("total_pages", 0)
+
+            if reviews:
+                # 기존 목록에 새 리뷰 추가
+                st.session_state["loaded_reviews"].extend(reviews)
+                st.session_state["reviews_current_page"] += 1
+
+                # 더 이상 로드할 페이지가 없는지 확인
+                if st.session_state["reviews_current_page"] > total_pages:
+                    st.session_state["reviews_has_more"] = False
+            else:
+                st.session_state["reviews_has_more"] = False
+        else:
+            st.session_state["reviews_has_more"] = False
+
+    def _get_reviews_paginated(self, page: int, page_size: int) -> Optional[Dict]:
+        """
+        페이지네이션된 리뷰 목록 가져오기 (영화 정보 포함)
+
+        Args:
+            page: 페이지 번호
+            page_size: 페이지당 항목 수
+
+        Returns:
+            페이지네이션 데이터 (리뷰 목록, 전체 개수 등)
+        """
+        try:
+            response = requests.get(
+                f"{self.api_url}/reviews/paginated",
+                params={"page": page, "page_size": page_size},
+            )
+            if response.status_code == 200:
+                return response.json()
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch paginated reviews: {str(e)}")
+        return None
+
     def _register_review(self, tmdb_id: int, author: str, content: str):
         """
         리뷰 등록
@@ -390,6 +460,17 @@ class ReviewManager:
             if response.status_code == 201:
                 review = response.json()
                 sentiment = "긍정" if review.get("is_positive") == 1 else "부정"
+
+                # 캐시 무효화 (리뷰 목록 및 평점 갱신)
+                if "loaded_reviews" in st.session_state:
+                    st.session_state["loaded_reviews"] = []
+                    st.session_state["reviews_current_page"] = 1
+                    st.session_state["reviews_has_more"] = True
+                # 평점 캐시 무효화
+                cache_key = f"cached_rating_{tmdb_id}"
+                if cache_key in st.session_state:
+                    del st.session_state[cache_key]
+
                 st.success(f"리뷰가 등록되었습니다! (AI 분석 결과: {sentiment})")
                 st.balloons()
                 st.rerun()
@@ -410,6 +491,18 @@ class ReviewManager:
             response = requests.delete(f"{self.api_url}/reviews/{review_id}")
 
             if response.status_code == 204:
+                # 캐시 무효화 (리뷰 목록 및 평점 갱신)
+                if "loaded_reviews" in st.session_state:
+                    st.session_state["loaded_reviews"] = []
+                    st.session_state["reviews_current_page"] = 1
+                    st.session_state["reviews_has_more"] = True
+                # 모든 평점 캐시 무효화
+                keys_to_delete = [
+                    k for k in st.session_state.keys() if k.startswith("cached_rating_")
+                ]
+                for key in keys_to_delete:
+                    del st.session_state[key]
+
                 st.success("리뷰가 삭제되었습니다.")
                 st.rerun()
             else:

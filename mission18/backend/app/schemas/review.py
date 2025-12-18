@@ -5,6 +5,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, TYPE_CHECKING, Any
 from datetime import datetime
+from typing import List
 
 if TYPE_CHECKING:
     from app.schemas.movie import MovieResponse
@@ -67,3 +68,24 @@ class ReviewWithMovie(ReviewResponse):
     """
 
     movie: Any = Field(..., description="영화 정보")  # 순환 참조 방지를 위해 Any 사용
+
+
+class ReviewPaginationResponse(BaseModel):
+    """
+    리뷰 목록 페이지네이션 응답 스키마
+
+    Attributes:
+        total: 전체 리뷰 수
+        page: 현재 페이지 번호
+        page_size: 페이지당 항목 수
+        total_pages: 전체 페이지 수
+        reviews: 리뷰 목록 (영화 정보 포함)
+    """
+
+    total: int = Field(..., description="전체 리뷰 수")
+    page: int = Field(..., description="현재 페이지 번호")
+    page_size: int = Field(..., description="페이지당 항목 수")
+    total_pages: int = Field(..., description="전체 페이지 수")
+    reviews: List[ReviewWithMovie] = Field(
+        ..., description="리뷰 목록 (영화 정보 포함)"
+    )

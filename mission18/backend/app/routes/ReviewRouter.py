@@ -2,14 +2,21 @@
 리뷰(Review) API 라우터
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session
 from typing import List
+import math
 
 from app.database import get_db
 from app.services.ReviewService import ReviewService
 from app.services.MovieService import MovieService
-from app.schemas import ReviewCreate, ReviewResponse, ReviewWithMovie, MovieRating
+from app.schemas import (
+    ReviewCreate,
+    ReviewResponse,
+    ReviewWithMovie,
+    MovieRating,
+    ReviewPaginationResponse,
+)
 
 import logging
 from helper_dev_utils import get_auto_logger
@@ -49,6 +56,14 @@ class ReviewRouter:
             response_model=List[ReviewWithMovie],
             summary="최근 리뷰 목록 조회",
             description="최근 등록된 리뷰 목록을 조회합니다 (기본 10개).",
+        )
+        self.router.add_api_route(
+            "/paginated",
+            self.get_reviews_paginated,
+            methods=["GET"],
+            response_model=ReviewPaginationResponse,
+            summary="페이지네이션된 리뷰 목록 조회",
+            description="페이지 단위로 리뷰 목록을 조회합니다 (영화 정보 포함).",
         )
         self.router.add_api_route(
             "/movie/{tmdb_id}",
@@ -129,6 +144,39 @@ class ReviewRouter:
         service = ReviewService(db)
         reviews = service.get_all_reviews(limit=limit)
         return reviews
+
+    def get_reviews_paginated(
+        self,
+        page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
+        page_size: int = Query(
+            10, ge=1, le=100, description="페이지당 항목 수 (최대 100)"
+        ),
+        db: Session = Depends(get_db),
+    ) -> ReviewPaginationResponse:
+        """
+        페이지네이션된 리뷰 목록 조회 (영화 정보 포함)
+
+        Args:
+            page: 페이지 번호 (1부터 시작)
+            page_size: 페이지당 항목 수
+            db: 데이터베이스 세션
+
+        Returns:
+            ReviewPaginationResponse: 페이지네이션 정보와 리뷰 목록 (영화 정보 포함)
+        """
+        service = ReviewService(db)
+        reviews, total = service.get_reviews_paginated(page, page_size)
+
+        # 전체 페이지 수 계산
+        total_pages = math.ceil(total / page_size) if total > 0 else 0
+
+        return ReviewPaginationResponse(
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            reviews=reviews,  # SQLModel의 관계 자동 로드 활용
+        )
 
     def get_reviews_by_movie(
         self, tmdb_id: int, db: Session = Depends(get_db)

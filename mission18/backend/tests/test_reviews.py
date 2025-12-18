@@ -257,3 +257,132 @@ def test_delete_review_not_found(client: TestClient):
     """존재하지 않는 리뷰 삭제 시도 테스트"""
     response = client.delete("/reviews/99999")
     assert response.status_code == 404
+
+
+def test_get_reviews_paginated_success(client: TestClient):
+    """리뷰 페이지네이션 정상 조회 테스트"""
+    # 영화 등록
+    movie_data = {
+        "tmdb_id": 6001,
+        "title": "페이지네이션 테스트 영화",
+        "release_date": "2024-01-01",
+        "director": "테스트 감독",
+        "genre": "드라마",
+        "poster_url": None,
+        "tmdb_rating": 8.0,
+    }
+    client.post("/movies/", json=movie_data)
+
+    # 리뷰 10개 등록
+    for i in range(10):
+        review_data = {
+            "tmdb_id": 6001,
+            "author": f"테스터{i}",
+            "content": f"테스트 리뷰 {i}",
+        }
+        client.post("/reviews/", json=review_data)
+
+    # 첫 번째 페이지 조회 (3개씩)
+    response = client.get("/reviews/paginated?page=1&page_size=3")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total"] == 10
+    assert data["page"] == 1
+    assert data["page_size"] == 3
+    assert data["total_pages"] == 4
+    assert len(data["reviews"]) == 3
+
+    # 각 리뷰에 영화 정보가 포함되어 있는지 확인
+    for review in data["reviews"]:
+        assert "movie" in review
+        assert review["movie"]["title"] == "페이지네이션 테스트 영화"
+
+    # 두 번째 페이지 조회
+    response2 = client.get("/reviews/paginated?page=2&page_size=3")
+    assert response2.status_code == 200
+    data2 = response2.json()
+    assert len(data2["reviews"]) == 3
+
+    # 마지막 페이지 조회
+    response_last = client.get("/reviews/paginated?page=4&page_size=3")
+    assert response_last.status_code == 200
+    data_last = response_last.json()
+    assert len(data_last["reviews"]) == 1  # 10 % 3 = 1
+
+
+def test_get_reviews_paginated_empty(client: TestClient):
+    """리뷰가 없을 때 페이지네이션 조회 테스트"""
+    response = client.get("/reviews/paginated?page=1&page_size=10")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total"] == 0
+    assert data["page"] == 1
+    assert data["page_size"] == 10
+    assert data["total_pages"] == 0
+    assert len(data["reviews"]) == 0
+
+
+def test_get_reviews_paginated_out_of_range(client: TestClient):
+    """범위 초과 페이지 조회 테스트"""
+    # 영화 및 리뷰 등록
+    movie_data = {
+        "tmdb_id": 6002,
+        "title": "범위 테스트 영화",
+        "release_date": "2024-01-01",
+    }
+    client.post("/movies/", json=movie_data)
+
+    review_data = {
+        "tmdb_id": 6002,
+        "author": "테스터",
+        "content": "테스트 리뷰",
+    }
+    client.post("/reviews/", json=review_data)
+
+    # 범위를 초과한 페이지 조회
+    response = client.get("/reviews/paginated?page=10&page_size=10")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total"] == 1
+    assert data["page"] == 10
+    assert data["total_pages"] == 1
+    assert len(data["reviews"]) == 0  # 범위 초과 시 빈 리스트
+
+
+def test_get_reviews_paginated_metadata(client: TestClient):
+    """페이지네이션 메타데이터 검증 테스트"""
+    # 영화 등록
+    movie_data = {
+        "tmdb_id": 6003,
+        "title": "메타데이터 테스트 영화",
+        "release_date": "2024-01-01",
+    }
+    client.post("/movies/", json=movie_data)
+
+    # 리뷰 7개 등록
+    for i in range(7):
+        review_data = {
+            "tmdb_id": 6003,
+            "author": f"테스터{i}",
+            "content": f"테스트 리뷰 {i}",
+        }
+        client.post("/reviews/", json=review_data)
+
+    # 페이지당 5개씩 조회
+    response = client.get("/reviews/paginated?page=1&page_size=5")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total"] == 7
+    assert data["page"] == 1
+    assert data["page_size"] == 5
+    assert data["total_pages"] == 2  # ceil(7/5) = 2
+    assert len(data["reviews"]) == 5
+
+    # 두 번째 페이지
+    response2 = client.get("/reviews/paginated?page=2&page_size=5")
+    data2 = response2.json()
+    assert len(data2["reviews"]) == 2  # 7 - 5 = 2

@@ -9,7 +9,12 @@ from app.schemas.movie import (
     MovieWithReviewsAndRating,
     MoviePaginationResponse,
 )
-from app.schemas.review import ReviewCreate, ReviewResponse, ReviewWithMovie
+from app.schemas.review import (
+    ReviewCreate,
+    ReviewResponse,
+    ReviewWithMovie,
+    ReviewPaginationResponse,
+)
 from app.schemas.rating import MovieRating
 
 __all__ = [
@@ -21,5 +26,6 @@ __all__ = [
     "ReviewCreate",
     "ReviewResponse",
     "ReviewWithMovie",
+    "ReviewPaginationResponse",
     "MovieRating",
 ]

@@ -3,6 +3,7 @@
 """
 
 from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 
 from app.models.ReviewModel import ReviewModel
@@ -72,6 +73,38 @@ class ReviewService:
         )
         results = self.session.exec(statement)
         return results.all()
+
+    def get_reviews_paginated(
+        self, page: int = 1, page_size: int = 10
+    ) -> tuple[List[ReviewModel], int]:
+        """
+        페이지네이션된 리뷰 목록 조회 (최신순)
+
+        Args:
+            page: 페이지 번호 (1부터 시작)
+            page_size: 페이지당 항목 수
+
+        Returns:
+            tuple[List[ReviewModel], int]: (리뷰 목록, 전체 리뷰 수)
+        """
+        # 전체 리뷰 수 조회
+        from sqlmodel import func
+
+        count_statement = select(func.count(ReviewModel.id))
+        total = self.session.exec(count_statement).one()
+
+        # 페이지네이션된 리뷰 목록 조회 (최신순, 영화 정보 eager loading)
+        offset = (page - 1) * page_size
+        statement = (
+            select(ReviewModel)
+            .options(selectinload(ReviewModel.movie))
+            .order_by(ReviewModel.created_at.desc())
+            .offset(offset)
+            .limit(page_size)
+        )
+        results = self.session.exec(statement)
+
+        return results.all(), total
 
     def get_reviews_by_tmdb_id(self, tmdb_id: int) -> List[ReviewModel]:
         """
