@@ -66,7 +66,7 @@ class ReviewEditManager:
 
     def render(self):
         """리뷰 작성 폼 렌더링"""
-        st.write("##### 리뷰 작성")
+        # st.write("##### 리뷰 작성")
 
         movies = st.session_state.get("searched_movies", [])
 
@@ -96,12 +96,17 @@ class ReviewEditManager:
             return
 
         # 영화 선택 드롭다운
-        selected_movie = st.selectbox(
-            "영화 선택 *",
-            options=movie_names,
-            key="selected_movie_for_review",
-            help="검색된 영화 중에서 선택하세요",
-        )
+        clos = st.columns([1.09, 8])
+        with clos[0]:
+            st_label("영화선택")
+        with clos[1]:
+            selected_movie = st.selectbox(
+                "영화 선택 *",
+                options=movie_names,
+                key="selected_movie_for_review",
+                help="검색된 영화 중에서 선택하세요",
+                label_visibility="collapsed",
+            )
 
         # 선택된 영화 TMDB ID 가져오기
         selected_tmdb_id = movie_options[selected_movie]
@@ -178,12 +183,13 @@ class ReviewEditManager:
                     )
 
         # 선택된 영화의 AI 평점 표시
-        st.divider()
+        st_div_divider()
+
         self._render_movie_rating_section(selected_tmdb_id, movies)
 
     def _render_movie_rating_section(self, movie_id: int, movies: List[Dict]):
         """영화 AI 평점 섹션 렌더링"""
-        st.header("영화 AI 평점")
+        st.write("##### 영화 AI 평점")
 
         # 선택된 영화의 평점 데이터 캐싱
         cache_key = f"cached_rating_{movie_id}"
