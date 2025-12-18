@@ -4,7 +4,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 import math
 
 from app.database import get_db
@@ -64,6 +65,14 @@ class ReviewRouter:
             response_model=ReviewPaginationResponse,
             summary="페이지네이션된 리뷰 목록 조회",
             description="페이지 단위로 리뷰 목록을 조회합니다 (영화 정보 포함).",
+        )
+        self.router.add_api_route(
+            "/search",
+            self.search_reviews,
+            methods=["GET"],
+            response_model=ReviewPaginationResponse,
+            summary="리뷰 검색 (복합 필터)",
+            description="다양한 조건으로 리뷰를 검색합니다. 모든 필터는 AND 조합으로 작동합니다.",
         )
         self.router.add_api_route(
             "/movie/{tmdb_id}",
@@ -176,6 +185,92 @@ class ReviewRouter:
             page_size=page_size,
             total_pages=total_pages,
             reviews=reviews,  # SQLModel의 관계 자동 로드 활용
+        )
+
+    def search_reviews(
+        self,
+        author: Optional[str] = Query(
+            None, description="작성자 이름 (부분 검색, 대소문자 무시)"
+        ),
+        content: Optional[str] = Query(
+            None, description="리뷰 내용 (부분 검색, 대소문자 무시)"
+        ),
+        sentiment: str = Query(
+            "all", description="감성 필터 (positive, negative, all)"
+        ),
+        movie_title: Optional[str] = Query(
+            None, description="영화 제목 (부분 검색, 대소문자 무시)"
+        ),
+        tmdb_id: Optional[int] = Query(None, description="TMDB 영화 ID"),
+        created_from: Optional[datetime] = Query(
+            None, description="생성일 시작 (ISO 8601 형식)"
+        ),
+        created_to: Optional[datetime] = Query(
+            None, description="생성일 종료 (ISO 8601 형식)"
+        ),
+        sort_by: str = Query(
+            "created_at", description="정렬 필드 (created_at, author)"
+        ),
+        sort_order: str = Query("desc", description="정렬 방향 (asc, desc)"),
+        page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
+        page_size: int = Query(
+            10, ge=1, le=100, description="페이지당 항목 수 (최대 100)"
+        ),
+        db: Session = Depends(get_db),
+    ) -> ReviewPaginationResponse:
+        """
+        리뷰 검색 (복합 필터, 정렬, 페이지네이션)
+
+        모든 필터는 AND 조합으로 작동합니다.
+
+        Query Parameters:
+            - author: 작성자 이름 부분 검색 (대소문자 무시)
+            - content: 리뷰 내용 부분 검색 (대소문자 무시)
+            - sentiment: 감성 필터 (positive, negative, all)
+            - movie_title: 영화 제목 부분 검색 (대소문자 무시)
+            - tmdb_id: TMDB 영화 ID
+            - created_from: 생성일 시작 (ISO 8601 형식, 예: 2024-01-01T00:00:00)
+            - created_to: 생성일 종료 (ISO 8601 형식)
+            - sort_by: 정렬 필드 (created_at, author)
+            - sort_order: 정렬 방향 (asc, desc)
+            - page: 페이지 번호
+            - page_size: 페이지당 항목 수
+
+        Returns:
+            ReviewPaginationResponse: 검색 결과 및 페이지네이션 정보
+        """
+        from app.schemas.review import ReviewSearchFilters
+
+        # 필터 객체 생성
+        filters = ReviewSearchFilters(
+            author=author,
+            content=content,
+            sentiment=sentiment,
+            movie_title=movie_title,
+            tmdb_id=tmdb_id,
+            created_from=created_from,
+            created_to=created_to,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            page=page,
+            page_size=page_size,
+        )
+
+        service = ReviewService(db)
+        reviews, total = service.search_reviews(filters)
+
+        total_pages = math.ceil(total / page_size) if total > 0 else 0
+
+        logger.debug(
+            f"[Router] Review search completed: {total} results, page {page}/{total_pages}"
+        )
+
+        return ReviewPaginationResponse(
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            reviews=reviews,
         )
 
     def get_reviews_by_movie(

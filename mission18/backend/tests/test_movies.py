@@ -365,3 +365,218 @@ def test_movies_paginated_ai_rating_calculation(client: TestClient):
     # AI 예측 결과에 따라 긍정/부정 비율이 결정됨
     assert "positive_ratio" in movie
     assert "ai_rating" in movie
+
+
+# ==================== Movie Search Tests ====================
+
+
+def test_search_movies_by_title(client: TestClient):
+    """제목으로 영화 검색 테스트 (대소문자 무시)"""
+    # 테스트 데이터 등록
+    movies = [
+        {
+            "tmdb_id": 50001,
+            "title": "The Dark Knight",
+            "director": "Christopher Nolan",
+            "genre": "Action",
+        },
+        {
+            "tmdb_id": 50002,
+            "title": "The Matrix",
+            "director": "Wachowski",
+            "genre": "Sci-Fi",
+        },
+        {
+            "tmdb_id": 50003,
+            "title": "Dark Phoenix",
+            "director": "Simon Kinberg",
+            "genre": "Action",
+        },
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    # "dark" 검색 (대소문자 무시)
+    response = client.get("/movies/search", params={"title": "dark"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+    titles = [m["title"] for m in data["movies"]]
+    assert "The Dark Knight" in titles
+    assert "Dark Phoenix" in titles
+    assert "The Matrix" not in titles
+
+
+def test_search_movies_by_director(client: TestClient):
+    """감독 이름으로 영화 검색 테스트"""
+    movies = [
+        {"tmdb_id": 50101, "title": "Inception", "director": "Christopher Nolan"},
+        {"tmdb_id": 50102, "title": "Interstellar", "director": "Christopher Nolan"},
+        {"tmdb_id": 50103, "title": "Tenet", "director": "Christopher Nolan"},
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    response = client.get("/movies/search", params={"director": "nolan"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 3
+
+
+def test_search_movies_by_genre(client: TestClient):
+    """장르로 영화 검색 테스트"""
+    movies = [
+        {"tmdb_id": 50201, "title": "Movie A", "genre": "Action, Thriller"},
+        {"tmdb_id": 50202, "title": "Movie B", "genre": "Romance"},
+        {"tmdb_id": 50203, "title": "Movie C", "genre": "Action"},
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    response = client.get("/movies/search", params={"genre": "action"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+
+
+def test_search_movies_by_release_date_range(client: TestClient):
+    """개봉일 범위로 영화 검색 테스트"""
+    movies = [
+        {"tmdb_id": 50301, "title": "Movie 2020", "release_date": "2020-05-15"},
+        {"tmdb_id": 50302, "title": "Movie 2021", "release_date": "2021-08-20"},
+        {"tmdb_id": 50303, "title": "Movie 2023", "release_date": "2023-01-10"},
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    response = client.get(
+        "/movies/search",
+        params={"release_date_from": "2021-01-01", "release_date_to": "2022-12-31"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["movies"][0]["title"] == "Movie 2021"
+
+
+def test_search_movies_by_tmdb_rating_range(client: TestClient):
+    """TMDB 평점 범위로 영화 검색 테스트"""
+    movies = [
+        {"tmdb_id": 50401, "title": "Great Movie", "tmdb_rating": 9.5},
+        {"tmdb_id": 50402, "title": "Good Movie", "tmdb_rating": 7.8},
+        {"tmdb_id": 50403, "title": "Bad Movie", "tmdb_rating": 5.2},
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    response = client.get(
+        "/movies/search", params={"tmdb_rating_min": 7.0, "tmdb_rating_max": 9.0}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["movies"][0]["title"] == "Good Movie"
+
+
+def test_search_movies_multiple_filters(client: TestClient):
+    """복합 필터로 영화 검색 테스트 (AND 조합)"""
+    movies = [
+        {
+            "tmdb_id": 50501,
+            "title": "Nolan Action 2020",
+            "director": "Nolan",
+            "genre": "Action",
+            "release_date": "2020-01-01",
+        },
+        {
+            "tmdb_id": 50502,
+            "title": "Nolan Drama 2020",
+            "director": "Nolan",
+            "genre": "Drama",
+            "release_date": "2020-06-01",
+        },
+        {
+            "tmdb_id": 50503,
+            "title": "Other Action 2020",
+            "director": "Other",
+            "genre": "Action",
+            "release_date": "2020-03-01",
+        },
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    response = client.get(
+        "/movies/search",
+        params={
+            "director": "nolan",
+            "genre": "action",
+            "release_date_from": "2020-01-01",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["movies"][0]["title"] == "Nolan Action 2020"
+
+
+def test_search_movies_with_sorting(client: TestClient):
+    """정렬 옵션으로 영화 검색 테스트"""
+    movies = [
+        {"tmdb_id": 50601, "title": "B Movie", "tmdb_rating": 7.0},
+        {"tmdb_id": 50602, "title": "A Movie", "tmdb_rating": 8.0},
+        {"tmdb_id": 50603, "title": "C Movie", "tmdb_rating": 6.0},
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    # 제목 오름차순
+    response = client.get(
+        "/movies/search", params={"sort_by": "title", "sort_order": "asc"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["movies"][0]["title"] == "A Movie"
+    assert data["movies"][2]["title"] == "C Movie"
+
+    # 평점 내림차순
+    response = client.get(
+        "/movies/search", params={"sort_by": "tmdb_rating", "sort_order": "desc"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["movies"][0]["title"] == "A Movie"  # 8.0
+    assert data["movies"][2]["title"] == "C Movie"  # 6.0
+
+
+def test_search_movies_empty_result(client: TestClient):
+    """검색 결과가 없는 경우 테스트"""
+    client.post("/movies/", json={"tmdb_id": 50701, "title": "Only Movie"})
+
+    response = client.get("/movies/search", params={"title": "NonExistent"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 0
+    assert len(data["movies"]) == 0
+
+
+def test_search_movies_pagination(client: TestClient):
+    """검색 결과 페이지네이션 테스트"""
+    for i in range(15):
+        client.post("/movies/", json={"tmdb_id": 50800 + i, "title": f"Test Movie {i}"})
+
+    # 첫 페이지
+    response = client.get("/movies/search", params={"page": 1, "page_size": 10})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 15
+    assert len(data["movies"]) == 10
+    assert data["page"] == 1
+    assert data["total_pages"] == 2
+
+    # 두 번째 페이지
+    response = client.get("/movies/search", params={"page": 2, "page_size": 10})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["movies"]) == 5
+    assert data["page"] == 2

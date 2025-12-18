@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlmodel import Session
-from typing import List
+from typing import List, Optional
 import math
 import time
 
@@ -72,6 +72,14 @@ class MovieRouter:
             response_model=MoviePaginationResponse,
             summary="영화 목록 페이지네이션 조회",
             description="페이지 번호와 페이지 크기를 기반으로 영화 목록을 조회합니다. 리뷰 정보도 함께 반환됩니다.",
+        )
+        self.router.add_api_route(
+            "/search",
+            self.search_movies,
+            methods=["GET"],
+            response_model=MoviePaginationResponse,
+            summary="영화 검색 (복합 필터)",
+            description="다양한 조건으로 영화를 검색합니다. 모든 필터는 AND 조합으로 작동합니다.",
         )
         self.router.add_api_route(
             "/{movie_id}",
@@ -221,6 +229,139 @@ class MovieRouter:
             movies_with_data.append(MovieWithReviewsAndRating(**movie_dict))
 
         total_pages = math.ceil(total / page_size) if total > 0 else 0
+
+        return MoviePaginationResponse(
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            movies=movies_with_data,
+        )
+
+    def search_movies(
+        self,
+        title: Optional[str] = Query(
+            None, description="영화 제목 (부분 검색, 대소문자 무시)"
+        ),
+        director: Optional[str] = Query(
+            None, description="감독 이름 (부분 검색, 대소문자 무시)"
+        ),
+        genre: Optional[str] = Query(
+            None, description="장르 (부분 검색, 대소문자 무시)"
+        ),
+        release_date_from: Optional[str] = Query(
+            None, description="개봉일 시작 (YYYY-MM-DD)"
+        ),
+        release_date_to: Optional[str] = Query(
+            None, description="개봉일 종료 (YYYY-MM-DD)"
+        ),
+        tmdb_rating_min: Optional[float] = Query(
+            None, ge=0, le=10, description="최소 TMDB 평점 (0-10)"
+        ),
+        tmdb_rating_max: Optional[float] = Query(
+            None, ge=0, le=10, description="최대 TMDB 평점 (0-10)"
+        ),
+        ai_rating_min: Optional[float] = Query(
+            None, ge=0, le=5, description="최소 AI 평점 (0-5)"
+        ),
+        ai_rating_max: Optional[float] = Query(
+            None, ge=0, le=5, description="최대 AI 평점 (0-5)"
+        ),
+        sort_by: str = Query(
+            "release_date",
+            description="정렬 필드 (release_date, tmdb_rating, title, ai_rating)",
+        ),
+        sort_order: str = Query("desc", description="정렬 방향 (asc, desc)"),
+        page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
+        page_size: int = Query(
+            10, ge=1, le=100, description="페이지당 항목 수 (최대 100)"
+        ),
+        db: Session = Depends(get_db),
+    ) -> MoviePaginationResponse:
+        """
+        영화 검색 (복합 필터, 정렬, 페이지네이션)
+
+        모든 필터는 AND 조합으로 작동합니다.
+
+        Query Parameters:
+            - title: 영화 제목 부분 검색 (대소문자 무시)
+            - director: 감독 이름 부분 검색 (대소문자 무시)
+            - genre: 장르 부분 검색 (대소문자 무시)
+            - release_date_from: 개봉일 시작 (YYYY-MM-DD)
+            - release_date_to: 개봉일 종료 (YYYY-MM-DD)
+            - tmdb_rating_min: 최소 TMDB 평점 (0-10)
+            - tmdb_rating_max: 최대 TMDB 평점 (0-10)
+            - ai_rating_min: 최소 AI 평점 (0-5)
+            - ai_rating_max: 최대 AI 평점 (0-5)
+            - sort_by: 정렬 필드 (release_date, tmdb_rating, title, ai_rating)
+            - sort_order: 정렬 방향 (asc, desc)
+            - page: 페이지 번호
+            - page_size: 페이지당 항목 수
+
+        Returns:
+            MoviePaginationResponse: 검색 결과 및 페이지네이션 정보
+        """
+        from app.schemas.movie import MovieSearchFilters
+
+        # 필터 객체 생성
+        filters = MovieSearchFilters(
+            title=title,
+            director=director,
+            genre=genre,
+            release_date_from=release_date_from,
+            release_date_to=release_date_to,
+            tmdb_rating_min=tmdb_rating_min,
+            tmdb_rating_max=tmdb_rating_max,
+            ai_rating_min=ai_rating_min,
+            ai_rating_max=ai_rating_max,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            page=page,
+            page_size=page_size,
+        )
+
+        service = MovieService(db)
+        movies, total = service.search_movies(filters)
+
+        # 각 영화의 리뷰 정보 및 AI 평점 추가
+        movies_with_data = []
+        for movie in movies:
+            movie_dict = MovieWithReviews.model_validate(movie).model_dump()
+            movie_dict["reviews"] = movie.reviews
+
+            # AI 평점 계산 (캐시된 값 사용 또는 계산)
+            total_reviews = len(movie.reviews)
+            positive_reviews = sum(
+                1 for review in movie.reviews if review.is_positive == 1
+            )
+            negative_reviews = sum(
+                1 for review in movie.reviews if review.is_positive == 0
+            )
+
+            if total_reviews > 0:
+                positive_ratio = positive_reviews / total_reviews
+                ai_rating = (
+                    movie.ai_rating
+                    if movie.ai_rating is not None
+                    else positive_ratio * 5.0
+                )
+            else:
+                positive_ratio = 0.0
+                ai_rating = 0.0
+
+            movie_dict["total_reviews"] = total_reviews
+            movie_dict["positive_reviews"] = positive_reviews
+            movie_dict["negative_reviews"] = negative_reviews
+            movie_dict["positive_ratio"] = round(positive_ratio, 2)
+            movie_dict["ai_rating"] = round(ai_rating, 1)
+
+            movies_with_data.append(MovieWithReviewsAndRating(**movie_dict))
+
+        total_pages = math.ceil(total / page_size) if total > 0 else 0
+
+        logger.debug(
+            f"[Router] Movie search completed: {total} results, page {page}/{total_pages}"
+        )
 
         return MoviePaginationResponse(
             total=total,

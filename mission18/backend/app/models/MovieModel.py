@@ -35,6 +35,9 @@ class MovieModel(SQLModel, table=True):
         default=None, max_length=500, description="포스터 이미지 로컬 경로"
     )
     tmdb_rating: Optional[float] = Field(default=None, description="TMDB 평점")
+    ai_rating: Optional[float] = Field(
+        default=None, index=True, description="AI 평점 (리뷰 기반 감성 분석, 0-5점)"
+    )
 
     # 관계 설정
     reviews: List["ReviewModel"] = Relationship(

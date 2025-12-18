@@ -386,3 +386,190 @@ def test_get_reviews_paginated_metadata(client: TestClient):
     response2 = client.get("/reviews/paginated?page=2&page_size=5")
     data2 = response2.json()
     assert len(data2["reviews"]) == 2  # 7 - 5 = 2
+
+
+# ==================== Review Search Tests ====================
+
+
+def test_search_reviews_by_author(client: TestClient):
+    """작성자 이름으로 리뷰 검색 테스트"""
+    # 영화 등록
+    client.post("/movies/", json={"tmdb_id": 60001, "title": "Test Movie"})
+
+    # 리뷰 등록
+    reviews = [
+        {"tmdb_id": 60001, "author": "John Doe", "content": "Great movie!"},
+        {"tmdb_id": 60001, "author": "Jane Smith", "content": "Not bad"},
+        {"tmdb_id": 60001, "author": "John Kim", "content": "Amazing"},
+    ]
+    for review in reviews:
+        client.post("/reviews/", json=review)
+
+    # "john" 검색 (대소문자 무시)
+    response = client.get("/reviews/search", params={"author": "john"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+    authors = [r["author"] for r in data["reviews"]]
+    assert "John Doe" in authors
+    assert "John Kim" in authors
+
+
+def test_search_reviews_by_content(client: TestClient):
+    """리뷰 내용으로 검색 테스트"""
+    client.post("/movies/", json={"tmdb_id": 60101, "title": "Movie A"})
+
+    reviews = [
+        {"tmdb_id": 60101, "author": "User1", "content": "This movie is amazing!"},
+        {"tmdb_id": 60101, "author": "User2", "content": "Terrible experience"},
+        {"tmdb_id": 60101, "author": "User3", "content": "The most amazing film"},
+    ]
+    for review in reviews:
+        client.post("/reviews/", json=review)
+
+    response = client.get("/reviews/search", params={"content": "amazing"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+
+
+def test_search_reviews_by_movie_title(client: TestClient):
+    """영화 제목으로 리뷰 검색 테스트"""
+    movies = [
+        {"tmdb_id": 60201, "title": "The Dark Knight"},
+        {"tmdb_id": 60202, "title": "The Matrix"},
+    ]
+    for movie in movies:
+        client.post("/movies/", json=movie)
+
+    client.post(
+        "/reviews/", json={"tmdb_id": 60201, "author": "User1", "content": "Review 1"}
+    )
+    client.post(
+        "/reviews/", json={"tmdb_id": 60201, "author": "User2", "content": "Review 2"}
+    )
+    client.post(
+        "/reviews/", json={"tmdb_id": 60202, "author": "User3", "content": "Review 3"}
+    )
+
+    response = client.get("/reviews/search", params={"movie_title": "dark knight"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+
+
+def test_search_reviews_by_tmdb_id(client: TestClient):
+    """TMDB ID로 리뷰 검색 테스트"""
+    client.post("/movies/", json={"tmdb_id": 60301, "title": "Movie X"})
+    client.post("/movies/", json={"tmdb_id": 60302, "title": "Movie Y"})
+
+    client.post(
+        "/reviews/", json={"tmdb_id": 60301, "author": "User1", "content": "Review 1"}
+    )
+    client.post(
+        "/reviews/", json={"tmdb_id": 60301, "author": "User2", "content": "Review 2"}
+    )
+    client.post(
+        "/reviews/", json={"tmdb_id": 60302, "author": "User3", "content": "Review 3"}
+    )
+
+    response = client.get("/reviews/search", params={"tmdb_id": 60301})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+
+
+def test_search_reviews_multiple_filters(client: TestClient):
+    """복합 필터로 리뷰 검색 테스트 (AND 조합)"""
+    client.post("/movies/", json={"tmdb_id": 60401, "title": "Test Film"})
+
+    reviews = [
+        {"tmdb_id": 60401, "author": "Alice", "content": "Great movie!"},
+        {"tmdb_id": 60401, "author": "Bob", "content": "Not so great"},
+        {"tmdb_id": 60401, "author": "Alice", "content": "Terrible"},
+    ]
+    for review in reviews:
+        client.post("/reviews/", json=review)
+
+    response = client.get(
+        "/reviews/search", params={"author": "alice", "content": "great"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["reviews"][0]["author"] == "Alice"
+    assert "Great movie" in data["reviews"][0]["content"]
+
+
+def test_search_reviews_with_sorting(client: TestClient):
+    """정렬 옵션으로 리뷰 검색 테스트"""
+    import time
+
+    client.post("/movies/", json={"tmdb_id": 60501, "title": "Movie"})
+
+    # 시간차를 두고 등록
+    client.post(
+        "/reviews/", json={"tmdb_id": 60501, "author": "Charlie", "content": "First"}
+    )
+    time.sleep(0.1)
+    client.post(
+        "/reviews/", json={"tmdb_id": 60501, "author": "Alice", "content": "Second"}
+    )
+    time.sleep(0.1)
+    client.post(
+        "/reviews/", json={"tmdb_id": 60501, "author": "Bob", "content": "Third"}
+    )
+
+    # 작성자 이름 오름차순
+    response = client.get(
+        "/reviews/search", params={"sort_by": "author", "sort_order": "asc"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["reviews"][0]["author"] == "Alice"
+    assert data["reviews"][2]["author"] == "Charlie"
+
+    # 생성일 내림차순 (최신순)
+    response = client.get(
+        "/reviews/search", params={"sort_by": "created_at", "sort_order": "desc"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["reviews"][0]["content"] == "Third"  # 가장 최근
+
+
+def test_search_reviews_pagination(client: TestClient):
+    """리뷰 검색 페이지네이션 테스트"""
+    client.post("/movies/", json={"tmdb_id": 60601, "title": "Popular Movie"})
+
+    for i in range(12):
+        client.post(
+            "/reviews/",
+            json={"tmdb_id": 60601, "author": f"User{i}", "content": f"Review {i}"},
+        )
+
+    response = client.get("/reviews/search", params={"page": 1, "page_size": 10})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 12
+    assert len(data["reviews"]) == 10
+    assert data["total_pages"] == 2
+
+    response = client.get("/reviews/search", params={"page": 2, "page_size": 10})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["reviews"]) == 2
+
+
+def test_search_reviews_empty_result(client: TestClient):
+    """리뷰 검색 결과가 없는 경우 테스트"""
+    client.post("/movies/", json={"tmdb_id": 60701, "title": "Movie"})
+    client.post(
+        "/reviews/", json={"tmdb_id": 60701, "author": "User", "content": "Review"}
+    )
+
+    response = client.get("/reviews/search", params={"author": "NonExistent"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 0
+    assert len(data["reviews"]) == 0

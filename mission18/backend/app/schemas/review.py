@@ -89,3 +89,44 @@ class ReviewPaginationResponse(BaseModel):
     reviews: List[ReviewWithMovie] = Field(
         ..., description="리뷰 목록 (영화 정보 포함)"
     )
+
+
+class ReviewSearchFilters(BaseModel):
+    """
+    리뷰 검색 필터 스키마
+
+    Attributes:
+        author: 작성자 이름 (부분 검색, 대소문자 무시)
+        content: 리뷰 내용 (부분 검색, 대소문자 무시)
+        sentiment: 감성 필터 (positive, negative, all)
+        movie_title: 영화 제목 (부분 검색, 대소문자 무시)
+        tmdb_id: TMDB 영화 ID
+        created_from: 생성일 시작 (ISO 8601 형식)
+        created_to: 생성일 종료 (ISO 8601 형식)
+        sort_by: 정렬 필드 (created_at, author)
+        sort_order: 정렬 방향 (asc, desc)
+        page: 페이지 번호
+        page_size: 페이지당 항목 수
+    """
+
+    author: Optional[str] = Field(
+        None, description="작성자 이름 (부분 검색, 대소문자 무시)"
+    )
+    content: Optional[str] = Field(
+        None, description="리뷰 내용 (부분 검색, 대소문자 무시)"
+    )
+    sentiment: str = Field("all", description="감성 필터 (positive, negative, all)")
+    movie_title: Optional[str] = Field(
+        None, description="영화 제목 (부분 검색, 대소문자 무시)"
+    )
+    tmdb_id: Optional[int] = Field(None, description="TMDB 영화 ID")
+    created_from: Optional[datetime] = Field(
+        None, description="생성일 시작 (ISO 8601 형식)"
+    )
+    created_to: Optional[datetime] = Field(
+        None, description="생성일 종료 (ISO 8601 형식)"
+    )
+    sort_by: str = Field("created_at", description="정렬 필드 (created_at, author)")
+    sort_order: str = Field("desc", description="정렬 방향 (asc, desc)")
+    page: int = Field(1, ge=1, description="페이지 번호")
+    page_size: int = Field(10, ge=1, le=100, description="페이지당 항목 수")

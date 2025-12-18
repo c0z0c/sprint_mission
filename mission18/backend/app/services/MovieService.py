@@ -2,7 +2,7 @@
 영화(Movie) 서비스 클래스
 """
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from typing import List, Optional
 import os
 import requests
@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from app.models.MovieModel import MovieModel
+from app.models.ReviewModel import ReviewModel
 from app.schemas import MovieCreate
 
 import logging
@@ -176,11 +177,140 @@ class MovieService:
         Returns:
             int: 최대 TMDB ID (영화가 없으면 0)
         """
-        from sqlmodel import func
-
         statement = select(func.max(MovieModel.tmdb_id))
         result = self.session.exec(statement).one()
         return result if result is not None else 0
+
+    def update_movie_ai_rating(self, tmdb_id: int) -> None:
+        """
+        영화의 AI 평점 업데이트 (리뷰 기반 감성 분석)
+
+        Args:
+            tmdb_id: TMDB 영화 ID
+        """
+        logger.debug(f"[Service] Updating AI rating for TMDB ID: {tmdb_id}")
+
+        # 영화 조회
+        movie = self.get_movie_by_tmdb_id(tmdb_id)
+        if not movie:
+            logger.warning(f"[Service] Movie not found for TMDB ID: {tmdb_id}")
+            return
+
+        # 해당 영화의 모든 리뷰 조회
+        statement = select(ReviewModel).where(ReviewModel.tmdb_id == tmdb_id)
+        reviews = self.session.exec(statement).all()
+
+        if not reviews:
+            # 리뷰가 없으면 ai_rating을 None으로 설정
+            movie.ai_rating = None
+            logger.debug(
+                f"[Service] No reviews found for TMDB ID: {tmdb_id}, setting ai_rating to None"
+            )
+        else:
+            # 긍정 리뷰 개수 계산
+            positive_count = sum(1 for r in reviews if r.is_positive == 1)
+            total_count = len(reviews)
+
+            # AI 평점 계산 (긍정 비율 * 5점)
+            positive_ratio = positive_count / total_count if total_count > 0 else 0.0
+            ai_rating = round(positive_ratio * 5.0, 2)
+
+            movie.ai_rating = ai_rating
+            logger.debug(
+                f"[Service] Updated AI rating for TMDB ID: {tmdb_id} - "
+                f"AI Rating: {ai_rating} ({positive_count}/{total_count} positive)"
+            )
+
+        self.session.add(movie)
+        self.session.commit()
+        self.session.refresh(movie)
+
+    def search_movies(
+        self, filters: "MovieSearchFilters"
+    ) -> tuple[List[MovieModel], int]:
+        """
+        영화 검색 (복합 필터링, 정렬, 페이지네이션)
+
+        Args:
+            filters: 영화 검색 필터
+
+        Returns:
+            tuple[List[MovieModel], int]: (영화 목록, 전체 검색 결과 수)
+        """
+        from app.schemas.movie import MovieSearchFilters
+
+        logger.debug(f"[Service] Searching movies with filters: {filters}")
+
+        # 기본 쿼리
+        statement = select(MovieModel)
+
+        # 필터 적용 (AND 조합)
+        if filters.title:
+            # 대소문자 무시 검색
+            statement = statement.where(MovieModel.title.ilike(f"%{filters.title}%"))
+
+        if filters.director:
+            # 대소문자 무시 검색
+            statement = statement.where(
+                MovieModel.director.ilike(f"%{filters.director}%")
+            )
+
+        if filters.genre:
+            # 대소문자 무시 부분 매칭
+            statement = statement.where(MovieModel.genre.ilike(f"%{filters.genre}%"))
+
+        if filters.release_date_from:
+            # 문자열 비교 (YYYY-MM-DD 형식이므로 사전순 정렬 가능)
+            statement = statement.where(
+                MovieModel.release_date >= filters.release_date_from
+            )
+
+        if filters.release_date_to:
+            # 문자열 비교
+            statement = statement.where(
+                MovieModel.release_date <= filters.release_date_to
+            )
+
+        if filters.tmdb_rating_min is not None:
+            statement = statement.where(
+                MovieModel.tmdb_rating >= filters.tmdb_rating_min
+            )
+
+        if filters.tmdb_rating_max is not None:
+            statement = statement.where(
+                MovieModel.tmdb_rating <= filters.tmdb_rating_max
+            )
+
+        if filters.ai_rating_min is not None:
+            statement = statement.where(MovieModel.ai_rating >= filters.ai_rating_min)
+
+        if filters.ai_rating_max is not None:
+            statement = statement.where(MovieModel.ai_rating <= filters.ai_rating_max)
+
+        # 전체 검색 결과 수 조회 (필터 적용 후)
+        count_statement = select(func.count()).select_from(statement.subquery())
+        total = self.session.exec(count_statement).one()
+
+        # 정렬 적용
+        sort_field = getattr(MovieModel, filters.sort_by, MovieModel.release_date)
+        if filters.sort_order == "desc":
+            statement = statement.order_by(sort_field.desc())
+        else:
+            statement = statement.order_by(sort_field.asc())
+
+        # 페이지네이션 적용
+        offset = (filters.page - 1) * filters.page_size
+        statement = statement.offset(offset).limit(filters.page_size)
+
+        # 실행
+        results = self.session.exec(statement)
+        movies = results.all()
+
+        logger.debug(
+            f"[Service] Found {total} movies, returning page {filters.page} with {len(movies)} items"
+        )
+
+        return movies, total
 
     def _download_and_update_poster(
         self, movie_id: int, poster_url: str, tmdb_id: int

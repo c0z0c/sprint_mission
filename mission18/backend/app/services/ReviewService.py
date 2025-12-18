@@ -2,11 +2,12 @@
 리뷰(Review) 서비스 클래스
 """
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 
 from app.models.ReviewModel import ReviewModel
+from app.models.MovieModel import MovieModel
 from app.schemas import ReviewCreate
 from app.ai.SentimentPredictor import SentimentPredictor
 
@@ -56,6 +57,16 @@ class ReviewService:
         self.session.commit()
         self.session.refresh(review)
 
+        # 영화 AI 평점 업데이트
+        from app.services.MovieService import MovieService
+
+        movie_service = MovieService(self.session)
+        movie_service.update_movie_ai_rating(review_data.tmdb_id)
+
+        logger.debug(
+            f"[Service] Review created and AI rating updated for TMDB ID: {review_data.tmdb_id}"
+        )
+
         return review
 
     def get_all_reviews(self, limit: int = 10) -> List[ReviewModel]:
@@ -88,8 +99,6 @@ class ReviewService:
             tuple[List[ReviewModel], int]: (리뷰 목록, 전체 리뷰 수)
         """
         # 전체 리뷰 수 조회
-        from sqlmodel import func
-
         count_statement = select(func.count(ReviewModel.id))
         total = self.session.exec(count_statement).one()
 
@@ -105,6 +114,81 @@ class ReviewService:
         results = self.session.exec(statement)
 
         return results.all(), total
+
+    def search_reviews(
+        self, filters: "ReviewSearchFilters"
+    ) -> tuple[List[ReviewModel], int]:
+        """
+        리뷰 검색 (복합 필터링, 정렬, 페이지네이션)
+
+        Args:
+            filters: 리뷰 검색 필터
+
+        Returns:
+            tuple[List[ReviewModel], int]: (리뷰 목록, 전체 검색 결과 수)
+        """
+        from app.schemas.review import ReviewSearchFilters
+
+        logger.debug(f"[Service] Searching reviews with filters: {filters}")
+
+        # 기본 쿼리 (eager loading)
+        statement = select(ReviewModel).options(selectinload(ReviewModel.movie))
+
+        # 필터 적용 (AND 조합)
+        if filters.author:
+            # 대소문자 무시 검색
+            statement = statement.where(ReviewModel.author.ilike(f"%{filters.author}%"))
+
+        if filters.content:
+            # 대소문자 무시 검색
+            statement = statement.where(
+                ReviewModel.content.ilike(f"%{filters.content}%")
+            )
+
+        if filters.sentiment != "all":
+            # 감성 필터 (positive: 1, negative: 0)
+            sentiment_value = 1 if filters.sentiment == "positive" else 0
+            statement = statement.where(ReviewModel.is_positive == sentiment_value)
+
+        if filters.tmdb_id is not None:
+            statement = statement.where(ReviewModel.tmdb_id == filters.tmdb_id)
+
+        if filters.movie_title:
+            # 영화 제목으로 필터 (JOIN 필요)
+            statement = statement.join(MovieModel).where(
+                MovieModel.title.ilike(f"%{filters.movie_title}%")
+            )
+
+        if filters.created_from:
+            statement = statement.where(ReviewModel.created_at >= filters.created_from)
+
+        if filters.created_to:
+            statement = statement.where(ReviewModel.created_at <= filters.created_to)
+
+        # 전체 검색 결과 수 조회 (필터 적용 후)
+        count_statement = select(func.count()).select_from(statement.subquery())
+        total = self.session.exec(count_statement).one()
+
+        # 정렬 적용
+        sort_field = getattr(ReviewModel, filters.sort_by, ReviewModel.created_at)
+        if filters.sort_order == "desc":
+            statement = statement.order_by(sort_field.desc())
+        else:
+            statement = statement.order_by(sort_field.asc())
+
+        # 페이지네이션 적용
+        offset = (filters.page - 1) * filters.page_size
+        statement = statement.offset(offset).limit(filters.page_size)
+
+        # 실행
+        results = self.session.exec(statement)
+        reviews = results.all()
+
+        logger.debug(
+            f"[Service] Found {total} reviews, returning page {filters.page} with {len(reviews)} items"
+        )
+
+        return reviews, total
 
     def get_reviews_by_tmdb_id(self, tmdb_id: int) -> List[ReviewModel]:
         """
@@ -146,8 +230,21 @@ class ReviewService:
         if not review:
             return False
 
+        tmdb_id = review.tmdb_id  # AI 평점 업데이트를 위해 저장
+
         self.session.delete(review)
         self.session.commit()
+
+        # 영화 AI 평점 업데이트
+        from app.services.MovieService import MovieService
+
+        movie_service = MovieService(self.session)
+        movie_service.update_movie_ai_rating(tmdb_id)
+
+        logger.debug(
+            f"[Service] Review deleted and AI rating updated for TMDB ID: {tmdb_id}"
+        )
+
         return True
 
     def get_movie_rating(self, tmdb_id: int) -> dict:

@@ -114,3 +114,55 @@ class MoviePaginationResponse(BaseModel):
     movies: List[MovieWithReviewsAndRating] = Field(
         ..., description="영화 목록 (리뷰 및 AI 평점 포함)"
     )
+
+
+class MovieSearchFilters(BaseModel):
+    """
+    영화 검색 필터 스키마
+
+    Attributes:
+        title: 영화 제목 (부분 검색, 대소문자 무시)
+        director: 감독 이름 (부분 검색, 대소문자 무시)
+        genre: 장르 (부분 검색, 대소문자 무시)
+        release_date_from: 개봉일 시작 (YYYY-MM-DD)
+        release_date_to: 개봉일 종료 (YYYY-MM-DD)
+        tmdb_rating_min: 최소 TMDB 평점
+        tmdb_rating_max: 최대 TMDB 평점
+        ai_rating_min: 최소 AI 평점
+        ai_rating_max: 최대 AI 평점
+        sort_by: 정렬 필드 (release_date, tmdb_rating, title, ai_rating)
+        sort_order: 정렬 방향 (asc, desc)
+        page: 페이지 번호
+        page_size: 페이지당 항목 수
+    """
+
+    title: Optional[str] = Field(
+        None, description="영화 제목 (부분 검색, 대소문자 무시)"
+    )
+    director: Optional[str] = Field(
+        None, description="감독 이름 (부분 검색, 대소문자 무시)"
+    )
+    genre: Optional[str] = Field(None, description="장르 (부분 검색, 대소문자 무시)")
+    release_date_from: Optional[str] = Field(
+        None, description="개봉일 시작 (YYYY-MM-DD)"
+    )
+    release_date_to: Optional[str] = Field(None, description="개봉일 종료 (YYYY-MM-DD)")
+    tmdb_rating_min: Optional[float] = Field(
+        None, ge=0, le=10, description="최소 TMDB 평점 (0-10)"
+    )
+    tmdb_rating_max: Optional[float] = Field(
+        None, ge=0, le=10, description="최대 TMDB 평점 (0-10)"
+    )
+    ai_rating_min: Optional[float] = Field(
+        None, ge=0, le=5, description="최소 AI 평점 (0-5)"
+    )
+    ai_rating_max: Optional[float] = Field(
+        None, ge=0, le=5, description="최대 AI 평점 (0-5)"
+    )
+    sort_by: str = Field(
+        "release_date",
+        description="정렬 필드 (release_date, tmdb_rating, title, ai_rating)",
+    )
+    sort_order: str = Field("desc", description="정렬 방향 (asc, desc)")
+    page: int = Field(1, ge=1, description="페이지 번호")
+    page_size: int = Field(10, ge=1, le=100, description="페이지당 항목 수")
