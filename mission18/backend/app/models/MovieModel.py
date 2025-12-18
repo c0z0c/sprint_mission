@@ -39,6 +39,23 @@ class MovieModel(SQLModel, table=True):
         default=None, index=True, description="AI 평점 (리뷰 기반 감성 분석, 0-5점)"
     )
 
+    # TMDB 추가 필드
+    overview: Optional[str] = Field(default=None, description="영화 줄거리/개요")
+    popularity: Optional[float] = Field(
+        default=None, index=True, description="TMDB 인기도"
+    )
+    vote_count: Optional[int] = Field(default=None, description="TMDB 투표 수")
+    original_title: Optional[str] = Field(
+        default=None, max_length=255, description="원제"
+    )
+    original_language: Optional[str] = Field(
+        default=None, max_length=10, description="원어 (ISO 639-1 코드)"
+    )
+    adult: Optional[bool] = Field(default=False, description="성인 영화 여부")
+    backdrop_path: Optional[str] = Field(
+        default=None, max_length=200, description="TMDB 배경 이미지 경로 (URL)"
+    )
+
     # 관계 설정
     reviews: List["ReviewModel"] = Relationship(
         back_populates="movie", cascade_delete=True

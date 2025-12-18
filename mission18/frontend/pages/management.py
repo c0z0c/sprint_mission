@@ -146,6 +146,42 @@ class MovieManager:
                     value=5.0,
                 )
 
+            # 새 필드 추가 (TMDB API 필드)
+            st.write("#### 추가 정보 (선택사항)")
+
+            col3, col4 = st.columns(2)
+            with col3:
+                overview = st.text_area(
+                    "줄거리",
+                    placeholder="영화 줄거리를 입력하세요",
+                    value="" if not TEST_MODE else "테스트 줄거리",
+                    height=100,
+                )
+                original_title = st_text_input(
+                    "원제 (Original Title)", placeholder="예: Interstellar", value=""
+                )
+                original_language = st.text_input(
+                    "원어 (Original Language)",
+                    placeholder="예: en (ISO 639-1 코드)",
+                    value="",
+                )
+                adult = st.checkbox("성인 영화", value=False)
+
+            with col4:
+                popularity = st.number_input(
+                    "인기도 (Popularity)",
+                    min_value=0.0,
+                    step=0.1,
+                    value=0.0,
+                    help="TMDB 인기도 지수",
+                )
+                vote_count = st.number_input(
+                    "투표 수 (Vote Count)", min_value=0, value=0, help="TMDB 투표 수"
+                )
+                backdrop_path = st.text_input(
+                    "배경 이미지 URL", placeholder="TMDB 배경 이미지 URL", value=""
+                )
+
             # 버튼 비활성화는 무조건 3초후에 풀린다.
             if st.form_submit_button("영화 등록", width="content"):
                 if not tmdb_id or not title:
@@ -161,6 +197,15 @@ class MovieManager:
                         "genre": genre if genre else None,
                         "poster_url": poster_url if poster_url else None,
                         "tmdb_rating": float(tmdb_rating) if tmdb_rating > 0 else None,
+                        "overview": overview if overview else None,
+                        "popularity": float(popularity) if popularity > 0 else None,
+                        "vote_count": int(vote_count) if vote_count > 0 else None,
+                        "original_title": original_title if original_title else None,
+                        "original_language": (
+                            original_language if original_language else None
+                        ),
+                        "adult": adult,
+                        "backdrop_path": backdrop_path if backdrop_path else None,
                     }
                     self._register_movie(**movie_data)
                     logger.debug("등록 완료")
@@ -174,6 +219,13 @@ class MovieManager:
         genre: Optional[str] = None,
         poster_url: Optional[str] = None,
         tmdb_rating: Optional[float] = None,
+        overview: Optional[str] = None,
+        popularity: Optional[float] = None,
+        vote_count: Optional[int] = None,
+        original_title: Optional[str] = None,
+        original_language: Optional[str] = None,
+        adult: Optional[bool] = None,
+        backdrop_path: Optional[str] = None,
     ):
         """
         영화 등록 API 호출
@@ -186,6 +238,13 @@ class MovieManager:
             genre: 장르
             poster_url: 포스터 URL
             tmdb_rating: TMDB 평점
+            overview: 영화 줄거리
+            popularity: 인기도
+            vote_count: 투표 수
+            original_title: 원제
+            original_language: 원어
+            adult: 성인 영화 여부
+            backdrop_path: 배경 이미지 URL
         """
         movie_data = {
             "tmdb_id": tmdb_id,
@@ -195,6 +254,13 @@ class MovieManager:
             "genre": genre,
             "poster_url": poster_url,
             "tmdb_rating": tmdb_rating,
+            "overview": overview,
+            "popularity": popularity,
+            "vote_count": vote_count,
+            "original_title": original_title,
+            "original_language": original_language,
+            "adult": adult,
+            "backdrop_path": backdrop_path,
         }
 
         logger.debug(f"Sending POST request to {self.api_url}/movies/")

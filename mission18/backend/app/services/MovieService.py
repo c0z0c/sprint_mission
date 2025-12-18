@@ -62,6 +62,14 @@ class MovieService:
             genre=movie_data.genre,
             poster_local_path=None,  # 나중에 백그라운드에서 업데이트
             tmdb_rating=movie_data.tmdb_rating,
+            # TMDB 추가 필드
+            overview=movie_data.overview,
+            popularity=movie_data.popularity,
+            vote_count=movie_data.vote_count,
+            original_title=movie_data.original_title,
+            original_language=movie_data.original_language,
+            adult=movie_data.adult,
+            backdrop_path=movie_data.backdrop_path,
         )
 
         self.session.add(movie)
@@ -507,3 +515,100 @@ class MovieService:
 
         logger.debug(f"[Service] Movie updated successfully: ID={movie_id}")
         return movie
+
+    def bulk_upsert_movies(
+        self, movies_data: list[dict], background_tasks=None
+    ) -> tuple[int, int, int]:
+        """
+        영화 데이터 대량 UPSERT (Insert or Update)
+
+        Args:
+            movies_data: 영화 데이터 딕셔너리 리스트
+            background_tasks: FastAPI BackgroundTasks (포스터 다운로드용)
+
+        Returns:
+            tuple[int, int, int]: (신규 등록 수, 업데이트 수, 실패 수)
+        """
+        inserted_count = 0
+        updated_count = 0
+        failed_count = 0
+
+        logger.info(f"[Service] Starting bulk upsert for {len(movies_data)} movies...")
+
+        for movie_data in movies_data:
+            try:
+                tmdb_id = movie_data.get("tmdb_id")
+                if not tmdb_id:
+                    logger.warning("[Service] Movie data missing tmdb_id, skipping")
+                    failed_count += 1
+                    continue
+
+                # 기존 영화 조회
+                existing_movie = self.get_movie_by_tmdb_id(tmdb_id)
+
+                if existing_movie:
+                    # 업데이트
+                    for key, value in movie_data.items():
+                        if key == "poster_url":
+                            # 포스터는 별도 처리 (백그라운드)
+                            if value and background_tasks:
+                                # 기존 포스터와 다르면 재다운로드
+                                background_tasks.add_task(
+                                    self._download_and_update_poster,
+                                    existing_movie.id,
+                                    value,
+                                    tmdb_id,
+                                )
+                        elif hasattr(existing_movie, key) and key != "tmdb_id":
+                            setattr(existing_movie, key, value)
+
+                    self.session.add(existing_movie)
+                    updated_count += 1
+                    logger.debug(f"[Service] Updated movie: {tmdb_id}")
+
+                else:
+                    # 신규 등록
+                    poster_url = movie_data.pop("poster_url", None)
+
+                    new_movie = MovieModel(**movie_data)
+                    self.session.add(new_movie)
+                    self.session.flush()  # ID 생성
+
+                    # 포스터 다운로드 (백그라운드)
+                    if poster_url and background_tasks:
+                        background_tasks.add_task(
+                            self._download_and_update_poster,
+                            new_movie.id,
+                            poster_url,
+                            tmdb_id,
+                        )
+
+                    inserted_count += 1
+                    logger.debug(f"[Service] Inserted movie: {tmdb_id}")
+
+                # 50건마다 커밋 (배치 처리)
+                if (inserted_count + updated_count) % 50 == 0:
+                    self.session.commit()
+                    logger.debug(
+                        f"[Service] Batch commit: {inserted_count} inserted, {updated_count} updated"
+                    )
+
+            except Exception as e:
+                logger.error(
+                    f"[Service] Failed to upsert movie {movie_data.get('tmdb_id')}: {str(e)}"
+                )
+                failed_count += 1
+                continue
+
+        # 최종 커밋
+        try:
+            self.session.commit()
+            logger.info(
+                f"[Service] Bulk upsert completed: "
+                f"{inserted_count} inserted, {updated_count} updated, {failed_count} failed"
+            )
+        except Exception as e:
+            logger.error(f"[Service] Final commit failed: {str(e)}")
+            self.session.rollback()
+
+        return inserted_count, updated_count, failed_count

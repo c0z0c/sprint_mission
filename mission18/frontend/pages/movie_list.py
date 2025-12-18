@@ -186,6 +186,13 @@ class MovieListManager:
                 unsafe_allow_html=True,
             )
 
+            # 원제 표시 (있는 경우)
+            if (
+                movie.get("original_title")
+                and movie.get("original_title") != movie["title"]
+            ):
+                st.caption(f"🌐 원제: {movie['original_title']}")
+
             # 개봉일
             if movie.get("release_date"):
                 st.markdown(
@@ -203,6 +210,16 @@ class MovieListManager:
             if info_items:
                 st.caption(" | ".join(info_items))
 
+            # 인기도 및 투표 수 표시
+            if movie.get("popularity") or movie.get("vote_count"):
+                metrics_items = []
+                if movie.get("popularity"):
+                    metrics_items.append(f"🔥 인기도: {movie['popularity']:.1f}")
+                if movie.get("vote_count"):
+                    metrics_items.append(f"👥 투표: {movie['vote_count']:,}명")
+                if metrics_items:
+                    st.caption(" | ".join(metrics_items))
+
             # 평점 정보
             rating_html = ""
             if movie.get("tmdb_rating"):
@@ -217,6 +234,11 @@ class MovieListManager:
 
             if rating_html:
                 st.markdown(rating_html, unsafe_allow_html=True)
+
+            # 줄거리 표시 (있는 경우)
+            if movie.get("overview"):
+                with st.expander("📖 줄거리"):
+                    st.write(movie["overview"])
 
             # st.markdown("<br>", unsafe_allow_html=True)
 

@@ -4,6 +4,7 @@
 
 from sqlmodel import create_engine, Session, SQLModel
 from typing import Generator
+from contextlib import contextmanager
 
 import logging
 from helper_dev_utils import get_auto_logger
@@ -38,6 +39,7 @@ class DatabaseConnector:
         """
         SQLModel.metadata.create_all(self.engine)
 
+    @contextmanager
     def get_session(self) -> Generator[Session, None, None]:
         """
         데이터베이스 세션 생성 및 반환

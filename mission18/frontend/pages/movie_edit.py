@@ -409,6 +409,55 @@ class MovieEditManager:
                 except Exception as e:
                     st.warning(f"⚠️ 포스터 미리보기 실패: {str(e)}")
 
+            st.write("#### 추가 정보 (선택사항)")
+
+            # 새 필드들 추가
+            col1, col2 = st.columns(2)
+
+            with col1:
+                new_overview = st.text_area(
+                    "줄거리",
+                    value=movie.get("overview") or "",
+                    key=f"edit_overview_{movie_id}",
+                    height=100,
+                )
+                new_original_title = st.text_input(
+                    "원제 (Original Title)",
+                    value=movie.get("original_title") or "",
+                    key=f"edit_original_title_{movie_id}",
+                )
+                new_original_language = st.text_input(
+                    "원어 (Original Language)",
+                    value=movie.get("original_language") or "",
+                    key=f"edit_original_language_{movie_id}",
+                    max_chars=10,
+                )
+                new_adult = st.checkbox(
+                    "성인 영화",
+                    value=movie.get("adult") or False,
+                    key=f"edit_adult_{movie_id}",
+                )
+
+            with col2:
+                new_popularity = st.number_input(
+                    "인기도 (Popularity)",
+                    min_value=0.0,
+                    value=float(movie.get("popularity") or 0.0),
+                    step=0.1,
+                    key=f"edit_popularity_{movie_id}",
+                )
+                new_vote_count = st.number_input(
+                    "투표 수 (Vote Count)",
+                    min_value=0,
+                    value=int(movie.get("vote_count") or 0),
+                    key=f"edit_vote_count_{movie_id}",
+                )
+                new_backdrop_path = st.text_input(
+                    "배경 이미지 URL",
+                    value=movie.get("backdrop_path") or "",
+                    key=f"edit_backdrop_path_{movie_id}",
+                )
+
             # 버튼들
             col1, col2, col3 = st.columns([1, 1, 4])
             with col1:
@@ -450,6 +499,42 @@ class MovieEditManager:
                     if new_poster_url != (movie.get("poster_url") or ""):
                         update_data["poster_url"] = (
                             new_poster_url.strip() if new_poster_url.strip() else None
+                        )
+
+                    # 새 필드들 처리
+                    if new_overview != (movie.get("overview") or ""):
+                        update_data["overview"] = (
+                            new_overview.strip() if new_overview.strip() else None
+                        )
+
+                    if new_original_title != (movie.get("original_title") or ""):
+                        update_data["original_title"] = (
+                            new_original_title.strip()
+                            if new_original_title.strip()
+                            else None
+                        )
+
+                    if new_original_language != (movie.get("original_language") or ""):
+                        update_data["original_language"] = (
+                            new_original_language.strip()
+                            if new_original_language.strip()
+                            else None
+                        )
+
+                    if new_adult != (movie.get("adult") or False):
+                        update_data["adult"] = new_adult
+
+                    if new_popularity != (movie.get("popularity") or 0.0):
+                        update_data["popularity"] = new_popularity
+
+                    if new_vote_count != (movie.get("vote_count") or 0):
+                        update_data["vote_count"] = new_vote_count
+
+                    if new_backdrop_path != (movie.get("backdrop_path") or ""):
+                        update_data["backdrop_path"] = (
+                            new_backdrop_path.strip()
+                            if new_backdrop_path.strip()
+                            else None
                         )
 
                     if update_data:

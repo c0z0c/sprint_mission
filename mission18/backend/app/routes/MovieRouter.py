@@ -7,9 +7,13 @@ from sqlmodel import Session
 from typing import List, Optional
 import math
 import time
+import asyncio
 
 from app.database import get_db
 from app.services.MovieService import MovieService
+from app.services.TMDBService import TMDBService
+from app.services.SyncStateManager import get_sync_state_manager
+from app.constants.tmdb_genres import convert_genre_ids_to_korean
 from app.schemas import (
     MovieCreate,
     MovieResponse,
@@ -19,6 +23,15 @@ from app.schemas import (
     MovieUpdate,
     MoviePatch,
 )
+from app.schemas.tmdb import (
+    TMDBSyncRequest,
+    SyncStartResponse,
+    SyncStateResponse,
+    SyncType,
+    SyncConfigResponse,
+    SyncStatsResponse,
+)
+from app.config import get_sync_config
 
 import logging
 from helper_dev_utils import get_auto_logger
@@ -114,6 +127,59 @@ class MovieRouter:
             status_code=status.HTTP_204_NO_CONTENT,
             summary="영화 삭제",
             description="영화 ID로 특정 영화를 삭제합니다.",
+        )
+
+        # TMDB 동기화 엔드포인트
+        self.router.add_api_route(
+            "/sync/popular",
+            self.sync_popular_movies,
+            methods=["POST"],
+            response_model=SyncStartResponse,
+            status_code=status.HTTP_202_ACCEPTED,
+            summary="인기 영화 동기화",
+            description="TMDB API로부터 인기 영화 목록을 가져와 DB에 저장합니다. 백그라운드에서 실행됩니다.",
+        )
+        self.router.add_api_route(
+            "/sync/latest",
+            self.sync_latest_movies,
+            methods=["POST"],
+            response_model=SyncStartResponse,
+            status_code=status.HTTP_202_ACCEPTED,
+            summary="최신 영화 동기화",
+            description="TMDB API로부터 최신 영화 목록을 가져와 DB에 저장합니다. 백그라운드에서 실행됩니다.",
+        )
+        self.router.add_api_route(
+            "/sync/period",
+            self.sync_period_movies,
+            methods=["POST"],
+            response_model=SyncStartResponse,
+            status_code=status.HTTP_202_ACCEPTED,
+            summary="기간별 영화 동기화",
+            description="TMDB API로부터 특정 기간의 영화 목록을 가져와 DB에 저장합니다. 백그라운드에서 실행됩니다.",
+        )
+        self.router.add_api_route(
+            "/sync/status/{task_id}",
+            self.get_sync_status,
+            methods=["GET"],
+            response_model=SyncStateResponse,
+            summary="동기화 상태 조회",
+            description="동기화 작업의 진행 상황을 조회합니다.",
+        )
+        self.router.add_api_route(
+            "/sync/config",
+            self.get_sync_config_endpoint,
+            methods=["GET"],
+            response_model=SyncConfigResponse,
+            summary="동기화 설정 조회",
+            description="현재 동기화 설정 정보를 조회합니다.",
+        )
+        self.router.add_api_route(
+            "/sync/stats",
+            self.get_sync_stats,
+            methods=["GET"],
+            response_model=SyncStatsResponse,
+            summary="동기화 통계 조회",
+            description="동기화 작업 통계를 조회합니다.",
         )
 
     def create_movie(
@@ -501,6 +567,427 @@ class MovieRouter:
             )
 
         return updated_movie
+
+    # ==================== TMDB 동기화 엔드포인트 ====================
+
+    def sync_popular_movies(
+        self,
+        request: TMDBSyncRequest = TMDBSyncRequest(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+    ) -> SyncStartResponse:
+        """
+        인기 영화 동기화 시작
+
+        Args:
+            request: 동기화 요청 (max_pages)
+            background_tasks: 백그라운드 작업
+
+        Returns:
+            SyncStartResponse: 작업 시작 응답
+        """
+        state_manager = get_sync_state_manager()
+
+        # 이미 실행 중인 작업이 있는지 확인
+        if state_manager.has_running_tasks():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="이미 실행 중인 동기화 작업이 있습니다. 완료 후 다시 시도하세요.",
+            )
+
+        task_id = state_manager.create_task(SyncType.POPULAR)
+
+        # 백그라운드에서 동기화 실행
+        background_tasks.add_task(self._run_sync_popular, task_id, request.max_pages)
+
+        logger.info(
+            f"Popular sync started: task_id={task_id}, max_pages={request.max_pages}"
+        )
+
+        return SyncStartResponse(
+            task_id=task_id,
+            sync_type=SyncType.POPULAR,
+            message=f"인기 영화 동기화가 시작되었습니다 (최대 {request.max_pages}페이지).",
+            status_url=f"/movies/sync/status/{task_id}",
+        )
+
+    def sync_latest_movies(
+        self,
+        request: TMDBSyncRequest = TMDBSyncRequest(),
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+    ) -> SyncStartResponse:
+        """
+        최신 영화 동기화 시작
+
+        Args:
+            request: 동기화 요청 (max_pages)
+            background_tasks: 백그라운드 작업
+
+        Returns:
+            SyncStartResponse: 작업 시작 응답
+        """
+        state_manager = get_sync_state_manager()
+
+        if state_manager.has_running_tasks():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="이미 실행 중인 동기화 작업이 있습니다. 완료 후 다시 시도하세요.",
+            )
+
+        task_id = state_manager.create_task(SyncType.LATEST)
+
+        background_tasks.add_task(self._run_sync_latest, task_id, request.max_pages)
+
+        logger.info(
+            f"Latest sync started: task_id={task_id}, max_pages={request.max_pages}"
+        )
+
+        return SyncStartResponse(
+            task_id=task_id,
+            sync_type=SyncType.LATEST,
+            message=f"최신 영화 동기화가 시작되었습니다 (최대 {request.max_pages}페이지).",
+            status_url=f"/movies/sync/status/{task_id}",
+        )
+
+    def sync_period_movies(
+        self,
+        request: TMDBSyncRequest,
+        background_tasks: BackgroundTasks = BackgroundTasks(),
+    ) -> SyncStartResponse:
+        """
+        기간별 영화 동기화 시작
+
+        Args:
+            request: 동기화 요청 (start_date, end_date, max_pages)
+            background_tasks: 백그라운드 작업
+
+        Returns:
+            SyncStartResponse: 작업 시작 응답
+
+        Raises:
+            HTTPException: start_date가 없는 경우
+        """
+        if not request.start_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="start_date는 필수입니다. (YYYY-MM-DD 형식)",
+            )
+
+        state_manager = get_sync_state_manager()
+
+        if state_manager.has_running_tasks():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="이미 실행 중인 동기화 작업이 있습니다. 완료 후 다시 시도하세요.",
+            )
+
+        task_id = state_manager.create_task(SyncType.PERIOD)
+
+        background_tasks.add_task(
+            self._run_sync_period,
+            task_id,
+            request.start_date,
+            request.end_date,
+            request.max_pages,
+        )
+
+        logger.info(
+            f"Period sync started: task_id={task_id}, "
+            f"period={request.start_date} to {request.end_date}, "
+            f"max_pages={request.max_pages}"
+        )
+
+        return SyncStartResponse(
+            task_id=task_id,
+            sync_type=SyncType.PERIOD,
+            message=f"기간별 영화 동기화가 시작되었습니다 ({request.start_date} ~ {request.end_date}).",
+            status_url=f"/movies/sync/status/{task_id}",
+        )
+
+    def get_sync_status(self, task_id: str) -> SyncStateResponse:
+        """
+        동기화 작업 상태 조회
+
+        Args:
+            task_id: 작업 ID
+
+        Returns:
+            SyncStateResponse: 작업 상태
+
+        Raises:
+            HTTPException: 작업을 찾을 수 없는 경우
+        """
+        state_manager = get_sync_state_manager()
+        state = state_manager.get_state(task_id)
+
+        if not state:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"작업 ID {task_id}를 찾을 수 없습니다.",
+            )
+
+        return state.to_response()
+
+    def get_sync_config_endpoint(self) -> SyncConfigResponse:
+        """
+        동기화 설정 조회
+
+        Returns:
+            SyncConfigResponse: 설정 정보
+        """
+        config = get_sync_config()
+
+        return SyncConfigResponse(
+            tmdb_base_url=config.get("tmdb.base_url"),
+            language=config.get("tmdb.language"),
+            region=config.get("tmdb.region"),
+            rate_limiting=config.get("tmdb.rate_limiting"),
+            initial_sync=config.get("initial_sync"),
+            scheduler=config.get("scheduler"),
+            poster=config.get("poster"),
+            error_handling=config.get("error_handling"),
+        )
+
+    def get_sync_stats(self, db: Session = Depends(get_db)) -> SyncStatsResponse:
+        """
+        동기화 통계 조회
+
+        Args:
+            db: 데이터베이스 세션
+
+        Returns:
+            SyncStatsResponse: 통계 정보
+        """
+        state_manager = get_sync_state_manager()
+        stats = state_manager.get_statistics()
+
+        # 전체 영화 수 조회
+        service = MovieService(db)
+        total_movies = len(service.get_all_movies())
+
+        return SyncStatsResponse(
+            total_movies=total_movies,
+            total_syncs=stats["total_syncs"],
+            successful_syncs=stats["successful_syncs"],
+            failed_syncs=stats["failed_syncs"],
+            last_sync_at=stats["last_sync_at"],
+            active_tasks=stats["active_tasks"],
+        )
+
+    # ==================== 백그라운드 동기화 작업 ====================
+
+    def _run_sync_popular(self, task_id: str, max_pages: int) -> None:
+        """백그라운드에서 인기 영화 동기화 실행"""
+        try:
+            asyncio.run(self._sync_popular_impl(task_id, max_pages))
+        except Exception as e:
+            logger.error(f"Popular sync failed: {str(e)}")
+            state_manager = get_sync_state_manager()
+            state_manager.mark_failed(task_id, str(e))
+
+    def _run_sync_latest(self, task_id: str, max_pages: int) -> None:
+        """백그라운드에서 최신 영화 동기화 실행"""
+        try:
+            config = get_sync_config()
+            days_back = config.get("initial_sync.latest.days_back", 7)
+            asyncio.run(self._sync_latest_impl(task_id, days_back, max_pages))
+        except Exception as e:
+            logger.error(f"Latest sync failed: {str(e)}")
+            state_manager = get_sync_state_manager()
+            state_manager.mark_failed(task_id, str(e))
+
+    def _run_sync_period(
+        self, task_id: str, start_date: str, end_date: Optional[str], max_pages: int
+    ) -> None:
+        """백그라운드에서 기간별 영화 동기화 실행"""
+        try:
+            asyncio.run(
+                self._sync_period_impl(task_id, start_date, end_date, max_pages)
+            )
+        except Exception as e:
+            logger.error(f"Period sync failed: {str(e)}")
+            state_manager = get_sync_state_manager()
+            state_manager.mark_failed(task_id, str(e))
+
+    async def _sync_popular_impl(self, task_id: str, max_pages: int) -> None:
+        """인기 영화 동기화 구현"""
+        from app.database import db_connector
+
+        state_manager = get_sync_state_manager()
+        state_manager.mark_started(task_id)
+        state_manager.update_progress(task_id, total_pages=max_pages)
+
+        try:
+            tmdb_service = TMDBService()
+            movies = await tmdb_service.fetch_popular_movies(max_pages)
+
+            with db_connector.get_session() as session:
+                service = MovieService(session)
+
+                movies_data = []
+                for movie in movies:
+                    genre_korean = convert_genre_ids_to_korean(movie.genre_ids)
+
+                    movies_data.append(
+                        {
+                            "tmdb_id": movie.id,
+                            "title": movie.title,
+                            "release_date": movie.release_date,
+                            "genre": genre_korean,
+                            "poster_url": tmdb_service.get_poster_url(
+                                movie.poster_path
+                            ),
+                            "tmdb_rating": movie.vote_average,
+                            "overview": movie.overview,
+                            "popularity": movie.popularity,
+                            "vote_count": movie.vote_count,
+                            "original_title": movie.original_title,
+                            "original_language": movie.original_language,
+                            "adult": movie.adult,
+                            "backdrop_path": movie.backdrop_path,
+                        }
+                    )
+
+                inserted, updated, failed = service.bulk_upsert_movies(movies_data)
+
+                state_manager.update_progress(
+                    task_id,
+                    current_page=max_pages,
+                    movies_collected=len(movies),
+                    movies_inserted=inserted,
+                    movies_updated=updated,
+                    movies_failed=failed,
+                )
+
+            state_manager.mark_completed(task_id)
+
+        except Exception as e:
+            logger.error(f"Popular sync implementation failed: {str(e)}")
+            state_manager.mark_failed(task_id, str(e))
+            raise
+
+    async def _sync_latest_impl(
+        self, task_id: str, days_back: int, max_pages: int
+    ) -> None:
+        """최신 영화 동기화 구현"""
+        from app.database import db_connector
+
+        state_manager = get_sync_state_manager()
+        state_manager.mark_started(task_id)
+        state_manager.update_progress(task_id, total_pages=max_pages)
+
+        try:
+            tmdb_service = TMDBService()
+            movies = await tmdb_service.fetch_latest_movies(days_back, max_pages)
+
+            with db_connector.get_session() as session:
+                service = MovieService(session)
+
+                movies_data = []
+                for movie in movies:
+                    genre_korean = convert_genre_ids_to_korean(movie.genre_ids)
+
+                    movies_data.append(
+                        {
+                            "tmdb_id": movie.id,
+                            "title": movie.title,
+                            "release_date": movie.release_date,
+                            "genre": genre_korean,
+                            "poster_url": tmdb_service.get_poster_url(
+                                movie.poster_path
+                            ),
+                            "tmdb_rating": movie.vote_average,
+                            "overview": movie.overview,
+                            "popularity": movie.popularity,
+                            "vote_count": movie.vote_count,
+                            "original_title": movie.original_title,
+                            "original_language": movie.original_language,
+                            "adult": movie.adult,
+                            "backdrop_path": movie.backdrop_path,
+                        }
+                    )
+
+                inserted, updated, failed = service.bulk_upsert_movies(movies_data)
+
+                state_manager.update_progress(
+                    task_id,
+                    current_page=max_pages,
+                    movies_collected=len(movies),
+                    movies_inserted=inserted,
+                    movies_updated=updated,
+                    movies_failed=failed,
+                )
+
+            state_manager.mark_completed(task_id)
+
+        except Exception as e:
+            logger.error(f"Latest sync implementation failed: {str(e)}")
+            state_manager.mark_failed(task_id, str(e))
+            raise
+
+    async def _sync_period_impl(
+        self,
+        task_id: str,
+        start_date: str,
+        end_date: Optional[str],
+        max_pages: int,
+    ) -> None:
+        """기간별 영화 동기화 구현"""
+        from app.database import db_connector
+
+        state_manager = get_sync_state_manager()
+        state_manager.mark_started(task_id)
+        state_manager.update_progress(task_id, total_pages=max_pages)
+
+        try:
+            tmdb_service = TMDBService()
+            movies = await tmdb_service.fetch_movies_by_period(
+                start_date, end_date, max_pages
+            )
+
+            with db_connector.get_session() as session:
+                service = MovieService(session)
+
+                movies_data = []
+                for movie in movies:
+                    genre_korean = convert_genre_ids_to_korean(movie.genre_ids)
+
+                    movies_data.append(
+                        {
+                            "tmdb_id": movie.id,
+                            "title": movie.title,
+                            "release_date": movie.release_date,
+                            "genre": genre_korean,
+                            "poster_url": tmdb_service.get_poster_url(
+                                movie.poster_path
+                            ),
+                            "tmdb_rating": movie.vote_average,
+                            "overview": movie.overview,
+                            "popularity": movie.popularity,
+                            "vote_count": movie.vote_count,
+                            "original_title": movie.original_title,
+                            "original_language": movie.original_language,
+                            "adult": movie.adult,
+                            "backdrop_path": movie.backdrop_path,
+                        }
+                    )
+
+                inserted, updated, failed = service.bulk_upsert_movies(movies_data)
+
+                state_manager.update_progress(
+                    task_id,
+                    current_page=max_pages,
+                    movies_collected=len(movies),
+                    movies_inserted=inserted,
+                    movies_updated=updated,
+                    movies_failed=failed,
+                )
+
+            state_manager.mark_completed(task_id)
+
+        except Exception as e:
+            logger.error(f"Period sync implementation failed: {str(e)}")
+            state_manager.mark_failed(task_id, str(e))
+            raise
 
 
 # 라우터 인스턴스 생성

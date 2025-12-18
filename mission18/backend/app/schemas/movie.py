@@ -26,6 +26,13 @@ class MovieCreate(BaseModel):
         genre: 장르
         poster_url: 포스터 이미지 URL
         tmdb_rating: TMDB 평점
+        overview: 영화 줄거리/개요
+        popularity: TMDB 인기도
+        vote_count: TMDB 투표 수
+        original_title: 원제
+        original_language: 원어
+        adult: 성인 영화 여부
+        backdrop_path: TMDB 배경 이미지 경로
     """
 
     tmdb_id: int = Field(..., description="TMDB 영화 ID")
@@ -35,6 +42,19 @@ class MovieCreate(BaseModel):
     genre: Optional[str] = Field(None, max_length=100, description="장르")
     poster_url: Optional[str] = Field(None, description="포스터 이미지 URL")
     tmdb_rating: Optional[float] = Field(None, description="TMDB 평점")
+
+    # TMDB 추가 필드
+    overview: Optional[str] = Field(None, description="영화 줄거리/개요")
+    popularity: Optional[float] = Field(None, description="TMDB 인기도")
+    vote_count: Optional[int] = Field(None, description="TMDB 투표 수")
+    original_title: Optional[str] = Field(None, max_length=255, description="원제")
+    original_language: Optional[str] = Field(
+        None, max_length=10, description="원어 (ISO 639-1)"
+    )
+    adult: Optional[bool] = Field(False, description="성인 영화 여부")
+    backdrop_path: Optional[str] = Field(
+        None, max_length=200, description="TMDB 배경 이미지 경로 (URL)"
+    )
 
 
 class MovieResponse(BaseModel):
@@ -50,6 +70,13 @@ class MovieResponse(BaseModel):
         genre: 장르
         poster_local_path: 포스터 로컬 경로
         tmdb_rating: TMDB 평점 (0-10)
+        overview: 영화 줄거리/개요
+        popularity: TMDB 인기도
+        vote_count: TMDB 투표 수
+        original_title: 원제
+        original_language: 원어
+        adult: 성인 영화 여부
+        backdrop_path: TMDB 배경 이미지 경로
     """
 
     id: int = Field(..., description="영화 ID")
@@ -60,6 +87,17 @@ class MovieResponse(BaseModel):
     genre: Optional[str] = Field(None, description="장르")
     poster_local_path: Optional[str] = Field(None, description="포스터 로컬 경로")
     tmdb_rating: Optional[float] = Field(None, description="TMDB 평점 (0-10)")
+
+    # TMDB 추가 필드
+    overview: Optional[str] = Field(None, description="영화 줄거리/개요")
+    popularity: Optional[float] = Field(None, description="TMDB 인기도")
+    vote_count: Optional[int] = Field(None, description="TMDB 투표 수")
+    original_title: Optional[str] = Field(None, description="원제")
+    original_language: Optional[str] = Field(None, description="원어 (ISO 639-1)")
+    adult: Optional[bool] = Field(None, description="성인 영화 여부")
+    backdrop_path: Optional[str] = Field(
+        None, description="TMDB 배경 이미지 경로 (URL)"
+    )
 
     class Config:
         from_attributes = True
@@ -183,6 +221,13 @@ class MovieUpdate(BaseModel):
         genre: 장르
         poster_url: 포스터 이미지 URL (변경 시 재다운로드)
         tmdb_rating: TMDB 평점
+        overview: 영화 줄거리/개요
+        popularity: TMDB 인기도
+        vote_count: TMDB 투표 수
+        original_title: 원제
+        original_language: 원어
+        adult: 성인 영화 여부
+        backdrop_path: TMDB 배경 이미지 경로
     """
 
     title: str = Field(..., max_length=255, description="영화 제목")
@@ -193,6 +238,19 @@ class MovieUpdate(BaseModel):
         None, description="포스터 이미지 URL (변경 시 재다운로드)"
     )
     tmdb_rating: Optional[float] = Field(None, description="TMDB 평점")
+
+    # TMDB 추가 필드
+    overview: Optional[str] = Field(None, description="영화 줄거리/개요")
+    popularity: Optional[float] = Field(None, description="TMDB 인기도")
+    vote_count: Optional[int] = Field(None, description="TMDB 투표 수")
+    original_title: Optional[str] = Field(None, max_length=255, description="원제")
+    original_language: Optional[str] = Field(
+        None, max_length=10, description="원어 (ISO 639-1)"
+    )
+    adult: Optional[bool] = Field(False, description="성인 영화 여부")
+    backdrop_path: Optional[str] = Field(
+        None, max_length=200, description="TMDB 배경 이미지 경로 (URL)"
+    )
 
 
 class MoviePatch(BaseModel):
@@ -211,6 +269,13 @@ class MoviePatch(BaseModel):
         genre: 장르 (선택)
         poster_url: 포스터 이미지 URL (선택, 변경 시 재다운로드)
         tmdb_rating: TMDB 평점 (선택)
+        overview: 영화 줄거리/개요 (선택)
+        popularity: TMDB 인기도 (선택)
+        vote_count: TMDB 투표 수 (선택)
+        original_title: 원제 (선택)
+        original_language: 원어 (선택)
+        adult: 성인 영화 여부 (선택)
+        backdrop_path: TMDB 배경 이미지 경로 (선택)
     """
 
     title: Optional[str] = Field(None, max_length=255, description="영화 제목")
@@ -221,3 +286,16 @@ class MoviePatch(BaseModel):
         None, description="포스터 이미지 URL (변경 시 재다운로드)"
     )
     tmdb_rating: Optional[float] = Field(None, description="TMDB 평점")
+
+    # TMDB 추가 필드
+    overview: Optional[str] = Field(None, description="영화 줄거리/개요")
+    popularity: Optional[float] = Field(None, description="TMDB 인기도")
+    vote_count: Optional[int] = Field(None, description="TMDB 투표 수")
+    original_title: Optional[str] = Field(None, max_length=255, description="원제")
+    original_language: Optional[str] = Field(
+        None, max_length=10, description="원어 (ISO 639-1)"
+    )
+    adult: Optional[bool] = Field(None, description="성인 영화 여부")
+    backdrop_path: Optional[str] = Field(
+        None, max_length=200, description="TMDB 배경 이미지 경로 (URL)"
+    )

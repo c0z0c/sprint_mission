@@ -2,6 +2,8 @@
 FastAPI 메인 애플리케이션
 """
 
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -10,11 +12,16 @@ from pathlib import Path
 
 from app.database import db_connector
 from app.routes import movie_router, review_router
+from app.services.SyncScheduler import get_sync_scheduler
 
 import logging
 from helper_dev_utils import get_auto_logger
 
 logger = get_auto_logger(log_level=logging.DEBUG)
+
+# 환경변수 로드 (.env 파일)
+load_dotenv()
+logger.debug("Environment variables loaded from .env file")
 
 
 @asynccontextmanager
@@ -30,9 +37,34 @@ async def lifespan(app: FastAPI):
     db_connector.create_tables()
     logger.debug("데이터베이스 테이블 생성 완료")
 
+    # 초기 동기화 실행 (DB가 비어있으면)
+    try:
+        scheduler = get_sync_scheduler()
+        await scheduler.run_initial_sync_if_needed()
+        logger.debug("초기 동기화 확인 완료")
+    except Exception as e:
+        logger.warning(f"초기 동기화 실패: {str(e)}")
+
+    # 동기화 스케줄러 시작
+    try:
+        scheduler = get_sync_scheduler()
+        scheduler.start()
+        logger.debug("동기화 스케줄러 시작 완료")
+    except Exception as e:
+        logger.warning(
+            f"스케줄러 시작 실패 (설정에서 비활성화되었거나 에러 발생): {str(e)}"
+        )
+
     yield
 
-    # 종료 시 정리 작업 (필요시 추가)
+    # 종료 시 정리 작업
+    try:
+        scheduler = get_sync_scheduler()
+        scheduler.stop()
+        logger.debug("동기화 스케줄러 종료 완료")
+    except Exception as e:
+        logger.warning(f"스케줄러 종료 중 에러: {str(e)}")
+
     logger.debug("애플리케이션 종료")
 
 

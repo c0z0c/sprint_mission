@@ -1,0 +1,65 @@
+# TMDB API 동기화 설정 파일
+# 이 파일은 TMDB API로부터 영화 데이터를 수집하는 설정을 관리합니다.
+
+# TMDB API 설정
+tmdb:
+  base_url: "https://api.themoviedb.org/3"
+  language: "ko-KR"  # 한글 데이터 요청
+  region: "KR"       # 한국 지역 설정
+  
+  # Rate Limiting 설정 (TMDB API 제한: 초당 50건)
+  rate_limiting:
+    requests_per_second: 40  # 안전을 위해 40으로 제한
+    burst_size: 10           # 동시 요청 수
+
+# 초기 동기화 설정 (DB가 비어있을 때 자동 실행)
+initial_sync:
+  enabled: true
+  
+  # 인기 영화 수집 설정
+  popular:
+    enabled: true
+    max_pages: 50      # 페이지당 20건 = 최대 1000개 영화
+  
+  # 최신 영화 수집 설정 (기간 기반)
+  latest:
+    enabled: false
+    start_date: "2020-01-01"  # 시작 날짜 (YYYY-MM-DD)
+    end_date: null             # null이면 현재 날짜까지
+    max_pages: 5               # 페이지당 20건 = 최대 100개 영화
+
+# 정기 동기화 스케줄러 설정
+scheduler:
+  enabled: false  # 스케줄러 활성화 여부 (개발 중에는 false 권장)
+  
+  # 인기 영화 자동 동기화
+  popular_sync:
+    enabled: false
+    cron: "0 2 * * *"  # 매일 오전 2시 (cron 표현식)
+    max_pages: 5
+  
+  # 최신 영화 자동 동기화
+  latest_sync:
+    enabled: false
+    cron: "0 3 * * 0"  # 매주 일요일 오전 3시
+    days_back: 7       # 최근 7일간의 영화 수집
+    max_pages: 3
+
+# 포스터 다운로드 설정
+poster:
+  download_on_sync: true     # 동기화 시 포스터 다운로드
+  download_timeout: 10       # 다운로드 타임아웃 (초)
+  retry_count: 3             # 실패 시 재시도 횟수
+  concurrent_downloads: 5    # 동시 다운로드 수
+
+# 에러 처리 설정
+error_handling:
+  skip_on_error: true        # 에러 발생 시 해당 영화 스킵하고 계속 진행
+  log_errors: true           # 에러 로그 기록
+  max_consecutive_errors: 10 # 연속 에러 최대 허용 횟수 (초과 시 중단)
+
+# 로깅 설정
+logging:
+  level: "INFO"              # DEBUG, INFO, WARNING, ERROR
+  sync_progress: true        # 동기화 진행 상황 로깅
+  detailed_stats: true       # 상세 통계 로깅
