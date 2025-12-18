@@ -41,7 +41,7 @@ class ReviewManager:
     def render(self):
         """리뷰 게시판 페이지 렌더링"""
 
-        if st.button("###### 리뷰 게시판", key="toggle_sidebar", help="사이드바"):
+        if st.button("###### 💬 리뷰 게시판", key="toggle_sidebar", help="사이드바"):
             st_sidebar_show()
 
         # 영화 검색 섹션 (공통)

@@ -20,7 +20,7 @@ logger.debug(f"API_BASE_URL: {API_BASE_URL}")
 
 
 # CSS 스타일링
-st.markdown(
+st.html(
     """
     <style>
     .movie-card {
@@ -91,8 +91,7 @@ st.markdown(
         color: #721c24;
     }
     </style>
-    """,
-    unsafe_allow_html=True,
+    """
 )
 
 
