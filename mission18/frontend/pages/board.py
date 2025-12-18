@@ -65,8 +65,12 @@ class ReviewManager:
         if "board_search_params" not in st.session_state:
             st.session_state["board_search_params"] = {}
 
-        # URL 쿼리 파라미터가 있으면 세션에 저장
-        if any(
+        # 초기 로드 플래그: URL 파라미터를 세션에 로드했는지 확인
+        if "board_search_params_loaded" not in st.session_state:
+            st.session_state["board_search_params_loaded"] = False
+
+        # URL 쿼리 파라미터가 있고 아직 로드하지 않았으면 세션에 저장 (최초 1회만)
+        if not st.session_state["board_search_params_loaded"] and any(
             key in query_params
             for key in [
                 "title",
@@ -87,15 +91,7 @@ class ReviewManager:
                 "tmdb_min": query_params.get("tmdb_min", "0.0"),
                 "tmdb_max": query_params.get("tmdb_max", "10.0"),
             }
-        # 세션에 저장된 검색 조건이 있으면 URL 복원
-        elif st.session_state["board_search_params"]:
-            params_to_set = {
-                k: v
-                for k, v in st.session_state["board_search_params"].items()
-                if v and v not in ["0.0", "10.0", ""]
-            }
-            if params_to_set:
-                st.query_params.update(params_to_set)
+            st.session_state["board_search_params_loaded"] = True
 
         # 영화 검색 섹션
         st.write("**🔍 영화 검색**")
@@ -186,9 +182,12 @@ class ReviewManager:
                 # 초기화: URL 쿼리 파라미터 및 세션 상태 제거
                 st.query_params.clear()
                 st.session_state["board_search_params"] = {}
+                st.session_state["board_search_params_loaded"] = False
                 # 초기화: 최신 영화 10개 로드
                 st.session_state["searched_movies"] = self._get_recent_movies()
                 st.session_state["search_performed"] = False
+                # 리뷰 목록 초기화
+                self._reset_review_list()
                 st.rerun()
             else:
                 # 검색 실행
@@ -218,6 +217,32 @@ class ReviewManager:
                     new_query_params["tmdb_max"] = str(search_tmdb_max)
 
                 # 세션 상태에 검색 조건 저장
+                st.session_state["board_search_params"] = {
+                    "title": search_title,
+                    "director": search_director,
+                    "genre": search_genre,
+                    "date_from": search_date_from,
+                    "date_to": search_date_to,
+                    "tmdb_min": str(search_tmdb_min),
+                    "tmdb_max": str(search_tmdb_max),
+                }
+
+                # URL 쿼리 파라미터 업데이트
+                st.query_params.update(new_query_params)
+
+                # 검색 API 호출
+                searched_movies = self._search_movies(search_params)
+                st.session_state["searched_movies"] = searched_movies
+                st.session_state["search_performed"] = True
+
+                # 리뷰 목록 초기화 (새로운 영화 목록에 맞춰)
+                self._reset_review_list()
+
+                # 검색 결과 메시지
+                if searched_movies:
+                    st.success(f"✅ {len(searched_movies)}개의 영화를 찾았습니다.")
+                else:
+                    st.warning("⚠️ 검색 결과가 없습니다. 검색 조건을 변경해보세요.")
                 st.session_state["board_search_params"] = {
                     "title": search_title,
                     "director": search_director,
@@ -294,6 +319,15 @@ class ReviewManager:
                 )
             else:
                 st.warning("등록된 영화가 없습니다. 먼저 영화를 등록해주세요.")
+
+    def _reset_review_list(self):
+        """리뷰 목록 초기화"""
+        if "loaded_reviews" in st.session_state:
+            st.session_state["loaded_reviews"] = []
+        if "reviews_current_page" in st.session_state:
+            st.session_state["reviews_current_page"] = 1
+        if "reviews_has_more" in st.session_state:
+            st.session_state["reviews_has_more"] = True
 
     def _get_recent_movies(self) -> List[Dict]:
         """최신 영화 10개 가져오기 (개봉일 기준 내림차순)"""
