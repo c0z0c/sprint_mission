@@ -171,11 +171,9 @@ class ReviewManager:
 
             col3_1, col3_2, col3_3 = st.columns([2, 2, 6])
             with col3_1:
-                search_button = st.button(
-                    "🔍 검색", type="primary", use_container_width=True
-                )
+                search_button = st.button("🔍 검색", type="primary", width="content")
             with col3_2:
-                reset_button = st.button("🔄 초기화", use_container_width=True)
+                reset_button = st.button("🔄 초기화", width="content")
 
         # 검색 또는 초기화 버튼 클릭 시 처리
         if search_button or reset_button:

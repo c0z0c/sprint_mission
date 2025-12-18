@@ -9,7 +9,16 @@ import os
 import random
 import logging
 import time
+import sys
+from pathlib import Path
 from helper_dev_utils import get_auto_logger
+
+# pages 디렉토리를 sys.path에 추가
+pages_dir = Path(__file__).parent
+if str(pages_dir) not in sys.path:
+    sys.path.insert(0, str(pages_dir))
+
+from movie_edit import MovieEditManager
 
 logger = get_auto_logger(log_level=logging.DEBUG)
 
@@ -74,16 +83,24 @@ class MovieManager:
         """
         logger.debug(f"영화 관리 페이지 렌더링 시작")
 
-        st.title("🎬 영화 관리")
+        st.write("##### 🎬 영화 관리")
 
-        # 영화 등록만 표시 (목록은 메인 페이지에 있음)
-        self._render_movie_registration()
+        # 탭 생성
+        tab1, tab2 = st.tabs(["📝 영화 등록", "✏️ 영화 수정/삭제"])
+
+        with tab1:
+            self._render_movie_registration()
+
+        with tab2:
+            # MovieEditManager를 사용하여 수정/삭제 UI 렌더링
+            movie_edit_manager = MovieEditManager()
+            movie_edit_manager.render()
 
     def _render_movie_registration(self):
         """
         영화 등록 폼 렌더링
         """
-        st.header("영화 등록")
+        # st.write("영화 등록")
         with st.form("movie_registration_form"):
             col1, col2 = st.columns(2)
 

@@ -3,6 +3,7 @@
 """
 
 from sqlmodel import Session, select, func
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 import os
 import requests
@@ -119,9 +120,14 @@ class MovieService:
         count_statement = select(func.count(MovieModel.id))
         total = self.session.exec(count_statement).one()
 
-        # 페이지네이션된 영화 목록 조회
+        # 페이지네이션된 영화 목록 조회 (리뷰 포함 - Eager Loading)
         offset = (page - 1) * page_size
-        statement = select(MovieModel).offset(offset).limit(page_size)
+        statement = (
+            select(MovieModel)
+            .options(selectinload(MovieModel.reviews))  # N+1 쿼리 방지
+            .offset(offset)
+            .limit(page_size)
+        )
         results = self.session.exec(statement)
 
         return results.all(), total
@@ -154,7 +160,7 @@ class MovieService:
 
     def delete_movie(self, movie_id: int) -> bool:
         """
-        영화 삭제
+        영화 삭제 (포스터 파일도 함께 삭제)
 
         Args:
             movie_id: 영화 ID
@@ -165,6 +171,20 @@ class MovieService:
         movie = self.session.get(MovieModel, movie_id)
         if not movie:
             return False
+
+        # 포스터 파일 삭제
+        if movie.poster_local_path:
+            poster_file = Path(movie.poster_local_path)
+            if poster_file.exists():
+                try:
+                    poster_file.unlink()
+                    logger.info(
+                        f"[Service] Deleted poster file: {movie.poster_local_path}"
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"[Service] Failed to delete poster file: {movie.poster_local_path} - {str(e)}"
+                    )
 
         self.session.delete(movie)
         self.session.commit()
@@ -301,6 +321,9 @@ class MovieService:
         # 페이지네이션 적용
         offset = (filters.page - 1) * filters.page_size
         statement = statement.offset(offset).limit(filters.page_size)
+
+        # 리뷰 Eager Loading 추가 (N+1 쿼리 방지)
+        statement = statement.options(selectinload(MovieModel.reviews))
 
         # 실행
         results = self.session.exec(statement)
