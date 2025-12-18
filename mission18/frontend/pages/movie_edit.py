@@ -245,12 +245,13 @@ class MovieEditManager:
             with cols_main[0]:
                 if movie.get("poster_local_path"):
                     poster_path = f"{self.api_url}/{movie['poster_local_path']}"
-                    st.image(poster_path, width="content")
                 else:
-                    st.image(
-                        "https://via.placeholder.com/300x450?text=No+Poster",
-                        width="content",
-                    )
+                    poster_path = "https://via.placeholder.com/300x450?text=No+Poster"
+
+                st.markdown(
+                    f'<div style="width: 100%; height: 350px; overflow: hidden; border-radius: 8px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;"><img src="{poster_path}" alt="poster" style="width: 100%; height: 100%; object-fit: cover;"></div>',
+                    unsafe_allow_html=True,
+                )
 
             # 영화 정보 및 버튼
             with cols_main[1]:

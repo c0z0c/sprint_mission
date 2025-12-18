@@ -36,11 +36,30 @@ st.markdown(
         transform: translateY(-5px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+    .movie-poster-container {
+        width: 100%;
+        height: 400px;
+        overflow: hidden;
+        border-radius: 8px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .movie-poster-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
     .movie-title {
         font-size: 1.1rem;
         font-weight: bold;
         margin: 10px 0 5px 0;
         color: #1f1f1f;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .movie-date {
         font-size: 0.85rem;
@@ -88,7 +107,8 @@ class MovieListManager:
 
     def render(self):
         """영화 목록 페이지 렌더링"""
-        st.write("###### 🎬 영화 목록")
+        if st.button("###### 🎬 영화 목록", key="toggle_sidebar", help="사이드바"):
+            st_sidebar_show()
 
         # 세션 상태 초기화 (무한 스크롤 방식)
         if "loaded_movies" not in st.session_state:
@@ -96,7 +116,7 @@ class MovieListManager:
             st.session_state["current_page"] = 1
             st.session_state["has_more"] = True
         if "page_size" not in st.session_state:
-            st.session_state["page_size"] = 8
+            st.session_state["page_size"] = 32
         if "search_mode" not in st.session_state:
             st.session_state["search_mode"] = False
         if "search_filters" not in st.session_state:
@@ -173,32 +193,26 @@ class MovieListManager:
             # 포스터 이미지
             if movie.get("poster_local_path"):
                 poster_url = f"{self.api_url}/{movie['poster_local_path']}"
-                st.image(poster_url, width="content")
             else:
-                st.image(
-                    "https://via.placeholder.com/300x450?text=No+Poster",
-                    width="content",
-                )
+                poster_url = "https://via.placeholder.com/300x450?text=No+Poster"
 
-            # 영화 제목
             st.markdown(
-                f"<div class='movie-title'>{movie['title']}</div>",
+                f'<div class="movie-poster-container"><img src="{poster_url}" alt="{movie.get("title", "poster")}"></div>',
                 unsafe_allow_html=True,
             )
 
-            # 원제 표시 (있는 경우)
+            title_text = movie.get("title", "")
             if (
                 movie.get("original_title")
                 and movie.get("original_title") != movie["title"]
             ):
-                st.caption(f"🌐 원제: {movie['original_title']}")
+                title_text += f" ({movie['original_title']})"
 
-            # 개봉일
-            if movie.get("release_date"):
-                st.markdown(
-                    f"<div class='movie-date'>📅 {movie['release_date']}</div>",
-                    unsafe_allow_html=True,
-                )
+            # 영화 제목
+            st.markdown(
+                f"<div class='movie-title'>{title_text}</div>",
+                unsafe_allow_html=True,
+            )
 
             # 감독 및 장르
             info_items = []
@@ -208,7 +222,21 @@ class MovieListManager:
                 info_items.append(f"🎭 {movie['genre']}")
 
             if info_items:
-                st.caption(" | ".join(info_items))
+                # st.caption(" | ".join(info_items))
+                st.text_input(
+                    "영화 정보",
+                    value=" | ".join(info_items),
+                    disabled=True,
+                    key=f"movie_info_{movie['id']}",
+                    label_visibility="collapsed",
+                )
+
+            # 개봉일
+            if movie.get("release_date"):
+                st.markdown(
+                    f"<div class='movie-date'>📅 {movie['release_date']}</div>",
+                    unsafe_allow_html=True,
+                )
 
             # 인기도 및 투표 수 표시
             if movie.get("popularity") or movie.get("vote_count"):
@@ -231,6 +259,11 @@ class MovieListManager:
                 rating_html += (
                     f"<span class='rating-badge ai-rating'>🤖 AI {ai_rating}/5.0</span>"
                 )
+            else:
+                ai_rating = 0.0
+                rating_html += (
+                    f"<span class='rating-badge ai-rating'>🤖 AI {ai_rating}/5.0</span>"
+                )
 
             if rating_html:
                 st.markdown(rating_html, unsafe_allow_html=True)
@@ -239,6 +272,9 @@ class MovieListManager:
             if movie.get("overview"):
                 with st.expander("📖 줄거리"):
                     st.write(movie["overview"])
+            else:
+                with st.expander("줄거리 없음"):
+                    st.write("")  # 빈 줄 추가
 
             # st.markdown("<br>", unsafe_allow_html=True)
 
@@ -249,7 +285,8 @@ class MovieListManager:
                     for review in reviews:
                         self._render_review_item(review)
             else:
-                st.caption("💬 아직 리뷰가 없습니다.")
+                with st.expander(f"리뷰 없음"):
+                    st.write("")  # 빈 줄 추가
 
     def _render_review_item(self, review: Dict):
         """

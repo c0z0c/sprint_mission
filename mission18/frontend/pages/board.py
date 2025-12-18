@@ -40,8 +40,9 @@ class ReviewManager:
 
     def render(self):
         """리뷰 게시판 페이지 렌더링"""
-        st.write("##### 리뷰 게시판")
-        #  st.write("영화 리뷰를 작성하고 AI 감성 분석 결과를 확인할 수 있습니다.")
+
+        if st.button("###### 리뷰 게시판", key="toggle_sidebar", help="사이드바"):
+            st_sidebar_show()
 
         # 영화 검색 섹션 (공통)
         self._render_movie_search()
@@ -95,9 +96,9 @@ class ReviewManager:
             st.session_state["board_search_params_loaded"] = True
 
         # 영화 검색 섹션
-        st.write("**🔍 영화 검색**")
+        # st.write("**🔍 영화 검색**")
 
-        with st.expander("검색 옵션 (클릭하여 펼치기)", expanded=False):
+        with st.expander("🔍 영화 검색", expanded=False):
             col1, col2 = st.columns(2)
 
             with col1:

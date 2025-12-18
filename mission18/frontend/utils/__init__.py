@@ -10,6 +10,7 @@ __all__ = [
     "st_style_toolbar_hidden",
     "st_div_divider",
     "st_style_page_margin",
+    "st_sidebar_show",
     "st_settings_panel_show",
     "st_query_param_get",
     "st_query_param_set",

@@ -5,9 +5,14 @@ Streamlit 멀티페이지 애플리케이션 메인 엔트리
 import streamlit as st
 import logging
 from helper_dev_utils import get_auto_logger
+from utils import (
+    st_style_page_margin_hidden,
+    st_sidebar_show,
+)
 
 logger = get_auto_logger(log_level=logging.DEBUG)
 
+st_style_page_margin_hidden()
 
 # 페이지 설정
 st.set_page_config(

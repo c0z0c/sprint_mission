@@ -20,6 +20,7 @@ __all__ = [
     "st_style_toolbar_hidden",
     "st_div_divider",
     "st_style_page_margin",
+    "st_sidebar_show",
     "st_settings_panel_show",
     "st_query_param_get",
     "st_query_param_set",
@@ -218,6 +219,34 @@ def st_style_page_margin(
     padding-bottom: {bottom}px !important;
 }}
 </style>"""
+    )
+
+
+def st_sidebar_show() -> None:
+    """사이드바 확장/축소 버튼을 클릭합니다."""
+    # 매번 다른 코드로 인식되도록 고유 ID 추가
+    unique_id = random.randint(1000, 9999)
+
+    components.html(
+        f"""
+        <script>
+        // 고유 ID: {unique_id}
+        (function() {{
+            setTimeout(function() {{
+                const targetDoc = window.parent.document;
+                const sidebarButton = targetDoc.querySelector('[data-testid="stExpandSidebarButton"]');
+                
+                if (sidebarButton) {{
+                    sidebarButton.click();
+                    console.log('Sidebar toggled (ID: {unique_id})');
+                }} else {{
+                    console.error('Sidebar button not found');
+                }}
+            }}, 100);
+        }})();
+        </script>
+        """,
+        height=0,
     )
 
 

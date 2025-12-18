@@ -12,6 +12,7 @@ import time
 import sys
 from pathlib import Path
 from helper_dev_utils import get_auto_logger
+from utils import *
 
 # pages 디렉토리를 sys.path에 추가
 pages_dir = Path(__file__).parent
@@ -83,7 +84,8 @@ class MovieManager:
         """
         logger.debug(f"영화 관리 페이지 렌더링 시작")
 
-        st.write("##### 🎬 영화 관리")
+        if st.button("###### 🎬 영화 관리", key="toggle_sidebar", help="사이드바"):
+            st_sidebar_show()
 
         # 탭 생성
         tab1, tab2 = st.tabs(["📝 영화 등록", "✏️ 영화 수정/삭제"])
