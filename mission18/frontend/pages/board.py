@@ -11,6 +11,7 @@ import random
 import logging
 from datetime import datetime
 from helper_dev_utils import get_auto_logger
+from utils import *
 
 logger = get_auto_logger(log_level=logging.DEBUG)
 
@@ -240,38 +241,53 @@ class ReviewManager:
         """
         리뷰 목록 렌더링 (무한 스크롤 방식)
         """
-        st.header("최근 리뷰 목록")
+        st.write("##### 최근 리뷰 목록")
 
         # 세션 상태 초기화
         if "loaded_reviews" not in st.session_state:
             st.session_state["loaded_reviews"] = []
             st.session_state["reviews_current_page"] = 1
             st.session_state["reviews_has_more"] = True
+
+        # URL query params에서 페이지 크기 로드 (기본값 10)
         if "reviews_page_size" not in st.session_state:
-            st.session_state["reviews_page_size"] = 10
+            st.session_state["reviews_page_size"] = st_query_param_get("page_size", 10)
+            logger.debug(f"reviews_page_size: {st.session_state['reviews_page_size']}")
 
         # 페이지 크기 선택 및 새로고침 버튼
-        col1, col2 = st.columns([4, 1])
-        with col1:
-            new_page_size = st.slider(
-                "한 번에 불러올 리뷰 개수",
-                min_value=5,
-                max_value=50,
-                value=st.session_state["reviews_page_size"],
-                step=5,
-                key="reviews_page_size_slider",
-            )
-        with col2:
-            st.write("")  # 버튼 위치 정렬을 위한 공백
+        cols = st.columns([1.5, 1, 5, 2, 1])
+        with cols[0]:
             if st.button("🔄 새로고침", key="refresh_reviews"):
                 st.session_state["loaded_reviews"] = []
                 st.session_state["reviews_current_page"] = 1
                 st.session_state["reviews_has_more"] = True
                 st.rerun()
 
-        # 페이지 크기가 변경되면 크기만 업데이트 (다시 불러오기는 하지 않음)
-        if new_page_size != st.session_state["reviews_page_size"]:
-            st.session_state["reviews_page_size"] = new_page_size
+        with cols[1]:
+            # 초기 로드 후 리뷰 개수 표시 (placeholder로 먼저 생성)
+            review_count_placeholder = st_label("")
+
+        with cols[3]:
+            st_label("한 번에 불러올 리뷰 개수:")
+
+        with cols[4]:
+            new_page_size = st.slider(
+                "한 번에 불러올 리뷰 개수",
+                min_value=5,
+                max_value=50,
+                value=int(st.session_state["reviews_page_size"]),
+                step=5,
+                key="reviews_page_size_slider",
+                label_visibility="collapsed",
+            )
+            logger.debug(f"Selected new_page_size: {new_page_size}")
+            # 페이지 크기가 변경되면 URL에 저장
+            if new_page_size != st.session_state["reviews_page_size"]:
+                st.session_state["reviews_page_size"] = new_page_size
+                st_query_param_set("page_size", new_page_size)
+
+        # 페이지 크기 로깅
+        logger.debug(f"reviews_page_size: {st.session_state['reviews_page_size']}")
 
         # 초기 로드: 첫 페이지 자동 로드
         if (
@@ -280,14 +296,22 @@ class ReviewManager:
         ):
             self._load_more_reviews()
 
-        # 로드된 리뷰가 없으면 안내 메시지
+        # 리뷰 개수 표시 업데이트
+        st_label(
+            review_count_placeholder,
+            value=(
+                f"{len(st.session_state['loaded_reviews'])}개의 리뷰"
+                if st.session_state["loaded_reviews"]
+                else "📭 등록된 리뷰가 없습니다."
+            ),
+            color="blue",
+        )
+
+        # 로드된 리뷰가 없으면 여기서 종료
         if not st.session_state["loaded_reviews"]:
-            st.info("📭 등록된 리뷰가 없습니다.")
             return
 
-        # 로드된 리뷰 수 표시
-        st.write(f"**{len(st.session_state['loaded_reviews'])}개의 리뷰**")
-        st.divider()
+        st_div_divider()
 
         # 누적된 모든 리뷰 표시
         for review in st.session_state["loaded_reviews"]:
@@ -311,20 +335,20 @@ class ReviewManager:
             review: 리뷰 정보 딕셔너리
         """
         with st.container(border=True):
-            col1, col2 = st.columns([4, 1])
+            # 영화 정보
+            if "movie" in review and review["movie"]:
+                movie = review["movie"]
+                release_date = movie.get("release_date") or "개봉일 미정"
+                st.write(f"##### 🎬 {movie['title']} ({release_date})")
+            else:
+                st.write(f"##### 🎬 TMDB ID: {review['tmdb_id']}")
 
-            with col1:
-                # 영화 정보
-                if "movie" in review and review["movie"]:
-                    movie = review["movie"]
-                    release_date = movie.get("release_date") or "개봉일 미정"
-                    st.subheader(f"🎬 {movie['title']} ({release_date})")
-                else:
-                    st.subheader(f"🎬 TMDB ID: {review['tmdb_id']}")
-
+            cols2 = st.columns([1, 2, 6])
+            with cols2[0]:
                 # 작성자
                 st.caption(f"✍️ {review['author']}")
 
+            with cols2[1]:
                 # 작성시간 및 수정시간
                 if review.get("created_at"):
                     try:
@@ -345,22 +369,26 @@ class ReviewManager:
                     except Exception as e:
                         logger.debug(f"Failed to parse datetime: {e}")
 
+            cols3 = st.columns([6, 1])
+            with cols3[0]:
                 # 리뷰 내용
                 st.write(review["content"])
-
-            with col2:
-                # 감성 분석 결과
-                if review.get("is_positive") is not None:
-                    if review["is_positive"] == 1:
-                        st.success("긍정")
+            with cols3[1]:
+                cols4 = st.columns([1, 1])
+                with cols4[0]:
+                    # 감성 분석 결과
+                    if review.get("is_positive") is not None:
+                        if review["is_positive"] == 1:
+                            st_label("긍정", color="green", font_weight="bold")
+                        else:
+                            st_label("부정", color="red", font_weight="bold")
                     else:
-                        st.error("부정")
-                else:
-                    st.info("분석중")
+                        st_label("분석중", color="gray", font_weight="bold")
 
-                # 삭제 버튼
-                if st.button("삭제", key=f"delete_review_{review['id']}"):
-                    self._delete_review(review["id"])
+                with cols4[1]:
+                    # 삭제 버튼
+                    if st.button("삭제", key=f"delete_review_{review['id']}"):
+                        self._delete_review(review["id"])
 
     def _get_movies(self) -> List[Dict]:
         """
