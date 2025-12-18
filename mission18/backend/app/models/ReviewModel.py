@@ -42,7 +42,6 @@ class ReviewModel(SQLModel, table=True):
     )
     updated_at: datetime = Field(
         default_factory=datetime.now,
-        sa_column_kwargs={"onupdate": datetime.now},
         nullable=False,
         description="수정 시간",
     )

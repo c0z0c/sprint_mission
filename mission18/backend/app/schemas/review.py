@@ -149,12 +149,14 @@ class ReviewUpdate(BaseModel):
     Attributes:
         author: 작성자 이름
         content: 리뷰 내용 (변경 시 감성 분석 재수행)
+        updated_at: 수정 시간 (선택, 미제공 시 서버 현재 시간)
     """
 
     author: str = Field(..., max_length=100, description="작성자 이름")
     content: str = Field(
         ..., max_length=2000, description="리뷰 내용 (변경 시 감성 분석 재수행)"
     )
+    updated_at: Optional[datetime] = Field(None, description="수정 시간")
 
 
 class ReviewPatch(BaseModel):
@@ -171,9 +173,11 @@ class ReviewPatch(BaseModel):
     Attributes:
         author: 작성자 이름 (선택)
         content: 리뷰 내용 (선택, 변경 시 감성 분석 재수행)
+        updated_at: 수정 시간 (선택, 미제공 시 서버 현재 시간)
     """
 
     author: Optional[str] = Field(None, max_length=100, description="작성자 이름")
     content: Optional[str] = Field(
         None, max_length=2000, description="리뷰 내용 (변경 시 감성 분석 재수행)"
     )
+    updated_at: Optional[datetime] = Field(None, description="수정 시간")

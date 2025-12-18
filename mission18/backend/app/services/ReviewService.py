@@ -345,8 +345,15 @@ class ReviewService:
                 f"[Service] Content changed, re-analyzed sentiment: is_positive={is_positive}"
             )
 
-        # updated_at 갱신
-        review.updated_at = datetime.now()
+        # updated_at 갱신 (입력값이 있으면 사용, 없으면 자동)
+        if "updated_at" in update_dict and update_dict["updated_at"]:
+            review.updated_at = update_dict["updated_at"]
+            logger.debug(
+                f"[Service] Using provided updated_at: {update_dict['updated_at']}"
+            )
+        else:
+            review.updated_at = datetime.now()
+            logger.debug("[Service] Using auto-generated updated_at")
 
         try:
             self.session.add(review)
