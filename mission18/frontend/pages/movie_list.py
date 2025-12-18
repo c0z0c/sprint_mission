@@ -97,16 +97,32 @@ class MovieListManager:
             st.session_state["has_more"] = True
         if "page_size" not in st.session_state:
             st.session_state["page_size"] = 8
+        if "search_mode" not in st.session_state:
+            st.session_state["search_mode"] = False
+        if "search_filters" not in st.session_state:
+            st.session_state["search_filters"] = {}
 
-        # 초기 로드: 첫 페이지 자동 로드
-        if not st.session_state["loaded_movies"] and st.session_state["has_more"]:
+        # 검색 UI 렌더링
+        self._render_search_ui()
+
+        st_div_divider()
+
+        # 초기 로드: 첫 페이지 자동 로드 (검색 모드가 아닐 때만)
+        if (
+            not st.session_state["loaded_movies"]
+            and st.session_state["has_more"]
+            and not st.session_state["search_mode"]
+        ):
             self._load_more_movies()
 
         # 로드된 영화가 없으면 안내 메시지
         if not st.session_state["loaded_movies"]:
-            st.info(
-                "📭 등록된 영화가 없습니다. 영화 관리 페이지에서 영화를 등록해주세요."
-            )
+            if st.session_state["search_mode"]:
+                st.info("🔍 검색 결과가 없습니다.")
+            else:
+                st.info(
+                    "📭 등록된 영화가 없습니다. 영화 관리 페이지에서 영화를 등록해주세요."
+                )
             return
 
         # 로드된 영화 수 표시
@@ -116,6 +132,8 @@ class MovieListManager:
                 st.session_state["loaded_movies"] = []
                 st.session_state["current_page"] = 1
                 st.session_state["has_more"] = True
+                st.session_state["search_mode"] = False
+                st.session_state["search_filters"] = {}
                 self._load_more_movies()
                 st.rerun()
 
@@ -244,13 +262,186 @@ class MovieListManager:
             unsafe_allow_html=True,
         )
 
+    def _render_search_ui(self):
+        """영화 검색 UI 렌더링"""
+        with st.expander("🔍 영화 검색", expanded=False):
+            # 제목 및 감독 검색
+            col1, col2 = st.columns(2)
+            with col1:
+                search_title = st.text_input(
+                    "제목",
+                    key="search_title_list",
+                    placeholder="예: 인셉션",
+                )
+            with col2:
+                search_director = st.text_input(
+                    "감독",
+                    key="search_director_list",
+                    placeholder="예: 크리스토퍼 놀란",
+                )
+
+            # 장르 및 개봉일 검색
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                search_genre = st.text_input(
+                    "장르",
+                    key="search_genre_list",
+                    placeholder="예: 액션",
+                )
+            with col2:
+                search_date_from = st.text_input(
+                    "개봉일 시작",
+                    key="search_date_from_list",
+                    placeholder="YYYY-MM-DD",
+                )
+            with col3:
+                search_date_to = st.text_input(
+                    "개봉일 종료",
+                    key="search_date_to_list",
+                    placeholder="YYYY-MM-DD",
+                )
+
+            # 평점 범위 검색
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("TMDB 평점 범위")
+                tmdb_rating_range = st.slider(
+                    "TMDB 평점",
+                    min_value=0.0,
+                    max_value=10.0,
+                    value=(0.0, 10.0),
+                    step=0.5,
+                    key="tmdb_rating_range_list",
+                    label_visibility="collapsed",
+                )
+            with col2:
+                st.write("AI 평점 범위")
+                ai_rating_range = st.slider(
+                    "AI 평점",
+                    min_value=0.0,
+                    max_value=5.0,
+                    value=(0.0, 5.0),
+                    step=0.1,
+                    key="ai_rating_range_list",
+                    label_visibility="collapsed",
+                )
+
+            # 정렬 옵션
+            col1, col2, col3 = st.columns([2, 2, 1])
+            with col1:
+                sort_by = st.selectbox(
+                    "정렬 기준",
+                    options=["release_date", "tmdb_rating", "ai_rating", "title"],
+                    format_func=lambda x: {
+                        "release_date": "개봉일",
+                        "tmdb_rating": "TMDB 평점",
+                        "ai_rating": "AI 평점",
+                        "title": "제목",
+                    }[x],
+                    key="sort_by_list",
+                )
+            with col2:
+                sort_order = st.selectbox(
+                    "정렬 방향",
+                    options=["desc", "asc"],
+                    format_func=lambda x: "내림차순" if x == "desc" else "오름차순",
+                    key="sort_order_list",
+                )
+
+            # 검색 및 초기화 버튼
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(
+                    "🔍 검색",
+                    type="primary",
+                    key="btn_search_list",
+                    use_container_width=True,
+                ):
+                    filters = {
+                        "title": search_title if search_title.strip() else None,
+                        "director": (
+                            search_director if search_director.strip() else None
+                        ),
+                        "genre": search_genre if search_genre.strip() else None,
+                        "release_date_from": (
+                            search_date_from if search_date_from.strip() else None
+                        ),
+                        "release_date_to": (
+                            search_date_to if search_date_to.strip() else None
+                        ),
+                        "tmdb_rating_min": (
+                            tmdb_rating_range[0] if tmdb_rating_range[0] > 0 else None
+                        ),
+                        "tmdb_rating_max": (
+                            tmdb_rating_range[1] if tmdb_rating_range[1] < 10 else None
+                        ),
+                        "ai_rating_min": (
+                            ai_rating_range[0] if ai_rating_range[0] > 0 else None
+                        ),
+                        "ai_rating_max": (
+                            ai_rating_range[1] if ai_rating_range[1] < 5 else None
+                        ),
+                        "sort_by": sort_by,
+                        "sort_order": sort_order,
+                    }
+
+                    # None 값 제거
+                    filters = {k: v for k, v in filters.items() if v is not None}
+
+                    st.session_state["search_filters"] = filters
+                    st.session_state["search_mode"] = True
+                    st.session_state["loaded_movies"] = []
+                    st.session_state["current_page"] = 1
+                    st.session_state["has_more"] = True
+                    self._load_more_movies()
+                    st.rerun()
+
+            with col2:
+                if st.button(
+                    "🔄 초기화",
+                    type="secondary",
+                    key="btn_reset_list",
+                    use_container_width=True,
+                ):
+                    st.session_state["search_mode"] = False
+                    st.session_state["search_filters"] = {}
+                    st.session_state["loaded_movies"] = []
+                    st.session_state["current_page"] = 1
+                    st.session_state["has_more"] = True
+
+                    # 검색 필드 초기화
+                    for key in [
+                        "search_title_list",
+                        "search_director_list",
+                        "search_genre_list",
+                        "search_date_from_list",
+                        "search_date_to_list",
+                        "tmdb_rating_range_list",
+                        "ai_rating_range_list",
+                        "sort_by_list",
+                        "sort_order_list",
+                    ]:
+                        if key in st.session_state:
+                            del st.session_state[key]
+
+                    st.rerun()
+
     def _load_more_movies(self):
         """
         다음 페이지의 영화를 로드하여 누적 목록에 추가
         """
-        pagination_data = self._get_movies_paginated(
-            st.session_state["current_page"], st.session_state["page_size"]
-        )
+        if st.session_state["search_mode"]:
+            # 검색 모드: search API 사용
+            pagination_data = self._search_movies_paginated(
+                st.session_state["current_page"],
+                st.session_state["page_size"],
+                st.session_state["search_filters"],
+            )
+        else:
+            # 일반 모드: 기본 paginated API 사용
+            pagination_data = self._get_movies_paginated(
+                st.session_state["current_page"], st.session_state["page_size"]
+            )
 
         if pagination_data:
             movies = pagination_data.get("movies", [])
@@ -268,6 +459,40 @@ class MovieListManager:
                 st.session_state["has_more"] = False
         else:
             st.session_state["has_more"] = False
+
+    def _search_movies_paginated(
+        self, page: int, page_size: int, filters: dict
+    ) -> Optional[Dict]:
+        """
+        검색된 영화 목록 가져오기 (페이지네이션)
+
+        Args:
+            page: 페이지 번호
+            page_size: 페이지당 항목 수
+            filters: 검색 필터
+
+        Returns:
+            페이지네이션 데이터 (영화 목록, 전체 개수 등)
+        """
+        try:
+            params = {
+                "page": page,
+                "page_size": page_size,
+                **filters,
+            }
+            response = requests.get(
+                f"{self.api_url}/movies/search",
+                params=params,
+            )
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(
+                    f"Failed to search movies: {response.status_code} - {response.text}"
+                )
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to search movies: {str(e)}")
+        return None
 
     def _get_movies_paginated(self, page: int, page_size: int) -> Optional[Dict]:
         """
