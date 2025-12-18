@@ -67,126 +67,11 @@ class ReviewEditManager:
         """리뷰 작성 폼 렌더링"""
         st.write("##### 리뷰 작성")
 
-        # 영화 검색 섹션
-        st.write("**영화 검색**")
-
-        with st.expander("🔍 검색 옵션 (클릭하여 펼치기)", expanded=False):
-            col1, col2 = st.columns(2)
-
-            with col1:
-                search_title = st.text_input(
-                    "제목",
-                    placeholder="예: Dark Knight",
-                    help="영화 제목 검색 (부분 검색, 대소문자 무시)",
-                )
-                search_director = st.text_input(
-                    "감독",
-                    placeholder="예: Nolan",
-                    help="감독 이름 검색 (부분 검색, 대소문자 무시)",
-                )
-                search_genre = st.text_input(
-                    "장르",
-                    placeholder="예: Action",
-                    help="장르 검색 (부분 검색, 대소문자 무시)",
-                )
-
-            with col2:
-                col2_1, col2_2 = st.columns(2)
-                with col2_1:
-                    search_date_from = st.text_input(
-                        "개봉일 시작", placeholder="YYYY-MM-DD", help="예: 2020-01-01"
-                    )
-                with col2_2:
-                    search_date_to = st.text_input(
-                        "개봉일 종료", placeholder="YYYY-MM-DD", help="예: 2023-12-31"
-                    )
-
-                col2_3, col2_4 = st.columns(2)
-                with col2_3:
-                    search_tmdb_min = st.number_input(
-                        "최소 TMDB 평점",
-                        min_value=0.0,
-                        max_value=10.0,
-                        value=0.0,
-                        step=0.5,
-                        help="0~10점",
-                    )
-                with col2_4:
-                    search_tmdb_max = st.number_input(
-                        "최대 TMDB 평점",
-                        min_value=0.0,
-                        max_value=10.0,
-                        value=10.0,
-                        step=0.5,
-                        help="0~10점",
-                    )
-
-            col3_1, col3_2, col3_3 = st.columns([2, 2, 6])
-            with col3_1:
-                search_button = st.button(
-                    "🔍 검색", type="primary", use_container_width=True
-                )
-            with col3_2:
-                reset_button = st.button("🔄 초기화", use_container_width=True)
-
-        # 검색 또는 초기화 버튼 클릭 시 처리
-        if search_button or reset_button:
-            if reset_button:
-                # 초기화: 최신 영화 10개 로드
-                st.session_state["searched_movies"] = self._get_recent_movies()
-                st.session_state["search_performed"] = False
-            else:
-                # 검색 실행
-                search_params = {}
-                if search_title:
-                    search_params["title"] = search_title
-                if search_director:
-                    search_params["director"] = search_director
-                if search_genre:
-                    search_params["genre"] = search_genre
-                if search_date_from:
-                    search_params["release_date_from"] = search_date_from
-                if search_date_to:
-                    search_params["release_date_to"] = search_date_to
-                if search_tmdb_min > 0:
-                    search_params["tmdb_rating_min"] = search_tmdb_min
-                if search_tmdb_max < 10:
-                    search_params["tmdb_rating_max"] = search_tmdb_max
-
-                # 검색 API 호출
-                searched_movies = self._search_movies(search_params)
-                st.session_state["searched_movies"] = searched_movies
-                st.session_state["search_performed"] = True
-
-                # 검색 결과 메시지
-                if searched_movies:
-                    st.success(f"✅ {len(searched_movies)}개의 영화를 찾았습니다.")
-                else:
-                    st.warning("⚠️ 검색 결과가 없습니다. 검색 조건을 변경해보세요.")
-
-        # 검색된 영화 목록 또는 최신 영화 10개 목록 사용
-        if "searched_movies" not in st.session_state:
-            st.session_state["searched_movies"] = self._get_recent_movies()
-            st.session_state["search_performed"] = False
-
-        movies = st.session_state["searched_movies"]
+        movies = st.session_state.get("searched_movies", [])
 
         if not movies:
-            if st.session_state.get("search_performed", False):
-                st.warning(
-                    "검색 결과가 없습니다. 검색 조건을 변경하거나 초기화 버튼을 눌러주세요."
-                )
-            else:
-                st.warning("등록된 영화가 없습니다. 먼저 영화를 등록해주세요.")
+            st.warning("영화를 먼저 검색해주세요.")
             return
-
-        # 검색 결과 정보 표시
-        if st.session_state.get("search_performed", False):
-            st.info(f"📋 검색된 영화: {len(movies)}개")
-        else:
-            st.info(f"📋 최신 영화: {len(movies)}개")
-
-        st.divider()
 
         # 영화 선택 (폼 외부에서 처리하여 AI 평점과 동기화)
         movie_options = {
@@ -322,61 +207,7 @@ class ReviewEditManager:
             height=400,
         )
 
-        st.plotly_chart(fig, use_container_width=True)
-
-    def _get_movies(self) -> List[Dict]:
-        """영화 목록 가져오기"""
-        try:
-            response = requests.get(f"{self.api_url}/movies/")
-            if response.status_code == 200:
-                return response.json()
-        except requests.exceptions.RequestException:
-            pass
-        return []
-
-    def _get_recent_movies(self) -> List[Dict]:
-        """최신 영화 10개 가져오기 (개봉일 기준 내림차순)"""
-        try:
-            search_params = {
-                "page_size": 10,
-                "page": 1,
-                "sort_by": "release_date",
-                "sort_order": "desc",
-            }
-
-            response = requests.get(
-                f"{self.api_url}/movies/search", params=search_params
-            )
-
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("movies", [])
-            else:
-                logger.error(f"Failed to get recent movies: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to get recent movies: {str(e)}")
-
-        return []
-
-    def _search_movies(self, search_params: dict) -> List[Dict]:
-        """영화 검색"""
-        try:
-            search_params["page_size"] = 100
-            search_params["page"] = 1
-
-            response = requests.get(
-                f"{self.api_url}/movies/search", params=search_params
-            )
-
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("movies", [])
-            else:
-                logger.error(f"Movie search failed: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to search movies: {str(e)}")
-
-        return []
+        st.plotly_chart(fig, width="content")
 
     def _get_movie_rating(self, tmdb_id: int) -> Optional[Dict]:
         """영화 평점 조회"""
@@ -399,6 +230,19 @@ class ReviewEditManager:
                 review = response.json()
                 sentiment = "긍정" if review.get("is_positive") == 1 else "부정"
 
+                # 생성 날짜 포맷팅
+                created_at = ""
+                if review.get("created_at"):
+                    from datetime import datetime
+
+                    try:
+                        dt = datetime.fromisoformat(
+                            review["created_at"].replace("Z", "+00:00")
+                        )
+                        created_at = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    except:
+                        created_at = review["created_at"]
+
                 # 캐시 무효화
                 if "loaded_reviews" in st.session_state:
                     st.session_state["loaded_reviews"] = []
@@ -409,7 +253,11 @@ class ReviewEditManager:
                 if cache_key in st.session_state:
                     del st.session_state[cache_key]
 
-                st.success(f"리뷰가 등록되었습니다! (AI 분석 결과: {sentiment})")
+                success_msg = f"✅ 리뷰가 등록되었습니다!\n\n"
+                success_msg += f"- AI 분석 결과: **{sentiment}**\n"
+                if created_at:
+                    success_msg += f"- 작성일시: {created_at}"
+                st.success(success_msg)
                 st.balloons()
                 st.rerun()
             else:

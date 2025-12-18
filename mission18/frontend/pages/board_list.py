@@ -105,9 +105,7 @@ class ReviewListManager:
         if st.session_state["reviews_has_more"]:
             _, col2, _ = st.columns([1, 8, 1])
             with col2:
-                if st.button(
-                    "📥 더 불러오기", use_container_width=True, type="primary"
-                ):
+                if st.button("📥 더 불러오기", width="content", type="primary"):
                     self._load_more_reviews()
                     st.rerun()
         else:
@@ -173,9 +171,19 @@ class ReviewListManager:
 
     def _load_more_reviews(self):
         """다음 페이지의 리뷰를 로드하여 누적 목록에 추가"""
+        # 검색된 영화 목록 가져오기
+        searched_movies = st.session_state.get("searched_movies", [])
+
+        # 검색된 영화의 tmdb_id 목록 생성
+        if searched_movies:
+            tmdb_ids = [movie["tmdb_id"] for movie in searched_movies]
+        else:
+            tmdb_ids = []
+
         pagination_data = self._get_reviews_paginated(
             st.session_state["reviews_current_page"],
             st.session_state["reviews_page_size"],
+            tmdb_ids,
         )
 
         if pagination_data:
@@ -195,12 +203,21 @@ class ReviewListManager:
         else:
             st.session_state["reviews_has_more"] = False
 
-    def _get_reviews_paginated(self, page: int, page_size: int) -> Optional[Dict]:
-        """페이지네이션된 리뷰 목록 가져오기"""
+    def _get_reviews_paginated(
+        self, page: int, page_size: int, tmdb_ids: List[int] = None
+    ) -> Optional[Dict]:
+        """페이지네이션된 리뷰 목록 가져오기 (영화 필터링 포함)"""
         try:
+            params = {"page": page, "page_size": page_size}
+
+            # tmdb_ids가 제공되면 필터링 파라미터 추가
+            if tmdb_ids:
+                # 리스트를 쉼표로 구분된 문자열로 변환
+                params["tmdb_ids"] = ",".join(map(str, tmdb_ids))
+
             response = requests.get(
                 f"{self.api_url}/reviews/paginated",
-                params={"page": page, "page_size": page_size},
+                params=params,
             )
             if response.status_code == 200:
                 return response.json()

@@ -160,6 +160,9 @@ class ReviewRouter:
         page_size: int = Query(
             10, ge=1, le=100, description="페이지당 항목 수 (최대 100)"
         ),
+        tmdb_ids: Optional[str] = Query(
+            None, description="필터링할 영화 TMDB ID 목록 (쉼표로 구분)"
+        ),
         db: Session = Depends(get_db),
     ) -> ReviewPaginationResponse:
         """
@@ -168,13 +171,23 @@ class ReviewRouter:
         Args:
             page: 페이지 번호 (1부터 시작)
             page_size: 페이지당 항목 수
+            tmdb_ids: 필터링할 영화 TMDB ID 목록 (쉼표로 구분)
             db: 데이터베이스 세션
 
         Returns:
             ReviewPaginationResponse: 페이지네이션 정보와 리뷰 목록 (영화 정보 포함)
         """
         service = ReviewService(db)
-        reviews, total = service.get_reviews_paginated(page, page_size)
+
+        # tmdb_ids 문자열을 정수 리스트로 변환
+        tmdb_id_list = None
+        if tmdb_ids:
+            try:
+                tmdb_id_list = [int(id.strip()) for id in tmdb_ids.split(",")]
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid tmdb_ids format")
+
+        reviews, total = service.get_reviews_paginated(page, page_size, tmdb_id_list)
 
         # 전체 페이지 수 계산
         total_pages = math.ceil(total / page_size) if total > 0 else 0

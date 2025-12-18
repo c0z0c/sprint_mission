@@ -86,31 +86,37 @@ class ReviewService:
         return results.all()
 
     def get_reviews_paginated(
-        self, page: int = 1, page_size: int = 10
+        self, page: int = 1, page_size: int = 10, tmdb_ids: List[int] = None
     ) -> tuple[List[ReviewModel], int]:
         """
-        페이지네이션된 리뷰 목록 조회 (최신순)
+        페이지네이션된 리뷰 목록 조회 (최신순, TMDB ID 필터링 가능)
 
         Args:
             page: 페이지 번호 (1부터 시작)
             page_size: 페이지당 항목 수
+            tmdb_ids: 필터링할 영화 TMDB ID 목록 (선택 사항)
 
         Returns:
             tuple[List[ReviewModel], int]: (리뷰 목록, 전체 리뷰 수)
         """
-        # 전체 리뷰 수 조회
+        # 전체 리뷰 수 조회 (tmdb_ids 필터링 적용)
         count_statement = select(func.count(ReviewModel.id))
+        if tmdb_ids:
+            count_statement = count_statement.where(ReviewModel.tmdb_id.in_(tmdb_ids))
         total = self.session.exec(count_statement).one()
 
-        # 페이지네이션된 리뷰 목록 조회 (최신순, 영화 정보 eager loading)
+        # 페이지네이션된 리뷰 목록 조회 (최신순, 영화 정보 eager loading, tmdb_ids 필터링 적용)
         offset = (page - 1) * page_size
         statement = (
             select(ReviewModel)
             .options(selectinload(ReviewModel.movie))
             .order_by(ReviewModel.created_at.desc())
-            .offset(offset)
-            .limit(page_size)
         )
+
+        if tmdb_ids:
+            statement = statement.where(ReviewModel.tmdb_id.in_(tmdb_ids))
+
+        statement = statement.offset(offset).limit(page_size)
         results = self.session.exec(statement)
 
         return results.all(), total
