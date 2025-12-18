@@ -122,7 +122,7 @@ class ReviewListManager:
             else:
                 st.write(f"##### 🎬 TMDB ID: {review['tmdb_id']}")
 
-            cols2 = st.columns([1, 2, 6])
+            cols2 = st.columns([2, 2, 3, 3])
             with cols2[0]:
                 # 작성자
                 st.caption(f"✍️ {review['author']}")
@@ -147,13 +147,8 @@ class ReviewListManager:
                         st.caption(time_text)
                     except Exception as e:
                         logger.debug(f"Failed to parse datetime: {e}")
-
-            cols3 = st.columns([6, 1])
-            with cols3[0]:
-                # 리뷰 내용
-                st.write(review["content"])
-            with cols3[1]:
-                cols4 = st.columns([1, 1])
+            with cols2[2]:
+                cols4 = st.columns([1, 1, 1])
                 with cols4[0]:
                     # 감성 분석 결과
                     if review.get("is_positive") is not None:
@@ -165,9 +160,18 @@ class ReviewListManager:
                         st_label("분석중", color="gray", font_weight="bold")
 
                 with cols4[1]:
+                    if st.button("수정", key=f"edit_review_{review['id']}"):
+                        # self._edit_review(review["id"])
+                        pass
+
+                with cols4[2]:
                     # 삭제 버튼
                     if st.button("삭제", key=f"delete_review_{review['id']}"):
                         self._delete_review(review["id"])
+
+            # 리뷰 내용
+            with st.container(border=True):
+                st.write(review["content"])
 
     def _load_more_reviews(self):
         """다음 페이지의 리뷰를 로드하여 누적 목록에 추가"""
