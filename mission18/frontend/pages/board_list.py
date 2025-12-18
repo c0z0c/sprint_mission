@@ -36,6 +36,10 @@ class ReviewListManager:
             st.session_state["reviews_current_page"] = 1
             st.session_state["reviews_has_more"] = True
 
+        # 수정 중인 리뷰 ID 추적
+        if "editing_review_id" not in st.session_state:
+            st.session_state["editing_review_id"] = None
+
         # URL query params에서 페이지 크기 로드
         if "reviews_page_size" not in st.session_state:
             st.session_state["reviews_page_size"] = st_query_param_get("page_size", 10)
@@ -48,6 +52,7 @@ class ReviewListManager:
                 st.session_state["loaded_reviews"] = []
                 st.session_state["reviews_current_page"] = 1
                 st.session_state["reviews_has_more"] = True
+                st.session_state["editing_review_id"] = None
                 st.rerun()
 
         with cols[1]:
@@ -113,6 +118,9 @@ class ReviewListManager:
 
     def _render_review_card(self, review: dict):
         """리뷰 카드 렌더링"""
+        review_id = review["id"]
+        is_editing = st.session_state.get("editing_review_id") == review_id
+
         with st.container(border=True):
             # 영화 정보
             if "movie" in review and review["movie"]:
@@ -160,18 +168,110 @@ class ReviewListManager:
                         st_label("분석중", color="gray", font_weight="bold")
 
                 with cols4[1]:
-                    if st.button("수정", key=f"edit_review_{review['id']}"):
-                        # self._edit_review(review["id"])
-                        pass
+                    # 수정 버튼
+                    if st.button(
+                        "수정" if not is_editing else "취소",
+                        key=f"edit_review_{review_id}",
+                    ):
+                        if is_editing:
+                            st.session_state["editing_review_id"] = None
+                        else:
+                            st.session_state["editing_review_id"] = review_id
+                        st.rerun()
 
                 with cols4[2]:
                     # 삭제 버튼
-                    if st.button("삭제", key=f"delete_review_{review['id']}"):
-                        self._delete_review(review["id"])
+                    if st.button("삭제", key=f"delete_review_{review_id}"):
+                        self._delete_review(review_id)
 
-            # 리뷰 내용
-            with st.container(border=True):
-                st.write(review["content"])
+            # 리뷰 내용 (수정 모드가 아닐 때)
+            if not is_editing:
+                with st.container(border=True):
+                    st.write(review["content"])
+
+            # 수정 폼 (expander로 표시)
+            if is_editing:
+                with st.expander("✏️ 리뷰 수정", expanded=True):
+                    self._render_edit_form(review)
+
+    def _render_edit_form(self, review: dict):
+        """리뷰 수정 폼 렌더링"""
+        review_id = review["id"]
+
+        with st.form(key=f"edit_form_{review_id}"):
+            # 작성자 입력
+            new_author = st.text_input(
+                "작성자",
+                value=review["author"],
+                max_chars=100,
+                key=f"edit_author_{review_id}",
+            )
+
+            # 리뷰 내용 입력
+            new_content = st.text_area(
+                "리뷰 내용",
+                value=review["content"],
+                max_chars=2000,
+                height=150,
+                key=f"edit_content_{review_id}",
+            )
+
+            # 버튼들
+            col1, col2, col3 = st.columns([1, 1, 4])
+            with col1:
+                submit_button = st.form_submit_button("💾 저장", type="primary")
+            with col2:
+                cancel_button = st.form_submit_button("❌ 취소")
+
+            # 폼 제출 처리
+            if submit_button:
+                if not new_author.strip():
+                    st.error("작성자를 입력해주세요.")
+                elif not new_content.strip():
+                    st.error("리뷰 내용을 입력해주세요.")
+                else:
+                    self._update_review(
+                        review_id, new_author.strip(), new_content.strip()
+                    )
+
+            if cancel_button:
+                st.session_state["editing_review_id"] = None
+                st.rerun()
+
+    def _update_review(self, review_id: int, author: str, content: str):
+        """리뷰 업데이트"""
+        try:
+            update_data = {"author": author, "content": content}
+
+            response = requests.put(
+                f"{self.api_url}/reviews/{review_id}", json=update_data
+            )
+
+            if response.status_code == 200:
+                # 캐시 무효화
+                st.session_state["loaded_reviews"] = []
+                st.session_state["reviews_current_page"] = 1
+                st.session_state["reviews_has_more"] = True
+                st.session_state["editing_review_id"] = None
+
+                # 모든 평점 캐시 무효화
+                keys_to_delete = [
+                    k for k in st.session_state.keys() if k.startswith("cached_rating_")
+                ]
+                for key in keys_to_delete:
+                    del st.session_state[key]
+
+                st.success("리뷰가 수정되었습니다.")
+                st.rerun()
+            elif response.status_code == 400:
+                error_detail = response.json().get("detail", "리뷰 수정 실패")
+                st.error(f"❌ {error_detail}")
+            elif response.status_code == 404:
+                st.error("❌ 리뷰를 찾을 수 없습니다.")
+            else:
+                st.error(f"❌ 리뷰 수정 실패 (상태 코드: {response.status_code})")
+        except requests.exceptions.RequestException as e:
+            st.error(f"❌ API 연결 오류: {str(e)}")
 
     def _load_more_reviews(self):
         """다음 페이지의 리뷰를 로드하여 누적 목록에 추가"""
