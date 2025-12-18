@@ -46,12 +46,20 @@ class ReviewService:
         is_positive = self.sentiment_predictor.predict(review_data.content)
 
         # 리뷰 모델 생성
-        review = ReviewModel(
-            tmdb_id=review_data.tmdb_id,
-            author=review_data.author,
-            content=review_data.content,
-            is_positive=is_positive,
-        )
+        review_dict = {
+            "tmdb_id": review_data.tmdb_id,
+            "author": review_data.author,
+            "content": review_data.content,
+            "is_positive": is_positive,
+        }
+
+        # 사용자가 제공한 datetime 사용 (없으면 default_factory 사용)
+        if review_data.created_at:
+            review_dict["created_at"] = review_data.created_at
+        if review_data.updated_at:
+            review_dict["updated_at"] = review_data.updated_at
+
+        review = ReviewModel(**review_dict)
 
         self.session.add(review)
         self.session.commit()

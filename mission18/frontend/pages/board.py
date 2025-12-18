@@ -19,6 +19,7 @@ import logging
 from helper_dev_utils import get_auto_logger
 from board_edit import ReviewEditManager
 from board_list import ReviewListManager
+from utils import *
 
 logger = get_auto_logger(log_level=logging.DEBUG)
 
@@ -40,12 +41,12 @@ class ReviewManager:
     def render(self):
         """리뷰 게시판 페이지 렌더링"""
         st.write("##### 리뷰 게시판")
-        st.write("영화 리뷰를 작성하고 AI 감성 분석 결과를 확인할 수 있습니다.")
+        #  st.write("영화 리뷰를 작성하고 AI 감성 분석 결과를 확인할 수 있습니다.")
 
         # 영화 검색 섹션 (공통)
         self._render_movie_search()
 
-        st.divider()
+        st_div_divider()
 
         # 탭 구성
         tab1, tab2 = st.tabs(["리뷰 작성", "리뷰 목록"])
@@ -238,11 +239,6 @@ class ReviewManager:
                 # 리뷰 목록 초기화 (새로운 영화 목록에 맞춰)
                 self._reset_review_list()
 
-                # 검색 결과 메시지
-                if searched_movies:
-                    st.success(f"✅ {len(searched_movies)}개의 영화를 찾았습니다.")
-                else:
-                    st.warning("⚠️ 검색 결과가 없습니다. 검색 조건을 변경해보세요.")
                 st.session_state["board_search_params"] = {
                     "title": search_title,
                     "director": search_director,
@@ -261,6 +257,7 @@ class ReviewManager:
                 st.session_state["searched_movies"] = searched_movies
                 st.session_state["search_performed"] = True
 
+                # 검색 결과 정보 표시 됨으로 여기에서는 생략
                 # 검색 결과 메시지
                 # if not searched_movies:
                 # st.success(f"✅ {len(searched_movies)}개의 영화를 찾았습니다.")

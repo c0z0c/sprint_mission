@@ -24,11 +24,15 @@ class ReviewCreate(BaseModel):
         tmdb_id: TMDB 영화 ID
         author: 작성자 이름
         content: 리뷰 내용
+        created_at: 생성 시간 (선택, 기본값: 서버 현재 시간)
+        updated_at: 수정 시간 (선택, 기본값: 서버 현재 시간)
     """
 
     tmdb_id: int = Field(..., description="TMDB 영화 ID")
     author: str = Field(..., max_length=100, description="작성자 이름")
     content: str = Field(..., max_length=2000, description="리뷰 내용")
+    created_at: Optional[datetime] = Field(None, description="생성 시간")
+    updated_at: Optional[datetime] = Field(None, description="수정 시간")
 
 
 class ReviewResponse(BaseModel):

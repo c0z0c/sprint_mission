@@ -6,6 +6,7 @@ import streamlit as st
 import requests
 import plotly.graph_objects as go
 from typing import List, Dict, Optional
+from datetime import datetime
 import os
 import random
 import logging
@@ -107,25 +108,74 @@ class ReviewEditManager:
 
         with st.form("review_form"):
             # 작성자 이름
-            author = st_text_input(
-                "작성자 이름 *", placeholder="예: 홍길동", value="작성자"
-            )
+            cols1 = st.columns([1, 9])
+            with cols1[0]:
+                st_label("작성자")
 
-            # 리뷰 내용
-            content = st_text_review_memo(
-                "리뷰 내용 *",
-                placeholder="영화에 대한 리뷰를 작성해주세요...",
-                height=100,
-                value="이 영화는 정말 ",
-            )
+            with cols1[1]:
+                author = st_text_input(
+                    "작성자 이름 *",
+                    placeholder="예: 홍길동",
+                    value="작성자",
+                    label_visibility="collapsed",
+                )
 
-            submitted = st.form_submit_button("리뷰 등록", width="content")
+            cols2 = st.columns([1, 9])
+            with cols2[0]:
+                st_label("리뷰<br/>내용")
+            with cols2[1]:
+                content = st_text_review_memo(
+                    "리뷰 내용 *",
+                    placeholder="영화에 대한 리뷰를 작성해주세요...",
+                    height=70,
+                    value="이 영화는 정말 ",
+                    label_visibility="collapsed",
+                )
+
+            cols3 = st.columns([1, 9])
+            with cols3[0]:
+                st_label("작성일")
+            with cols3[1]:
+                cols4 = st.columns([4, 1])
+                with cols4[0]:
+                    cols5 = st.columns([1, 1])
+                    with cols5[0]:
+                        created_datetime = st.text_input(
+                            "작성 시간",
+                            value=datetime.now().strftime("%Y/%m/%d %H:%M"),
+                            help="리뷰 작성 시간",
+                            key="review_created_datetime",
+                            label_visibility="collapsed",
+                        )
+                    with cols5[1]:
+                        updated_datetime = st.text_input(
+                            "수정 시간",
+                            value=datetime.now().strftime("%Y/%m/%d %H:%M"),
+                            help="리뷰 수정 시간",
+                            key="review_updated_datetime",
+                            label_visibility="collapsed",
+                        )
+                with cols4[1]:
+                    submitted = st.form_submit_button("리뷰 등록", width="stretch")
 
             if submitted:
                 if not author or not content:
                     st.error("작성자 이름과 리뷰 내용은 필수 입력 항목입니다.")
                 else:
-                    self._register_review(selected_tmdb_id, author, content)
+                    # datetime 객체 생성
+                    created_datetime = datetime.strptime(
+                        created_datetime, "%Y/%m/%d %H:%M"
+                    )
+                    updated_datetime = datetime.strptime(
+                        updated_datetime, "%Y/%m/%d %H:%M"
+                    )
+                    self._register_review(
+                        selected_tmdb_id,
+                        author,
+                        content,
+                        created_datetime,
+                        updated_datetime,
+                    )
 
         # 선택된 영화의 AI 평점 표시
         st.divider()
@@ -219,9 +269,23 @@ class ReviewEditManager:
             pass
         return None
 
-    def _register_review(self, tmdb_id: int, author: str, content: str):
+    def _register_review(
+        self,
+        tmdb_id: int,
+        author: str,
+        content: str,
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+    ):
         """리뷰 등록"""
-        review_data = {"tmdb_id": tmdb_id, "author": author, "content": content}
+
+        review_data = {
+            "tmdb_id": tmdb_id,
+            "author": author,
+            "content": content,
+            "created_at": created_at.isoformat() if created_at else None,
+            "updated_at": updated_at.isoformat() if updated_at else None,
+        }
 
         try:
             response = requests.post(f"{self.api_url}/reviews/", json=review_data)
@@ -231,17 +295,15 @@ class ReviewEditManager:
                 sentiment = "긍정" if review.get("is_positive") == 1 else "부정"
 
                 # 생성 날짜 포맷팅
-                created_at = ""
+                created_at_str = ""
                 if review.get("created_at"):
-                    from datetime import datetime
-
                     try:
                         dt = datetime.fromisoformat(
                             review["created_at"].replace("Z", "+00:00")
                         )
-                        created_at = dt.strftime("%Y-%m-%d %H:%M:%S")
+                        created_at_str = dt.strftime("%Y-%m-%d %H:%M:%S")
                     except:
-                        created_at = review["created_at"]
+                        created_at_str = review["created_at"]
 
                 # 캐시 무효화
                 if "loaded_reviews" in st.session_state:
@@ -255,8 +317,8 @@ class ReviewEditManager:
 
                 success_msg = f"✅ 리뷰가 등록되었습니다!\n\n"
                 success_msg += f"- AI 분석 결과: **{sentiment}**\n"
-                if created_at:
-                    success_msg += f"- 작성일시: {created_at}"
+                if created_at_str:
+                    success_msg += f"- 작성일시: {created_at_str}"
                 st.success(success_msg)
                 st.balloons()
                 st.rerun()
