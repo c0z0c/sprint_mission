@@ -28,15 +28,11 @@ def test_get_db_returns_generator():
 
 def test_database_connector_session():
     """DatabaseConnector의 세션 생성이 제대로 작동하는지 테스트"""
-    session_gen = db_connector.get_session()
-    assert isinstance(
-        session_gen, Generator
-    ), "get_session()은 Generator를 반환해야 합니다"
-
-    session = next(session_gen)
-    assert isinstance(
-        session, Session
-    ), "get_session()이 yield한 객체는 Session이어야 합니다"
+    # get_session()은 contextmanager를 사용하므로 with 문으로 사용
+    with db_connector.get_session() as session:
+        assert isinstance(
+            session, Session
+        ), "get_session()이 yield한 객체는 Session이어야 합니다"
 
 
 def test_real_db_workflow(client_with_real_db: TestClient):

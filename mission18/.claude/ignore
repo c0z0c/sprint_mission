@@ -99,3 +99,5 @@ documents/*.pdf
 ../Learning Daily/
 ../실습/
 ../테스트/
+
+ignore_project.md

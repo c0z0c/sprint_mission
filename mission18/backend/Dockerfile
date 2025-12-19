@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# AI 모델 사전 다운로드 (서버 시작 시간 단축)
+RUN python -c "from transformers import pipeline; pipeline('text-classification', model='daekeun-ml/koelectra-small-v3-nsmc')"
+
 # 애플리케이션 코드 복사
 COPY ./app ./app
 

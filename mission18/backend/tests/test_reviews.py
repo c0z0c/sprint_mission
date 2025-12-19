@@ -2,7 +2,9 @@
 리뷰(Review) API 테스트
 """
 
+import pytest
 from fastapi.testclient import TestClient
+from app.ai.SentimentPredictor import SentimentPredictor
 
 
 def test_create_review_success(client: TestClient):
@@ -698,3 +700,168 @@ def test_update_review_unique_constraint_violation(client: TestClient):
     response = client.put(f"/reviews/{review2_id}", json=update_data)
     assert response.status_code == 400
     assert "동일한" in response.json()["detail"]
+
+
+# ==================== AI Sentiment Analysis Tests ====================
+
+
+@pytest.fixture(scope="module")
+def sentiment_predictor():
+    """테스트용 SentimentPredictor 인스턴스 (모듈 범위에서 한 번만 로딩)"""
+    return SentimentPredictor()
+
+
+def test_create_review_with_ai_positive_sentiment(
+    client: TestClient, sentiment_predictor: SentimentPredictor
+):
+    """리뷰 생성 시 AI가 긍정으로 분류하는지 검증"""
+    # 영화 등록
+    client.post("/movies/", json={"tmdb_id": 80001, "title": "AI 긍정 테스트 영화"})
+
+    # 긍정 리뷰 등록
+    positive_content = (
+        "이 영화는 정말 최고였어요! 감동적이고 재미있었습니다. 꼭 다시 보고 싶습니다."
+    )
+    review_data = {
+        "tmdb_id": 80001,
+        "author": "긍정 테스터",
+        "content": positive_content,
+    }
+    response = client.post("/reviews/", json=review_data)
+    assert response.status_code == 201
+    data = response.json()
+
+    # AI 예측 결과와 실제 저장된 is_positive 값 비교
+    expected_sentiment = sentiment_predictor.predict(positive_content)
+    assert (
+        data["is_positive"] == expected_sentiment
+    ), f"AI 예측({expected_sentiment})과 저장된 값({data['is_positive']})이 불일치"
+    assert data["is_positive"] == 1, "긍정 리뷰가 부정으로 분류됨"
+
+
+def test_create_review_with_ai_negative_sentiment(
+    client: TestClient, sentiment_predictor: SentimentPredictor
+):
+    """리뷰 생성 시 AI가 부정으로 분류하는지 검증"""
+    # 영화 등록
+    client.post("/movies/", json={"tmdb_id": 80002, "title": "AI 부정 테스트 영화"})
+
+    # 부정 리뷰 등록
+    negative_content = (
+        "최악의 영화였습니다. 돈과 시간이 아까웠어요. 지루하고 재미없었습니다."
+    )
+    review_data = {
+        "tmdb_id": 80002,
+        "author": "부정 테스터",
+        "content": negative_content,
+    }
+    response = client.post("/reviews/", json=review_data)
+    assert response.status_code == 201
+    data = response.json()
+
+    # AI 예측 결과와 실제 저장된 is_positive 값 비교
+    expected_sentiment = sentiment_predictor.predict(negative_content)
+    assert (
+        data["is_positive"] == expected_sentiment
+    ), f"AI 예측({expected_sentiment})과 저장된 값({data['is_positive']})이 불일치"
+    assert data["is_positive"] == 0, "부정 리뷰가 긍정으로 분류됨"
+
+
+def test_update_review_content_ai_reanalysis(
+    client: TestClient, sentiment_predictor: SentimentPredictor
+):
+    """리뷰 content 변경 시 AI 재분석 검증"""
+    # 영화 등록
+    client.post("/movies/", json={"tmdb_id": 80003, "title": "AI 재분석 테스트 영화"})
+
+    # 초기 긍정 리뷰 등록
+    initial_content = "정말 훌륭한 영화였습니다!"
+    review_data = {
+        "tmdb_id": 80003,
+        "author": "재분석 테스터",
+        "content": initial_content,
+    }
+    create_response = client.post("/reviews/", json=review_data)
+    review_id = create_response.json()["id"]
+    initial_sentiment = create_response.json()["is_positive"]
+
+    # content를 부정으로 변경
+    updated_content = "최악의 영화였습니다. 다시는 보고 싶지 않습니다."
+    update_data = {"content": updated_content}
+    update_response = client.patch(f"/reviews/{review_id}", json=update_data)
+    assert update_response.status_code == 200
+    updated_sentiment = update_response.json()["is_positive"]
+
+    # AI 재분석 결과 검증
+    expected_sentiment = sentiment_predictor.predict(updated_content)
+    assert (
+        updated_sentiment == expected_sentiment
+    ), f"AI 재분석({expected_sentiment})과 저장된 값({updated_sentiment})이 불일치"
+    assert (
+        updated_sentiment != initial_sentiment
+    ), "content 변경 시 sentiment가 변경되지 않음"
+
+
+def test_movie_ai_rating_calculation(client: TestClient):
+    """영화 AI 평점 계산 검증 (긍정 비율 × 5.0)"""
+    # 영화 등록
+    client.post(
+        "/movies/", json={"tmdb_id": 80004, "title": "AI 평점 계산 테스트 영화"}
+    )
+
+    # 긍정 리뷰 3개, 부정 리뷰 2개 등록
+    positive_reviews = [
+        "정말 훌륭한 영화였습니다!",
+        "감동적이고 재미있었습니다.",
+        "최고의 영화입니다!",
+    ]
+    negative_reviews = [
+        "최악의 영화였습니다.",
+        "지루하고 재미없었습니다.",
+    ]
+
+    for i, content in enumerate(positive_reviews):
+        client.post(
+            "/reviews/",
+            json={"tmdb_id": 80004, "author": f"긍정유저{i}", "content": content},
+        )
+
+    for i, content in enumerate(negative_reviews):
+        client.post(
+            "/reviews/",
+            json={"tmdb_id": 80004, "author": f"부정유저{i}", "content": content},
+        )
+
+    # 영화 평점 조회
+    response = client.get("/reviews/movie/80004/rating")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_reviews"] == 5
+    # 긍정 리뷰 비율 검증 (AI 예측 결과에 따라 다를 수 있음)
+    assert 0 <= data["ai_rating"] <= 5.0
+    assert data["positive_ratio"] == data["positive_reviews"] / data["total_reviews"]
+
+
+def test_ai_sentiment_not_random(client: TestClient):
+    """동일 content에 대해 AI 감성 분석 결과가 일관되는지 검증 (랜덤이 아님)"""
+    # 영화 등록
+    client.post("/movies/", json={"tmdb_id": 80005, "title": "일관성 테스트 영화"})
+
+    # 동일한 content로 리뷰 3개 등록
+    same_content = "이 영화는 정말 감동적이었습니다. 최고의 영화입니다!"
+    sentiments = []
+
+    for i in range(3):
+        review_data = {
+            "tmdb_id": 80005,
+            "author": f"테스터{i}",
+            "content": same_content,
+        }
+        response = client.post("/reviews/", json=review_data)
+        sentiments.append(response.json()["is_positive"])
+
+    # 모든 sentiment 값이 동일해야 함 (랜덤이 아님)
+    assert (
+        len(set(sentiments)) == 1
+    ), f"동일 content에 대해 다른 sentiment 반환: {sentiments}"
