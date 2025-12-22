@@ -29,7 +29,7 @@ FastAPI(패스트API)는 Starlette(스타렛)을 기반으로 구축된 현대�
   async def get_info(request: Request):
       client_host = request.client.host
       user_agent = request.headers.get("user-agent")
-      return {"client": client_host, "agent": user_agent}
+      return ⦃"client": client_host, "agent": user_agent❵
   ```
 
 ### 1.2. Response
@@ -41,7 +41,7 @@ FastAPI(패스트API)는 Starlette(스타렛)을 기반으로 구축된 현대�
   @app.get("/set-cookie")
   async def set_cookie(response: Response):
       response.set_cookie(key="session_id", value="abc123")
-      return {"message": "쿠키가 설정되었습니다"}
+      return ⦃"message": "쿠키가 설정되었습니다"❵
   ```
 
 ### 1.3. BackgroundTasks
@@ -57,7 +57,7 @@ FastAPI(패스트API)는 Starlette(스타렛)을 기반으로 구축된 현대�
   @app.post("/submit")
   async def submit(background_tasks: BackgroundTasks):
       background_tasks.add_task(write_log, "새로운 요청이 들어왔습니다")
-      return {"message": "요청이 접수되었습니다"}
+      return ⦃"message": "요청이 접수되었습니다"❵
   ```
 
 ---
@@ -68,11 +68,11 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
 
 ### 2.1. Path (경로 변수)
 - **설명:** URL 경로에 포함된 변수를 추출합니다.
-- **예시:** `/items/{item_id}`
+- **예시:** `/items/⦃item_id❵`
   ```python
-  @app.get("/items/{item_id}")
+  @app.get("/items/⦃item_id❵")
   async def read_item(item_id: int):
-      return {"item_id": item_id}
+      return ⦃"item_id": item_id❵
   ```
 
 ### 2.2. Query (쿼리 스트링)
@@ -81,7 +81,7 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
   ```python
   @app.get("/search")
   async def search(q: str = None):
-      return {"query": q}
+      return ⦃"query": q❵
   ```
 
 ### 2.3. Header (HTTP 헤더)
@@ -91,7 +91,7 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
 
   @app.get("/agent")
   async def get_agent(user_agent: str = Header(None)):
-      return {"User-Agent": user_agent}
+      return ⦃"User-Agent": user_agent❵
   ```
 
 ### 2.4. Cookie
@@ -101,7 +101,7 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
 
   @app.get("/cookie")
   async def read_cookie(session_id: str = Cookie(None)):
-      return {"session_id": session_id}
+      return ⦃"session_id": session_id❵
   ```
 
 ### 2.5. Body (JSON 바디 데이터)
@@ -111,7 +111,7 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
 
   @app.post("/items")
   async def create_item(data: dict = Body(...)):
-      return {"data": data}
+      return ⦃"data": data❵
   ```
 
 ### 2.6. File / UploadFile (파일 업로드)
@@ -122,7 +122,7 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
   @app.post("/upload")
   async def upload_file(file: UploadFile = File(...)):
       contents = await file.read()
-      return {"filename": file.filename, "size": len(contents)}
+      return ⦃"filename": file.filename, "size": len(contents)❵
   ```
 
 ### 2.7. Form (HTML `<form>` 데이터)
@@ -132,7 +132,7 @@ FastAPI는 URL 경로, 쿼리 스트링, 헤더, 쿠키, 바디 등 다양한 �
 
   @app.post("/login")
   async def login(username: str = Form(...), password: str = Form(...)):
-      return {"username": username, "password": password}
+      return ⦃"username": username, "password": password❵
   ```
 
 ---
@@ -154,7 +154,7 @@ FastAPI는 단순히 Request/Response 객체를 주입하는 것뿐만 아니라
 
   @app.get("/secure")
   async def secure_endpoint(token: str = Depends(get_token_header)):
-      return {"token": token}
+      return ⦃"token": token❵
   ```
 
 ### 3.2. 클래스 기반 의존성
@@ -171,7 +171,7 @@ FastAPI는 단순히 Request/Response 객체를 주입하는 것뿐만 아니라
 
   @app.get("/items/")
   async def read_items(commons: CommonQueryParams = Depends(CommonQueryParams)):
-      return {"q": commons.q, "page": commons.page, "size": commons.size}
+      return ⦃"q": commons.q, "page": commons.page, "size": commons.size❵
   ```
 
 ### 3.3. 중첩 의존성
@@ -187,7 +187,7 @@ FastAPI는 단순히 Request/Response 객체를 주입하는 것뿐만 아니라
 
   @app.get("/items/")
   async def read_query(query: str = Depends(query_or_cookie_extractor)):
-      return {"query": query}
+      return ⦃"query": query❵
   ```
 
 ---
@@ -203,7 +203,7 @@ FastAPI는 단순히 Request/Response 객체를 주입하는 것뿐만 아니라
 
   @app.get("/users/me")
   async def read_users_me(token: str = Depends(oauth2_scheme)):
-      return {"token": token}
+      return ⦃"token": token❵
   ```
 
 ### 4.2. Context 관리
@@ -236,7 +236,7 @@ D --> G["Custom Depends Functions"]
 ## 6. 수식 표현: 의존성 그래프 모델
 
 $$
-DependencyGraph = \{ Node_i \mid Node_i \in (Request, Response, BackgroundTasks, Path, Query, Header, Cookie, Body, File, Form, Depends) \}
+DependencyGraph = \⦃ Node_i \mid Node_i \in (Request, Response, BackgroundTasks, Path, Query, Header, Cookie, Body, File, Form, Depends) \❵
 $$
 
 ---

@@ -53,7 +53,7 @@ def load_resources():
 @app.post("/predict")
 def predict():
     # ... 예측 로직 ...
-    return {"status": "ok"}
+    return ⦃"status": "ok"❵
 ```
 
 ### 1.3. `on_event("shutdown")`
@@ -124,13 +124,13 @@ app = FastAPI(lifespan=lifespan)
 
 ```mermaid
 graph TD
-    A[서버 시작 명령어 실행] --> B{FastAPI 초기화};
-    B --> C{on_event("startup") 함수 실행};
-    C --> D{모든 startup 함수 완료?};
+    A[서버 시작 명령어 실행] --> B⦃FastAPI 초기화❵;
+    B --> C⦃on_event("startup") 함수 실행❵;
+    C --> D⦃모든 startup 함수 완료?❵;
     D -- No --> E[서버 시작 실패/종료];
     D -- Yes --> F[클라이언트 요청 처리 시작];
-    F --> G{서버 종료 명령어/신호 수신};
-    G --> H{on_event("shutdown") 함수 실행};
+    F --> G⦃서버 종료 명령어/신호 수신❵;
+    G --> H⦃on_event("shutdown") 함수 실행❵;
     H --> I[모든 shutdown 함수 완료];
     I --> J[서버 프로세스 종료];
 ```

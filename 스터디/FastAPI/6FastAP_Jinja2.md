@@ -21,9 +21,9 @@ Jinja2(진자투)는 Python 기반의 강력한 템플릿 엔진으로, HTML 파
 
 Jinja2는 세 가지 주요 구분자를 사용합니다.
 
-- **출력(Expression/Output):** `{{ ... }}`
-- **제어(Statements/Control):** `{% ... %}`
-- **주석(Comment):** `{# ... #}`
+- **출력(Expression/Output):** `❴❴ ... ❵❵`
+- **제어(Statements/Control):** `❴% ... %❵`
+- **주석(Comment):** `❴# ... #❵`
 
 ---
 
@@ -31,19 +31,19 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 
 ### 1.2.1. 변수 출력
 ```html
-<p>{{ username }}</p>
-<p>{{ product.name }}</p>
+<p>❴❴ username ❵❵</p>
+<p>❴❴ product.name ❵❵</p>
 ```
 
 ### 1.2.2. 연산
 ```html
-<p>{{ 10 + 20 }}</p>
-<p>{{ price * quantity }}</p>
+<p>❴❴ 10 + 20 ❵❵</p>
+<p>❴❴ price * quantity ❵❵</p>
 ```
 
 ### 1.2.3. 함수 호출
 ```html
-<p>{{ user.get_full_name() }}</p>
+<p>❴❴ user.get_full_name() ❵❵</p>
 ```
 
 ---
@@ -52,23 +52,23 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 
 ### 1.3.1. 조건문 (if, elif, else)
 ```html
-{% if user.is_admin %}
+❴% if user.is_admin %❵
   <p>관리자</p>
-{% elif user.is_staff %}
+❴% elif user.is_staff %❵
   <p>스태프</p>
-{% else %}
+❴% else %❵
   <p>일반 사용자</p>
-{% endif %}
+❴% endif %❵
 ```
 
 ### 1.3.2. 반복문 (for)
 ```html
 <ul>
-{% for item in items %}
-  <li>{{ loop.index }}. {{ item }}</li>
-{% else %}
+❴% for item in items %❵
+  <li>❴❴ loop.index ❵❵. ❴❴ item ❵❵</li>
+❴% else %❵
   <li>항목 없음</li>
-{% endfor %}
+❴% endfor %❵
 </ul>
 ```
 
@@ -80,57 +80,57 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 
 ### 1.3.3. set 구문 (변수 정의)
 ```html
-{% set total = price * quantity %}
-<p>총합: {{ total }}</p>
+❴% set total = price * quantity %❵
+<p>총합: ❴❴ total ❵❵</p>
 ```
 
 ### 1.3.4. with 구문 (지역 변수 블록)
 ```html
-{% with messages = get_messages() %}
-  {% for msg in messages %}
-    <p>{{ msg }}</p>
-  {% endfor %}
-{% endwith %}
+❴% with messages = get_messages() %❵
+  ❴% for msg in messages %❵
+    <p>❴❴ msg ❵❵</p>
+  ❴% endfor %❵
+❴% endwith %❵
 ```
 
 ### 1.3.5. macro 구문 (매크로 정의)
 ```html
-{% macro input(name, type="text") %}
-  <input name="{{ name }}" type="{{ type }}">
-{% endmacro %}
+❴% macro input(name, type="text") %❵
+  <input name="❴❴ name ❵❵" type="❴❴ type ❵❵">
+❴% endmacro %❵
 ```
 
 ### 1.3.6. include 구문 (템플릿 삽입)
 ```html
-{% include "partials/nav.html" %}
+❴% include "partials/nav.html" %❵
 ```
 
 ### 1.3.7. extends / block 구문 (상속)
 ```html
-{% extends "base.html" %}
-{% block content %}
+❴% extends "base.html" %❵
+❴% block content %❵
   <h1>홈</h1>
-{% endblock %}
+❴% endblock %❵
 ```
 
 ### 1.3.8. import 구문 (매크로 불러오기)
 ```html
-{% import "forms.html" as forms %}
-{{ forms.input("email") }}
+❴% import "forms.html" as forms %❵
+❴❴ forms.input("email") ❵❵
 ```
 
 ### 1.3.9. filter 구문 (블록 필터링)
 ```html
-{% filter upper %}
+❴% filter upper %❵
   이 텍스트는 대문자로 변환됩니다.
-{% endfilter %}
+❴% endfilter %❵
 ```
 
 ### 1.3.10. call 구문 (매크로 호출 블록)
 ```html
-{% call forms.input("comment") %}
+❴% call forms.input("comment") %❵
   <textarea name="comment"></textarea>
-{% endcall %}
+❴% endcall %❵
 ```
 
 ---
@@ -138,7 +138,7 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 ## 1.4. 주석 (Comments)
 
 ```html
-{# 이 주석은 렌더링되지 않습니다. #}
+❴# 이 주석은 렌더링되지 않습니다. #❵
 ```
 
 ---
@@ -159,8 +159,8 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 
 ### 1.5.2. 예시
 ```html
-<p>{{ "hello" | upper }}</p>
-<p>{{ my_list | length }}</p>
+<p>❴❴ "hello" | upper ❵❵</p>
+<p>❴❴ my_list | length ❵❵</p>
 ```
 
 ---
@@ -177,9 +177,9 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 
 ### 1.6.2. 예시
 ```html
-{% if username is defined %}
-  <p>사용자: {{ username }}</p>
-{% endif %}
+❴% if username is defined %❵
+  <p>사용자: ❴❴ username ❵❵</p>
+❴% endif %❵
 ```
 
 ---
@@ -193,9 +193,9 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 - `dict(...)`
 
 ```html
-{% for i in range(5) %}
-  <p>{{ i }}</p>
-{% endfor %}
+❴% for i in range(5) %❵
+  <p>❴❴ i ❵❵</p>
+❴% endfor %❵
 ```
 
 ---
@@ -204,23 +204,23 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 
 ### 1.8.1. whitespace control (공백 제어)
 ```html
-{{- variable -}}
-{%- for item in items -%}
+❴❴- variable -❵❵
+❴%- for item in items -%❵
 ```
 
 ### 1.8.2. super() (부모 블록 내용 가져오기)
 ```html
-{% block head %}
-  {{ super() }}
+❴% block head %❵
+  ❴❴ super() ❵❵
   <link rel="stylesheet" href="/static/style.css">
-{% endblock %}
+❴% endblock %❵
 ```
 
 ### 1.8.3. raw 구문 (Jinja2 해석 방지)
 ```html
-{% raw %}
-  {{ 이 부분은 Jinja2가 해석하지 않습니다 }}
-{% endraw %}
+❴% raw %❵
+  ❴❴ 이 부분은 Jinja2가 해석하지 않습니다 ❵❵
+❴% endraw %❵
 ```
 
 ---
@@ -240,7 +240,7 @@ Jinja2는 세 가지 주요 구분자를 사용합니다.
 ```mermaid
 flowchart TD
 A["base.html"] --> B["child.html"]
-B --> C["{% block content %}"]
+B --> C["❴% block content %❵"]
 C --> D["렌더링된 HTML"]
 ```
 
@@ -249,16 +249,16 @@ C --> D["렌더링된 HTML"]
 ## 1.11. 수식 표현
 
 $$
-\text{total} = \sum_{i=1}^{n} p_i \cdot q_i
+\text❴total❵ = \sum_❴i=1❵^❴n❵ p_i \cdot q_i
 $$
 
 ---
 
 ## 1.12. 전체 API 체크리스트
 
-- 출력: `{{ ... }}`
-- 제어: `{% if %}`, `{% for %}`, `{% set %}`, `{% with %}`, `{% macro %}`, `{% include %}`, `{% extends %}`, `{% block %}`, `{% import %}`, `{% filter %}`, `{% call %}`, `{% raw %}`
-- 주석: `{# ... #}`
+- 출력: `❴❴ ... ❵❵`
+- 제어: `❴% if %❵`, `❴% for %❵`, `❴% set %❵`, `❴% with %❵`, `❴% macro %❵`, `❴% include %❵`, `❴% extends %❵`, `❴% block %❵`, `❴% import %❵`, `❴% filter %❵`, `❴% call %❵`, `❴% raw %❵`
+- 주석: `❴# ... #❵`
 - 필터: `upper`, `lower`, `length`, `default`, `safe`, `striptags`, `int`, `list`, ...
 - 테스트: `defined`, `none`, `even`, `odd`, `string`, `iterable`
 - 전역 함수: `range`, `lipsum`, `cycler`, `joiner`, `dict`

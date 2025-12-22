@@ -28,12 +28,12 @@ app = FastAPI()
 @app.post("/set-cookie")
 def set_cookie(response: Response):
     response.set_cookie(key="session_id", value="abc123", httponly=True)
-    return {"msg": "쿠키 설정 완료"}
+    return ⦃"msg": "쿠키 설정 완료"❵
 
 @app.get("/get-cookie")
 def get_cookie(request: Request):
     session_id = request.cookies.get("session_id")
-    return {"session_id": session_id}
+    return ⦃"session_id": session_id❵
 ```
 👉 `/set-cookie`로 쿠키를 설정하고, `/get-cookie`로 읽을 수 있습니다.
 
@@ -57,10 +57,10 @@ redis = aioredis.from_url("redis://localhost")
 async def cached_data():
     data = await redis.get("mykey")
     if data:
-        return {"cached": data}
+        return ⦃"cached": data❵
     new_data = "fresh result"
     await redis.set("mykey", new_data, ex=60)  # TTL 60초
-    return {"cached": new_data}
+    return ⦃"cached": new_data❵
 ```
 👉 처음 요청 시 새 데이터를 저장하고, 이후 60초 동안은 캐시된 데이터를 반환합니다.
 
@@ -77,17 +77,17 @@ async def cached_data():
 from fastapi import FastAPI, Request
 
 app = FastAPI()
-sessions = {}
+sessions = ⦃❵
 
 @app.post("/login")
 def login(request: Request):
     user_id = "u001"
-    sessions[user_id] = {"logged_in": True}
-    return {"msg": "로그인 성공", "session": sessions[user_id]}
+    sessions[user_id] = ⦃"logged_in": True❵
+    return ⦃"msg": "로그인 성공", "session": sessions[user_id]❵
 
-@app.get("/session/{user_id}")
+@app.get("/session/⦃user_id❵")
 def get_session(user_id: str):
-    return sessions.get(user_id, {"msg": "세션 없음"})
+    return sessions.get(user_id, ⦃"msg": "세션 없음"❵)
 ```
 👉 실제 운영에서는 Redis 같은 중앙 저장소를 사용해 세션을 관리합니다.
 
@@ -109,7 +109,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.get("/secure")
 def secure_endpoint(token: str = Depends(oauth2_scheme)):
-    return {"msg": "토큰 인증 성공", "token": token}
+    return ⦃"msg": "토큰 인증 성공", "token": token❵
 ```
 👉 클라이언트가 `Authorization: Bearer <token>` 헤더를 보내면 인증됩니다.
 

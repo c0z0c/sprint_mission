@@ -125,7 +125,7 @@ FastAPI는 기본적인 HTTP 메서드 외에도 다양한 기능을 데코레�
 
 - **미들웨어 등록**: `@app.middleware("http")` → 요청/응답 처리 과정에 공통 로직 삽입  
 - **이벤트 핸들러 등록**: `@app.on_event("startup")`, `@app.on_event("shutdown")` → 서버 시작/종료 시 실행할 로직 정의  
-- **경로 매개변수(Path Parameter)**: 데코레이터에 `{}`를 사용하여 동적 경로 처리  
+- **경로 매개변수(Path Parameter)**: 데코레이터에 `⦃❵`를 사용하여 동적 경로 처리  
 - **쿼리 매개변수(Query Parameter)**: 함수 인자로 정의하여 자동 검증 및 문서화  
 
 ---

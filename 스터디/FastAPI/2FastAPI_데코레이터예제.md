@@ -28,19 +28,19 @@ def get_users():
 @app.post("/users")
 def create_user(user: dict):
     users[user["id"]] = user
-    return {"msg": "사용자 생성 완료", "user": user}
+    return ⦃"msg": "사용자 생성 완료", "user": user❵
 ```
-클라이언트가 JSON 본문으로 `{ "id": "u003", "name": "홍길동" }`을 보내면 새로운 사용자가 추가됩니다.  
+클라이언트가 JSON 본문으로 `⦃ "id": "u003", "name": "홍길동" ❵`을 보내면 새로운 사용자가 추가됩니다.  
 
 ---
 
 ## 3. `@app.put` (전체 수정)
 - **상황**: 특정 사용자 정보를 전체 교체  
 ```python
-@app.put("/users/{user_id}")
+@app.put("/users/⦃user_id❵")
 def update_user(user_id: str, user: dict):
     users[user_id] = user
-    return {"msg": "사용자 전체 수정 완료", "user": user}
+    return ⦃"msg": "사용자 전체 수정 완료", "user": user❵
 ```
 기존 사용자 데이터를 완전히 새 데이터로 교체합니다.  
 
@@ -49,22 +49,22 @@ def update_user(user_id: str, user: dict):
 ## 4. `@app.patch` (부분 수정)
 - **상황**: 특정 사용자 정보 일부만 수정  
 ```python
-@app.patch("/users/{user_id}")
+@app.patch("/users/⦃user_id❵")
 def partial_update(user_id: str, user: dict):
     users[user_id].update(user)
-    return {"msg": "사용자 일부 수정 완료", "user": users[user_id]}
+    return ⦃"msg": "사용자 일부 수정 완료", "user": users[user_id]❵
 ```
-예를 들어 `{"age": 35}`만 보내면 해당 사용자 나이만 변경됩니다.  
+예를 들어 `⦃"age": 35❵`만 보내면 해당 사용자 나이만 변경됩니다.  
 
 ---
 
 ## 5. `@app.delete` (삭제)
 - **상황**: 특정 사용자 삭제  
 ```python
-@app.delete("/users/{user_id}")
+@app.delete("/users/⦃user_id❵")
 def delete_user(user_id: str):
     del users[user_id]
-    return {"msg": f"{user_id} 삭제 완료"}
+    return ⦃"msg": f"⦃user_id❵ 삭제 완료"❵
 ```
 `/users/u001`로 DELETE 요청을 보내면 해당 사용자가 제거됩니다.  
 
@@ -75,7 +75,7 @@ def delete_user(user_id: str):
 ```python
 @app.options("/users")
 def options_users():
-    return {"allow": ["GET", "POST", "PUT", "PATCH", "DELETE"]}
+    return ⦃"allow": ["GET", "POST", "PUT", "PATCH", "DELETE"]❵
 ```
 브라우저나 클라이언트가 서버가 어떤 메서드를 지원하는지 확인할 때 사용됩니다.  
 
@@ -86,7 +86,7 @@ def options_users():
 ```python
 @app.head("/users")
 def head_users():
-    return {"X-Total-Count": len(users)}
+    return ⦃"X-Total-Count": len(users)❵
 ```
 본문 없이 헤더만 반환하여, 전체 사용자 수 같은 정보를 확인할 수 있습니다.  
 
