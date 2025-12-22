@@ -697,6 +697,26 @@ docker push myregistry.com/myapp:1.0
 docker push -a myregistry.com/myapp
 ```
 
+**Docker Hub 푸시 실전 예시**
+
+Docker Hub에 이미지를 푸시할 때는 전체 레지스트리 주소를 명시해야 합니다.
+
+```bash
+# 백엔드 이미지 태깅
+docker tag c0z0c/mis18_backend:latest index.docker.io/c0z0c/mis18_backend:v1.1
+
+# 백엔드 푸시
+docker push index.docker.io/c0z0c/mis18_backend:v1.1
+
+# 프론트엔드 이미지 태깅
+docker tag c0z0c/mis18_frontend:latest index.docker.io/c0z0c/mis18_frontend:v1.1
+
+# 프론트엔드 푸시
+docker push index.docker.io/c0z0c/mis18_frontend:v1.1
+```
+
+**참고**: `index.docker.io`는 Docker Hub의 공식 레지스트리 주소입니다. 이 주소를 명시하면 클라우드 플랫폼에서 이미지를 정확하게 참조할 수 있습니다.
+
 #### 2.3.3. docker save
 
 이미지를 tar 아카이브 (archive)로 저장합니다.
@@ -3448,11 +3468,165 @@ services:
       - DATABASE_URL=${DATABASE_URL:?DATABASE_URL must be set}
 ```
 
+## 5. 클라우드 배포 (Cloud Deployment)
+
+### 5.1. Google Cloud Run 배포
+
+Google Cloud Run에 Docker 이미지를 배포하는 방법입니다.
+
+#### 5.1.1. 기본 배포 명령어
+
+```bash
+gcloud run deploy [SERVICE_NAME] --image [IMAGE_URL] --region [REGION] --platform managed --allow-unauthenticated
+```
+
+**주요 옵션**
+
+- `--image`: Docker Hub 또는 Container Registry의 이미지 URL
+- `--region`: 배포할 리전 (예: asia-northeast3)
+- `--cpu`: CPU 할당 (기본값: 1)
+- `--memory`: 메모리 할당 (예: 2Gi, 512Mi)
+- `--allow-unauthenticated`: 인증 없이 접근 허용
+- `--platform`: managed (완전 관리형) 또는 gke (Kubernetes)
+
+#### 5.1.2. 실전 배포 예시
+
+**백엔드 배포**
+
+```bash
+gcloud run deploy mis18-backend --image index.docker.io/c0z0c/mis18_backend:v1.1 --region asia-northeast3 --cpu 1 --memory 2Gi --allow-unauthenticated
+```
+
+**프론트엔드 배포**
+
+```bash
+gcloud run deploy mis18-frontend --image index.docker.io/c0z0c/mis18_frontend:v1.1 --region asia-northeast3 --allow-unauthenticated
+```
+
+#### 5.1.3. 완전 자동화 스크립트
+
+빌드부터 배포까지 한 번에 수행하는 스크립트입니다.
+
+**백엔드 자동화**
+
+```bash
+# 1. Docker Compose로 빌드
+docker-compose build backend
+
+# 2. 이미지 태깅
+docker tag c0z0c/mis18_backend:latest index.docker.io/c0z0c/mis18_backend:v1.1
+
+# 3. Docker Hub에 푸시
+docker push index.docker.io/c0z0c/mis18_backend:v1.1
+
+# 4. Google Cloud Run에 배포
+gcloud run deploy mis18-backend --image index.docker.io/c0z0c/mis18_backend:v1.1 --region asia-northeast3 --cpu 1 --memory 2Gi --platform managed --allow-unauthenticated
+```
+
+**프론트엔드 자동화**
+
+```bash
+# 1. Docker Compose로 빌드
+docker-compose build frontend
+
+# 2. 이미지 태깅
+docker tag c0z0c/mis18_frontend:latest index.docker.io/c0z0c/mis18_frontend:v1.1
+
+# 3. Docker Hub에 푸시
+docker push index.docker.io/c0z0c/mis18_frontend:v1.1
+
+# 4. Google Cloud Run에 배포
+gcloud run deploy mis18-frontend --image index.docker.io/c0z0c/mis18_frontend:v1.1 --region asia-northeast3 --platform managed --allow-unauthenticated
+```
+
+#### 5.1.4. 환경 변수 설정
+
+배포 시 환경 변수를 설정하려면:
+
+```bash
+gcloud run deploy mis18-backend --image index.docker.io/c0z0c/mis18_backend:v1.1 --region asia-northeast3 --set-env-vars="DATABASE_URL=postgresql://...,API_KEY=xxx" --allow-unauthenticated
+```
+
+또는 파일에서 환경 변수 로드:
+
+```bash
+gcloud run deploy mis18-backend --image index.docker.io/c0z0c/mis18_backend:v1.1 --region asia-northeast3 --env-vars-file=.env.yaml --allow-unauthenticated
+```
+
+#### 5.1.5. PowerShell 스크립트 예시
+
+Windows PowerShell에서 사용할 수 있는 완전 자동화 스크립트:
+
+```powershell
+# deploy-to-cloud.ps1
+
+# 변수 설정
+$BACKEND_IMAGE = "index.docker.io/c0z0c/mis18_backend"
+$FRONTEND_IMAGE = "index.docker.io/c0z0c/mis18_frontend"
+$VERSION = "v1.1"
+$REGION = "asia-northeast3"
+
+# 백엔드 배포
+Write-Host "Building backend..." -ForegroundColor Green
+docker-compose build backend
+
+Write-Host "Tagging backend image..." -ForegroundColor Green
+docker tag c0z0c/mis18_backend:latest "${BACKEND_IMAGE}:${VERSION}"
+
+Write-Host "Pushing backend to Docker Hub..." -ForegroundColor Green
+docker push "${BACKEND_IMAGE}:${VERSION}"
+
+Write-Host "Deploying backend to Cloud Run..." -ForegroundColor Green
+gcloud run deploy mis18-backend --image "${BACKEND_IMAGE}:${VERSION}" --region $REGION --cpu 1 --memory 2Gi --platform managed --allow-unauthenticated
+
+# 프론트엔드 배포
+Write-Host "Building frontend..." -ForegroundColor Green
+docker-compose build frontend
+
+Write-Host "Tagging frontend image..." -ForegroundColor Green
+docker tag c0z0c/mis18_frontend:latest "${FRONTEND_IMAGE}:${VERSION}"
+
+Write-Host "Pushing frontend to Docker Hub..." -ForegroundColor Green
+docker push "${FRONTEND_IMAGE}:${VERSION}"
+
+Write-Host "Deploying frontend to Cloud Run..." -ForegroundColor Green
+gcloud run deploy mis18-frontend --image "${FRONTEND_IMAGE}:${VERSION}" --region $REGION --platform managed --allow-unauthenticated
+
+Write-Host "Deployment completed!" -ForegroundColor Green
+```
+
+#### 5.1.6. 배포 상태 확인
+
+```bash
+# 서비스 목록 조회
+gcloud run services list --region asia-northeast3
+
+# 특정 서비스 상세 정보
+gcloud run services describe mis18-backend --region asia-northeast3
+
+# 로그 확인
+gcloud run logs read mis18-backend --region asia-northeast3 --limit 50
+
+# 실시간 로그 스트리밍
+gcloud run logs tail mis18-backend --region asia-northeast3
+```
+
+#### 5.1.7. 주의사항
+
+1. **Docker Hub 로그인**: 푸시 전에 `docker login` 필요
+2. **gcloud 인증**: `gcloud auth login` 및 `gcloud config set project [PROJECT_ID]` 필요
+3. **이미지 경로**: `index.docker.io` 사용으로 레지스트리 명시
+4. **리전 선택**: 서울 리전은 `asia-northeast3`
+5. **비용**: Cloud Run은 사용한 만큼 과금 (무료 할당량 있음)
+
+---
+
 이상으로 Docker 명령어 설명서를 완성했습니다. 각 섹션은 다음을 포함합니다:
 
 1. **기본 명령어**: 이미지/컨테이너 관리, 정보 조회
 2. **추가 명령어**: 네트워크/볼륨 관리, 고급 기능, 시스템 관리
 3. **Dockerfile**: 모든 명령어와 멀티스테이지 빌드, 모범 사례
 4. **docker-compose.yml**: 서비스 구성, 네트워크/볼륨 설정, 실전 예시
+5. **클라우드 배포**: Docker Hub 푸시 및 Google Cloud Run 배포 완전 가이드
 
 각 명령어와 옵션에 대한 자세한 설명, 사용 예시, 그리고 실무에 적용할 수 있는 완전한 예제를 포함했습니다.

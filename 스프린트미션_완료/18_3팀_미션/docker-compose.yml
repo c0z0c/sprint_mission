@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mis18_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    volumes:
+      # 데이터베이스 파일 영속성
+      - ./backend/data/movie_review.db:/app/data/movie_review.db
+      # 포스터 이미지 영속성
+      - ./backend/data:/app/data
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mis18_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - PORT=8501
+      - API_BASE_URL=http://mis18_backend:8000
+      - BROWSER_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  db-data:
+  static-data:
