@@ -15,11 +15,18 @@ def render_prompt_selector():
 
     selected_prompts = []
     for category, items in PROMPT_CATEGORIES.items():
-        with st.expander(f"🔹 {category}", expanded=False):
+        options = list(items.keys())
+        key = f"select_{category}"
+        # 세션 상태에 선택값이 없을 때만 첫 항목을 기본값으로 설정
+        default = [options[0]] if options and key not in st.session_state else None
+        cols = st.columns([9, 0.1])
+        with cols[0]:
             selected = st.multiselect(
                 f"{category} 선택",
-                options=list(items.keys()),
-                key=f"select_{category}",
+                options=options,
+                default=default,
+                key=key,
+                help=f"{category}에서 하나 이상 선택하세요",
             )
             for item in selected:
                 selected_prompts.append(items[item])
@@ -71,7 +78,7 @@ def render_image_uploader(mode):
 def render_seed_control():
     """시드 제어 UI 렌더링"""
     st.subheader("🎲 시드 설정")
-    use_fixed_seed = st.checkbox("시드 고정")
+    use_fixed_seed = st.checkbox("시드 고정", value=True)
     fixed_seed = None
     if use_fixed_seed:
         fixed_seed = st.number_input(

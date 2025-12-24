@@ -61,6 +61,13 @@ class DiffusersHandler:
 
         prompt = params.get("prompt")
         input_image_b64 = params.get("image")
+        seed = params.get("seed")
+
+        # Seed 처리: generator 생성
+        generator = None
+        if seed is not None:
+            generator = torch.Generator(device="cuda").manual_seed(int(seed))
+            print(f"Using seed: {seed}")
 
         # 분기 처리
         if input_image_b64 and prompt:
@@ -75,6 +82,7 @@ class DiffusersHandler:
                     prompt=prompt,
                     image=init_image,
                     strength=strength,
+                    generator=generator,
                 )
             except Exception as e:
                 print(f"Error during img2img processing: {e}")
@@ -94,6 +102,7 @@ class DiffusersHandler:
                     prompt="",  # 빈 프롬프트
                     image=init_image,
                     strength=strength,
+                    generator=generator,
                 )
             except Exception as e:
                 print(f"Error during img2img (similar) processing: {e}")
@@ -102,7 +111,7 @@ class DiffusersHandler:
         elif prompt and not input_image_b64:
             print("Processing Text-to-Image request...")
             # === Text만: Text-to-Image ===
-            output = self.txt2img_pipe(prompt=prompt)
+            output = self.txt2img_pipe(prompt=prompt, generator=generator)
 
         else:
             print("Error: Either prompt or image is required.")

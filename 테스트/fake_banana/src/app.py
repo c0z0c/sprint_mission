@@ -4,6 +4,11 @@ AI 이미지 생성기 메인 애플리케이션
 
 import streamlit as st
 from datetime import datetime
+from helper_streamlit_utils import (
+    st_style_page_margin_hidden,
+    st_div_divider,
+    st_sidebar_show,
+)
 
 # 모듈 임포트
 from ui_components import (
@@ -24,14 +29,22 @@ if "generated_images" not in st.session_state:
     st.session_state.generated_images = []
 if "auto_generating" not in st.session_state:
     st.session_state.auto_generating = False
+if "is_generating" not in st.session_state:
+    st.session_state.is_generating = False
+if "generation_message" not in st.session_state:
+    st.session_state.generation_message = ""
+
+st_style_page_margin_hidden()
 
 # 메인 UI
-st.title("🎨 AI 이미지 생성기")
+if st.button("##### 🎨 AI 이미지 생성기"):
+    st_sidebar_show()
+
 st.markdown("Stable Diffusion XL을 사용한 이미지 생성 도구")
 
 # ========== 사이드바 - 입력 컨트롤 ==========
 with st.sidebar:
-    st.header("⚙️ 설정")
+    st.markdown("⚙️ 설정")
 
     # 생성 모드 선택
     mode = st.radio(
@@ -40,7 +53,7 @@ with st.sidebar:
         help="텍스트→이미지: 프롬프트만으로 생성\n이미지 유사: 업로드한 이미지와 유사한 이미지 생성\n이미지+텍스트: 업로드한 이미지에 효과 적용",
     )
 
-    st.divider()
+    st_div_divider()
 
     # 프롬프트 조합 (텍스트 모드일 때)
     custom_prompt = ""
@@ -49,7 +62,7 @@ with st.sidebar:
     else:
         final_prompt = ""
 
-    st.divider()
+    st_div_divider()
 
     # 이미지 업로드 (이미지 모드일 때)
     uploaded_file = None
@@ -57,17 +70,17 @@ with st.sidebar:
     if mode in ["이미지 유사 생성", "이미지 + 텍스트"]:
         uploaded_file, strength = render_image_uploader(mode)
 
-    st.divider()
+    st_div_divider()
 
     # 시드 설정
     use_fixed_seed, fixed_seed = render_seed_control()
 
-    st.divider()
+    st_div_divider()
 
     # 자동 생성 설정
     auto_mode, auto_delay, max_auto_images = render_auto_generation_control()
 
-    st.divider()
+    st_div_divider()
 
     # 생성 버튼
     generate_btn = False
@@ -85,7 +98,7 @@ with st.sidebar:
         if stop_auto:
             st.session_state.auto_generating = False
 
-    st.divider()
+    st_div_divider()
 
     # 일괄 다운로드
     render_bulk_download_section()
@@ -96,24 +109,27 @@ with st.sidebar:
         st.rerun()
 
 # ========== 메인 영역 - 이미지 생성 및 표시 ==========
-st.header("🖼️ 생성된 이미지")
+st.markdown("🖼️ 생성된 이미지")
 
-# 단일 이미지 생성
-if not auto_mode and generate_btn:
-    handle_manual_generation(
-        mode, final_prompt, uploaded_file, fixed_seed, strength, custom_prompt
-    )
+# 생성 상태 메시지를 상단에 표시
+if st.session_state.generation_message:
+    if st.session_state.is_generating:
+        st.info(f"⏳ {st.session_state.generation_message}")
+    else:
+        if (
+            "완료" in st.session_state.generation_message
+            or "✅" in st.session_state.generation_message
+        ):
+            st.success(st.session_state.generation_message)
+        elif (
+            "실패" in st.session_state.generation_message
+            or "❌" in st.session_state.generation_message
+        ):
+            st.error(st.session_state.generation_message)
+        else:
+            st.info(st.session_state.generation_message)
 
-# 자동 생성 모드
-if auto_mode and st.session_state.auto_generating:
-    handle_auto_generation(max_auto_images, use_fixed_seed, fixed_seed, auto_delay)
-
-    # 자동 생성 대기 시간 추가 (이미지가 화면에 표시된 후)
-    if len(st.session_state.generated_images) < max_auto_images:
-        import time
-        time.sleep(auto_delay)
-
-# 이미지 그리드 (3열)
+# 이미지 그리드를 먼저 표시 (생성 중에도 기존 이미지가 보임)
 if len(st.session_state.generated_images) > 0:
     # 삭제할 인덱스를 저장
     delete_idx = None
@@ -142,6 +158,22 @@ else:
         "생성된 이미지가 없습니다. 왼쪽 사이드바에서 설정 후 이미지를 생성해보세요!"
     )
 
+# ========== 이미지 생성 로직 (화면 표시 후 실행) ==========
+# 단일 이미지 생성
+if not auto_mode and generate_btn:
+    handle_manual_generation(
+        mode, final_prompt, uploaded_file, fixed_seed, strength, custom_prompt
+    )
+
+# 자동 생성 모드
+if auto_mode and st.session_state.auto_generating:
+    # 이전 생성이 완료되었다면 delay 적용
+    if len(st.session_state.generated_images) > 0 and not st.session_state.is_generating:
+        import time
+        time.sleep(auto_delay)
+
+    handle_auto_generation(max_auto_images, use_fixed_seed, fixed_seed, auto_delay)
+
 # 푸터
-st.divider()
+st_div_divider()
 st.caption("Powered by Stable Diffusion XL • Made with Streamlit")
