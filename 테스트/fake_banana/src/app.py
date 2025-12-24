@@ -97,6 +97,8 @@ with st.sidebar:
             st.session_state.auto_generating = True
         if stop_auto:
             st.session_state.auto_generating = False
+            st.session_state.is_generating = False
+            st.session_state.generation_message = "⏹️ 자동 생성이 중지되었습니다."
 
     st_div_divider()
 
